@@ -17,3 +17,5 @@ data/
 .DS_Store
 .env
 *.log
+/src/utils/ANTH312
+/src/utils/jsonStringTest

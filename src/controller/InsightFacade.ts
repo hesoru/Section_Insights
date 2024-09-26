@@ -43,11 +43,12 @@ export default class InsightFacade implements IInsightFacade {
 		const unzipped = await zip.loadAsync(content, {base64: true})
 		// 	//forEach documentation: https://stuk.github.io/jszip/documentation/api_jszip/for_each.html
 		// 	//should execute callback function for each entry at this folder level.
-		const coursesFolder = unzipped.folder("/courses");
+		//const coursesFolder = unzipped.folder("courses");
 		const fileStringsPromises: Promise<string>[] = [];
-
+		const test = await unzipped.files['courses/ANTH312'].async('string');
+		parseJSONtoSections(test);
 		// @ts-ignore
-		coursesFolder.forEach((relativePath) => {
+		unzipped.forEach((relativePath) => {
 				fileStringsPromises.push(unzipped.files[relativePath].async('string')) //add promise to array
 			})
 
