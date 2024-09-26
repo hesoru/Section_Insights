@@ -6,9 +6,14 @@
  */
 import {InsightError} from "../controller/IInsightFacade";
 
-export function parseJSONtoSection(file: string): void {
+export function parseJSONtoSections(file: string): void {
 
     console.log(file);
+
+}
+
+export function writeFilesToDisk(files: string[]): void {
+    console.log(files);
 
 }
 

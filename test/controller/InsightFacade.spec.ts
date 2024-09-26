@@ -269,7 +269,7 @@ describe("InsightFacade", function () {
 		});
 
 		it("list from empty database", async function () {
-			const result = await facade.listDatasets(); //I dont think I need a try catch here because listDatasets() does not throw any errors
+			const result = await facade.listDatasets(); //I don't think I need a try catch here because listDatasets() does not throw any errors
 
 			expect(result).to.deep.equal([]);
 		});
@@ -286,7 +286,7 @@ describe("InsightFacade", function () {
 				expect.fail("addDataset failed" + error);
 			}
 
-			const result = await facade.listDatasets(); //I dont think I need a try catch here because listDatasets() does not throw any errors
+			const result = await facade.listDatasets(); //I don't think I need a try catch here because listDatasets() does not throw any errors
 
 			expect(result).to.deep.equal([
 				{

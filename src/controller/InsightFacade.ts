@@ -1,7 +1,8 @@
 import {IInsightFacade, InsightDataset, InsightDatasetKind, InsightError, InsightResult} from "./IInsightFacade";
 import JSZip from "jszip";
 import fs from "fs-extra";
-import {checkValidId, parseJSONtoSection} from "../utils/JsonHelper";
+import {checkValidId, parseJSONtoSections, writeFilesToDisk} from "../utils/JsonHelper";
+
 
 /**
  * This is the main programmatic entry point for the project.
@@ -42,13 +43,27 @@ export default class InsightFacade implements IInsightFacade {
 		const unzipped = await zip.loadAsync(content, {base64: true})
 		// 	//forEach documentation: https://stuk.github.io/jszip/documentation/api_jszip/for_each.html
 		// 	//should execute callback function for each entry at this folder level.
-			const coursesFolder = unzipped.folder("/courses");
-			// @ts-ignore
-		coursesFolder.forEach(async (relativePath) => {
-				const test = await unzipped.files[relativePath].async('string')
-				parseJSONtoSection(test);
+		const coursesFolder = unzipped.folder("/courses");
+		const fileStringsPromises: Promise<string>[] = [];
+
+		// @ts-ignore
+		coursesFolder.forEach((relativePath) => {
+				fileStringsPromises.push(unzipped.files[relativePath].async('string')) //add promise to array
 			})
-		//stub
+
+		//Adapted from ChatGPT generated response
+		try {
+			const fileStrings = await Promise.all(fileStringsPromises);
+			for (const fileString of fileStrings) {
+				parseJSONtoSections(fileString);
+			}
+			writeFilesToDisk(fileStrings);
+		} catch (error) {
+			throw new InsightError("unable to convert all files to JSON formatted strings" + error);
+		}
+		//try catch for promise.all
+		//array of sections equals return of helper and store array of section to disk.
+		//loop through promises array
 		return [];
 	}
 
