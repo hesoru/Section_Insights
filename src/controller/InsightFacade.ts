@@ -12,7 +12,7 @@ import {checkValidId, parseJSONtoSections, writeFilesToDisk} from "../utils/Json
 export default class InsightFacade implements IInsightFacade {
 	public datasetIds: string[];
 
-	//dont include any async code inside the constructor and make the constructor as simple as possible.
+	//don't include any async code inside the constructor and make the constructor as simple as possible.
 	//A function itself could fail/succeed but a constructor should always pass.
 	constructor() {
 		this.datasetIds = [];
@@ -35,20 +35,22 @@ export default class InsightFacade implements IInsightFacade {
 		//must be located within a folder called courses/ in root zips directory.
 		//A valid section must contain all queryable fields: id, Course, Title, Professor, Subject, Year, Avg, Pass, Fail, Audit
 
-		//Decoding a base64 string: adapted from StackOverflow answer
-		//const decode = (str: string): string => Buffer.from(str, 'base64').toString('binary');
-		//unzipping zip file: following JZip github guide: https://stuk.github.io/jszip/documentation/examples.html
-
+		//unzipping zip file: following JZip gitHub guide: https://stuk.github.io/jszip/documentation/examples.html
 		const zip = new JSZip();
 		const unzipped = await zip.loadAsync(content, {base64: true})
-		// 	//forEach documentation: https://stuk.github.io/jszip/documentation/api_jszip/for_each.html
-		// 	//should execute callback function for each entry at this folder level.
-		//const coursesFolder = unzipped.folder("courses");
+		//forEach documentation: https://stuk.github.io/jszip/documentation/api_jszip/for_each.html
 		const fileStringsPromises: Promise<string>[] = [];
 		const test = await unzipped.files['courses/ANTH312'].async('string');
 		parseJSONtoSections(test);
+
+		let courses;
+		try {
+			courses = unzipped.folder('courses');
+		} catch (error) {
+			throw new InsightError("Failed to load files, no courses folder found" + error);
+		}
 		// @ts-ignore
-		unzipped.forEach((relativePath) => {
+		courses.forEach((relativePath) => {
 				fileStringsPromises.push(unzipped.files[relativePath].async('string')) //add promise to array
 			})
 
@@ -58,7 +60,7 @@ export default class InsightFacade implements IInsightFacade {
 			for (const fileString of fileStrings) {
 				parseJSONtoSections(fileString);
 			}
-			writeFilesToDisk(fileStrings);
+			writeFilesToDisk(fileStrings, id);
 		} catch (error) {
 			throw new InsightError("unable to convert all files to JSON formatted strings" + error);
 		}
