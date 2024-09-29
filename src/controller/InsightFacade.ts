@@ -40,19 +40,14 @@ export default class InsightFacade implements IInsightFacade {
 		const unzipped = await zip.loadAsync(content, {base64: true})
 		//forEach documentation: https://stuk.github.io/jszip/documentation/api_jszip/for_each.html
 		const fileStringsPromises: Promise<string>[] = [];
-		const test = await unzipped.files['courses/ANTH312'].async('string');
+		const test = await unzipped.files['courses/CONS481'].async('string');
 		parseJSONtoSections(test);
-
-		let courses;
-		try {
-			courses = unzipped.folder('courses');
-		} catch (error) {
-			throw new InsightError("Failed to load files, no courses folder found" + error);
-		}
-		// @ts-ignore
-		courses.forEach((relativePath) => {
-				fileStringsPromises.push(unzipped.files[relativePath].async('string')) //add promise to array
-			})
+		unzipped.forEach((relativePath, file) => {
+			if(!file.dir) {
+				//add promise to array
+				fileStringsPromises.push(unzipped.files[relativePath].async('string'))
+			}
+		})
 
 		//Adapted from ChatGPT generated response
 		try {
@@ -60,7 +55,7 @@ export default class InsightFacade implements IInsightFacade {
 			for (const fileString of fileStrings) {
 				parseJSONtoSections(fileString);
 			}
-			writeFilesToDisk(fileStrings, id);
+			await writeFilesToDisk(fileStrings, id);
 		} catch (error) {
 			throw new InsightError("unable to convert all files to JSON formatted strings" + error);
 		}
@@ -69,6 +64,14 @@ export default class InsightFacade implements IInsightFacade {
 		//loop through promises array
 		return [];
 	}
+
+
+// 	let courses;
+// 	try {
+// 	courses = unzipped.folder('courses');
+// } catch (error) {
+// 	throw new InsightError("Failed to load files, no courses folder found" + error);
+// }
 
 	public async removeDataset(id: string): Promise<string> {
 		// TODO: Remove this once you implement the methods!

@@ -1,10 +1,12 @@
 
 import {InsightError} from "../controller/IInsightFacade";
 import {JSONFile, Section} from "../models/Section";
-import fs, {outputJSON} from "fs-extra";
+import fs from "fs-extra";
+import path from "node:path";
 
 /**
- * @param section - A section found within file passed to parseJSONtoSections
+ * @param section - A section found within file passed to parseJSONtoSections. ASSUME param passed in the form of a
+ * JSONFile containing all queryable fields specified in file format
  * @returns - Section, creates a Section interface from JSON object including all queryable fields
  * Will throw an InsightDatasetError if a queryable field can not be found in the JSON object
  */
@@ -30,7 +32,7 @@ export function parseSectionObject(section: JSONFile): object {  //I would like 
 }
 
 /**
- * @param file - A file found within /courses directory in JSON format
+ * @param file - A file found within /courses directory. ASSUME contents is a string in JSON format
  * @returns - Sections[], separates file into its individual sections passing each section to parseSectionObject and adding the returned object to the array
  * Will throw an InsightDatasetError if file is not a JSON formatted string
  */
@@ -52,26 +54,32 @@ export function parseJSONtoSections(file: string): Section[] {
 }
 
 /**
- * @param files - Files contained within an added Dataset
+ * @param files - Files contained within an added Dataset, ASSUME files is a list of JSON formatted strings
  * @param id
  * @returns - Sections[], separates file into its individual sections passing each section to parseSectionObject and adding the returned object to the array
  * Will throw an InsightDatasetError if file is not a JSON formatted string
  */
-export function writeFilesToDisk(files: string[], id: string): void {
-    console.log(files);
-    let acc: object
+export async function writeFilesToDisk(files: string[], id: string): Promise<void> {
+    let acc: object = {}; //this might cause problems down the line
     for (const file of files) {
         const JSONObject = JSON.parse(file)
         //Adapted from ChatGPT generated response
         acc = {...acc, ...JSONObject}
     }
 
-    const idPath = '../../data' + id;
-    fs.outputJSON(idPath, files).then(() => {
-        return acc;
-    })["catch"] (() => {
-        throw new InsightError("Failed to write file to disk");
-    })
+    const idPath = path.join('../../data', id);
+    try{
+        await fs.outputFile(idPath, JSON.stringify(acc, null, 2)); //How can I add the space argument?
+    }catch (error) {
+        throw new InsightError("failed to write files to disk" + id + error);
+    }
+
+    //Why in the world can't I use then catch?!
+    // fs.outputJSON(idPath, files).then(() => {
+    //     return acc;
+    // }).catch(() => {
+    //     throw new InsightError("Failed to write file to disk");
+    // })
 
 }
 

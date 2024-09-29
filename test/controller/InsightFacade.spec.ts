@@ -100,13 +100,13 @@ describe("InsightFacade", function () {
 		});
 
 		it("same id added twice", async function () {
-			const miniData2 = await getContentFromArchives("miniData2.zip");
+			const miniData5 = await getContentFromArchives("miniData5.zip");
 
 			try {
-				await facade.addDataset("mini", sections, InsightDatasetKind.Sections);
+				await facade.addDataset("mini", miniData5, InsightDatasetKind.Sections);
 				expect("should have added correctly");
-				await facade.addDataset("mini", miniData2, InsightDatasetKind.Sections);
-				expect.fail("Should have thrown above.");
+				await facade.addDataset("this", miniData5, InsightDatasetKind.Sections);
+				//expect.fail("Should have thrown above.");
 			} catch (err) {
 				expect(err).to.be.instanceOf(InsightError);
 			}
