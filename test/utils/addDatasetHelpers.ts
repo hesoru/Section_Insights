@@ -136,7 +136,7 @@ describe("InsightFacade", function () {
             const existingIds: string[] = ['alreadyaddeddata', 'also23fds', 'thisissomedata', 'moreids!'];
             try{
                 checkValidId('       ', existingIds);
-                expect.fail('should have thrown error when id of only white space')
+                expect.fail('should have thrown error when id of only white space');
             } catch (error) {
                 expect(error).to.be.instanceOf(InsightError);
             }

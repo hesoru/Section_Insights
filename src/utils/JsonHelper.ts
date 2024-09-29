@@ -5,6 +5,22 @@ import fs from "fs-extra";
 import path from "node:path";
 
 /**
+ * @returns - Sections[], separates file into its individual sections passing each section to parseSectionObject and adding the returned object to the array
+ * Will throw an InsightDatasetError if file is not a JSON formatted string
+ * @param id
+ * @param datasetIds
+ */
+export function checkValidId(id: string, datasetIds: string[]): void {
+    const validId = /^[^_]+$/; //Adapted from chatGPT generated response.
+    if (!validId.test(id) || id.trim().length === 0) { //Adapted from chatGPT generated response.
+        throw new InsightError(`id provided to addDataset not valid - id=${id};`);
+    }
+    if (datasetIds.includes(id)) {
+        throw new InsightError(`id provided to addDataset already in database - id=${id};`)
+    }
+}
+
+/**
  * @param section - A section found within file passed to parseJSONtoSections. ASSUME param passed in the form of a
  * JSONFile containing all queryable fields specified in file format
  * @returns - Section, creates a Section interface from JSON object including all queryable fields
@@ -66,35 +82,22 @@ export async function writeFilesToDisk(files: string[], id: string): Promise<voi
         //Adapted from ChatGPT generated response
         acc = {...acc, ...JSONObject}
     }
-
-    const idPath = path.join('../../data', id);
+    //Adapted from ChatGPT generated response
+    const idPath = path.resolve(__dirname, '../data', id);
+    console.log(idPath);
     try{
-        await fs.outputFile(idPath, JSON.stringify(acc, null, 2)); //How can I add the space argument?
+        //await fs.outputFile(idPath, 'test, please work!');
+        await fs.outputFile(idPath, JSON.stringify(acc)); //How can I add the space argument?
+        console.log('made output file');
     }catch (error) {
         throw new InsightError("failed to write files to disk" + id + error);
     }
-
-    //Why in the world can't I use then catch?!
-    // fs.outputJSON(idPath, files).then(() => {
-    //     return acc;
-    // }).catch(() => {
-    //     throw new InsightError("Failed to write file to disk");
-    // })
-
 }
 
-/**
- * @returns - Sections[], separates file into its individual sections passing each section to parseSectionObject and adding the returned object to the array
- * Will throw an InsightDatasetError if file is not a JSON formatted string
- * @param id
- * @param datasetIds
- */
-export function checkValidId(id: string, datasetIds: string[]): void {
-    const validId = /^[^_]+$/; //Adapted from chatGPT generated response.
-    if (!validId.test(id)) { //Adapted from chatGPT generated response.
-        //throw new InsightError(`id provided to addDataset not valid - id=${id};`);
-    }
-    if (datasetIds.includes(id)) {
-        throw new InsightError(`id provided to addDataset already in database - id=${id};`)
-    }
-}
+//Why in the world can't I use then catch?!
+// fs.outputJSON(idPath, files).then(() => {
+//     return acc;
+// }).catch(() => {
+//     throw new InsightError("Failed to write file to disk");
+// })
+
