@@ -50,8 +50,9 @@ export default class InsightFacade implements IInsightFacade {
 		})
 
 		//Adapted from ChatGPT generated response
+		let fileStrings: string[]
 		try {
-			const fileStrings = await Promise.all(fileStringsPromises);
+			fileStrings = await Promise.all(fileStringsPromises);
 			for (const fileString of fileStrings) {
 				parseJSONtoSections(fileString);
 			}
@@ -59,10 +60,9 @@ export default class InsightFacade implements IInsightFacade {
 		} catch (error) {
 			throw new InsightError("unable to convert all files to JSON formatted strings" + error);
 		}
-		//try catch for promise.all
-		//array of sections equals return of helper and store array of section to disk.
-		//loop through promises array
-		return [];
+		//append newly added datasetId to list of used ids
+		this.datasetIds.push(id);
+		return fileStrings;
 	}
 
 

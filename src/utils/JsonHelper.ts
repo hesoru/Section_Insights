@@ -26,17 +26,24 @@ export function checkValidId(id: string, datasetIds: string[]): void {
  * @returns - Section, creates a Section interface from JSON object including all queryable fields
  * Will throw an InsightDatasetError if a queryable field can not be found in the JSON object
  */
-export function parseSectionObject(section: JSONFile): object {  //I would like to specify that it is a Section object if possible
+export function parseSectionObject(section: JSONFile): Section {  //I would like to specify that it is a Section object if possible
+
+    const fields: string[] = ["Year", "Subject", "Title", "id", "Professor", "Avg", "Pass", "Fail", "Course"]
+    for (const field of fields) {
+        if (!Object.prototype.hasOwnProperty.call(section, field)) {
+            throw new InsightError("section passed to parseSectionObject does not contain all queryable fields")
+        }
+    }
 
     let newSection: Section;
     try {
         newSection = {  //I like it this way it is more explicit.
-            uuid: section.id,  //how to I specify that the parameter contains these fields.
+            uuid: String(section.id),  //how to I specify that the parameter contains these fields.
             id: section.Course,
             title: section.Title,
             instructor: section.Professor,
             dept: section.Subject,
-            year: section.Year,
+            year: Number(section.Year),
             avg: section.Avg,
             pass: section.Pass,
             fail: section.Fail,
@@ -56,11 +63,12 @@ export function parseJSONtoSections(file: string): Section[] {
     const addedSections: Section[] = [];
 
     try {
-        const sections = JSON.parse(file).result;
+        const sections = JSON.parse(file).result as JSONFile[];
 
         for (const section of sections) {
-            parseSectionObject(section);
-            addedSections.push(section);
+            const newSection = parseSectionObject(section);
+            addedSections.push(newSection);
+            console.log(newSection);
         }
     } catch(error) {
         throw new InsightError("Unable to parse to JSON, file is not a JSON formatted string" + error);
