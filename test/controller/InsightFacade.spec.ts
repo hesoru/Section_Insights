@@ -105,8 +105,8 @@ describe("InsightFacade", function () {
 			try {
 				await facade.addDataset("mini", miniData5, InsightDatasetKind.Sections);
 				expect("should have added correctly");
-				await facade.addDataset("this", miniData5, InsightDatasetKind.Sections);
-				//expect.fail("Should have thrown above.");
+				await facade.addDataset("mini", miniData5, InsightDatasetKind.Sections);
+				expect.fail("Should have thrown above.");
 			} catch (err) {
 				expect(err).to.be.instanceOf(InsightError);
 			}
@@ -138,10 +138,10 @@ describe("InsightFacade", function () {
 
 		it("adding data with invalid section", async function () {
 			try {
-				const miniData5 = await getContentFromArchives("miniData5.zip");
+				const miniData6 = await getContentFromArchives("miniData6.zip");
 				await facade.addDataset(
 					"noCoursesData",
-					miniData5,
+					miniData6,
 					InsightDatasetKind.Sections
 				);
 				expect.fail("Should have thrown above.");
@@ -153,7 +153,7 @@ describe("InsightFacade", function () {
 		it("adding valid large dataset", async function () {
 			try {
 				await facade.addDataset(
-					"noCoursesData",
+					"sections",
 					sections,
 					InsightDatasetKind.Sections
 				);

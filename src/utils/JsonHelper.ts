@@ -3,14 +3,15 @@ import {InsightError} from "../controller/IInsightFacade";
 import {JSONFile, Section} from "../models/Section";
 import fs from "fs-extra";
 import path from "node:path";
+import JSZip from "jszip";
 
 /**
- * @returns - Sections[], separates file into its individual sections passing each section to parseSectionObject and adding the returned object to the array
- * Will throw an InsightDatasetError if file is not a JSON formatted string
+ * @returns - true if id is a valid dataset id and has not already been used in the database
+ * Will throw an InsightError otherwise
  * @param id
  * @param datasetIds
  */
-export function checkValidId(id: string, datasetIds: string[]): void {
+export function checkValidId(id: string, datasetIds: string[]): boolean {
     const validId = /^[^_]+$/; //Adapted from chatGPT generated response.
     if (!validId.test(id) || id.trim().length === 0) { //Adapted from chatGPT generated response.
         throw new InsightError(`id provided to addDataset not valid - id=${id};`);
@@ -18,6 +19,7 @@ export function checkValidId(id: string, datasetIds: string[]): void {
     if (datasetIds.includes(id)) {
         throw new InsightError(`id provided to addDataset already in database - id=${id};`)
     }
+    return true;
 }
 
 /**
@@ -68,7 +70,6 @@ export function parseJSONtoSections(file: string): Section[] {
         for (const section of sections) {
             const newSection = parseSectionObject(section);
             addedSections.push(newSection);
-            console.log(newSection);
         }
     } catch(error) {
         throw new InsightError("Unable to parse to JSON, file is not a JSON formatted string" + error);
@@ -84,22 +85,66 @@ export function parseJSONtoSections(file: string): Section[] {
  * Will throw an InsightDatasetError if file is not a JSON formatted string
  */
 export async function writeFilesToDisk(files: string[], id: string): Promise<void> {
-    let acc: object = {}; //this might cause problems down the line
+    const acc = []; //this might cause problems down the line
     for (const file of files) {
         const JSONObject = JSON.parse(file)
         //Adapted from ChatGPT generated response
-        acc = {...acc, ...JSONObject}
+        acc.push(JSONObject)
     }
     //Adapted from ChatGPT generated response
     const idPath = path.resolve(__dirname, '../data', id);
-    console.log(idPath);
     try{
-        //await fs.outputFile(idPath, 'test, please work!');
-        await fs.outputFile(idPath, JSON.stringify(acc)); //How can I add the space argument?
-        console.log('made output file');
+        await fs.outputFile(idPath, JSON.stringify(acc, null, 2)); //How can I add the space argument?
     }catch (error) {
         throw new InsightError("failed to write files to disk" + id + error);
     }
+}
+
+/**
+ * @param unzipped - JSZip object of the contents to be added to the database.
+ * First checks to see if courses directory exists, any valid courses must be contained inside the courses' directory.
+ * If no courses directory found throws InsightError
+ * Second extracts the contents of each file as a string. If another directory is contained inside courses throws an Insight Error
+ * Third checks that there is at least one file extracted from courses, otherwise throws InsightError
+ * @returns - Promise<string>[], when all promises are resolved will be an array of file contents.
+ */
+export function extractFileStrings(unzipped: JSZip): Promise<string>[] {
+    //forEach documentation: https://stuk.github.io/jszip/documentation/api_jszip/for_each.html
+    const fileStringsPromises: Promise<string>[] = [];
+    const courses = unzipped.folder('courses/');
+    if(!courses) {
+        throw new InsightError('courses folder not found in file');
+    }
+    courses.forEach((relativePath, file) => {
+        if(file.dir) {
+            throw new InsightError('file ' + relativePath + 'is a folder within courses folder');
+        }
+        fileStringsPromises.push(file.async('string'))
+    })
+
+    if(fileStringsPromises.length === 0) {
+        throw new InsightError('file does not contain at least one valid section');
+    }
+
+    return fileStringsPromises;
+}
+
+/**
+ * @param content - base64 formatted string encoding zip file containing dataset.
+ * Unzips content into JSZip object to be further processed by extractFileStrings
+ * If content can not be unzipped throws InsightError
+ * @returns - JSZip object of unzipped dataset
+ */
+export async function unzipContent(content: string): Promise<JSZip> {
+    //unzipping zip file: following JZip gitHub guide: https://stuk.github.io/jszip/documentation/examples.html
+    const zip = new JSZip();
+    let unzipped: JSZip;
+    try {
+        unzipped = await zip.loadAsync(content, {base64: true})
+    } catch (error) {
+        throw new InsightError('content passed to addDataset is not a valid base64 string' + error)
+    }
+    return unzipped;
 }
 
 //Why in the world can't I use then catch?!
