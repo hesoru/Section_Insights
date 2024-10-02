@@ -10,6 +10,7 @@ import JSZip from "jszip";
 import fs from "fs-extra";
 import {checkValidId, parseJSONtoSections, writeFilesToDisk} from "../utils/JsonHelper";
 import path from "node:path";
+import {extractDatasetId, processQueryOnDataset, validateQuery} from "../utils/QueryHelper";
 
 
 /**
@@ -123,18 +124,18 @@ export default class InsightFacade implements IInsightFacade {
 			throw new InsightError("Invalid query format.");
 		}
 
-		// 2) extract dataset ids from query
-		const datasetId = extractDatasetId(query); // TODO: write helper function in QueryHelper.ts
+		// 2) extract dataset id from query
+		const id = extractDatasetId(query); // TODO: write helper function in QueryHelper.ts
 
 		// 3) ensure dataset exists
-		if (!this.datasetIds.includes(datasetId)) {
-			throw new InsightError(`Dataset '${datasetId}' does not exist.`);
+		if (!this.datasetIds.includes(id)) {
+			throw new InsightError(`Dataset '${id}' does not exist.`);
 		}
 
 		// 4) process query on the dataset
 		let results: InsightResult[];
 		try {
-			results = await processQueryOnDataset(query, datasetId); // TODO: write helper function in QueryHelper.ts
+			results = await processQueryOnDataset(query, id); // TODO: write helper function in QueryHelper.ts
 		} catch (error: any) {
 			throw new InsightError(`Error processing query: ${error.message}`);
 		}
@@ -150,20 +151,18 @@ export default class InsightFacade implements IInsightFacade {
 	public async listDatasets(): Promise<InsightDataset[]> {
 		// TODO: Remove this once you implement the methods!
 
-		const datasets: InsightDataset[] = [];
+		const datasetPromises: Promise<InsightDataset>[] = [];
 
 		// get datasets in datasetIds array
 		for (const id of this.datasetIds) {
-			const datasetInfo = await this.getDatasetInfo(id); // need to write this
-			// list id, kind, and numRows
-			datasets.push({
-				id: id,
-				kind: datasetInfo.kind,
-				numRows: datasetInfo.numRows,
-			});
+			datasetPromises.push(this.getDatasetInfo(id)); // need to write this
 		}
-
-		return datasets;
+		// list id, kind, and numRows
+		try {
+			return await Promise.all(datasetPromises);
+		} catch (error: any) {
+			throw new InsightError("Failed to list datasets: " + error.message);
+		}
 	}
 
 	public async getDatasetInfo(id: string): Promise<InsightDataset> {
@@ -186,7 +185,7 @@ export default class InsightFacade implements IInsightFacade {
 				kind: kind,
 				numRows: numRows
 			};
-		} catch (error) {
+		} catch (error: any) {
 			throw new InsightError(`Failed to retrieve dataset info for id '${id}': ${error.message}`);
 		}
 	}
