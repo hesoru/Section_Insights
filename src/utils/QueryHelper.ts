@@ -1,5 +1,4 @@
-import {InsightResult} from "../controller/IInsightFacade";
-
+import { InsightResult } from "../controller/IInsightFacade";
 
 export function validateQuery(query: unknown): boolean {
 	return true;

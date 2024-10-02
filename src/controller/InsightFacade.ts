@@ -4,14 +4,14 @@ import {
 	InsightDatasetKind,
 	InsightError,
 	InsightResult,
-	NotFoundError, ResultTooLargeError
+	NotFoundError,
+	ResultTooLargeError,
 } from "./IInsightFacade";
 import JSZip from "jszip";
 import fs from "fs-extra";
-import {checkValidId, parseJSONtoSections, writeFilesToDisk} from "../utils/JsonHelper";
+import { checkValidId, parseJSONtoSections, writeFilesToDisk } from "../utils/JsonHelper";
 import path from "node:path";
-import {extractDatasetId, processQueryOnDataset, validateQuery} from "../utils/QueryHelper";
-
+import { extractDatasetId, processQueryOnDataset, validateQuery } from "../utils/QueryHelper";
 
 /**
  * This is the main programmatic entry point for the project.
@@ -37,7 +37,7 @@ export default class InsightFacade implements IInsightFacade {
 		try {
 			checkValidId(id, this.datasetIds);
 		} catch (e) {
-			throw new InsightError('id passed to addDataset invalid' + e); //is this catch block necessary?
+			throw new InsightError("id passed to addDataset invalid" + e); //is this catch block necessary?
 		}
 		//3) Check validity of content: must be a valid base24 string. Must contain at least 1 valid section(not be empty)
 		//4) Check validity of courses folder: must be a JSON formatted file, must contain 1 or more valid sections within the result key
@@ -46,20 +46,20 @@ export default class InsightFacade implements IInsightFacade {
 
 		//unzipping zip file: following JZip gitHub guide: https://stuk.github.io/jszip/documentation/examples.html
 		const zip = new JSZip();
-		const unzipped = await zip.loadAsync(content, {base64: true})
+		const unzipped = await zip.loadAsync(content, { base64: true });
 		//forEach documentation: https://stuk.github.io/jszip/documentation/api_jszip/for_each.html
 		const fileStringsPromises: Promise<string>[] = [];
-		const test = await unzipped.files['courses/CONS481'].async('string');
+		const test = await unzipped.files["courses/CONS481"].async("string");
 		parseJSONtoSections(test);
 		unzipped.forEach((relativePath, file) => {
 			if (!file.dir) {
 				//add promise to array
-				fileStringsPromises.push(unzipped.files[relativePath].async('string'))
+				fileStringsPromises.push(unzipped.files[relativePath].async("string"));
 			}
-		})
+		});
 
 		//Adapted from ChatGPT generated response
-		let fileStrings: string[]
+		let fileStrings: string[];
 		try {
 			fileStrings = await Promise.all(fileStringsPromises);
 			for (const fileString of fileStrings) {
@@ -74,13 +74,12 @@ export default class InsightFacade implements IInsightFacade {
 		return fileStrings;
 	}
 
-
-// 	let courses;
-// 	try {
-// 	courses = unzipped.folder('courses');
-// } catch (error) {
-// 	throw new InsightError("Failed to load files, no courses folder found" + error);
-// }
+	// 	let courses;
+	// 	try {
+	// 	courses = unzipped.folder('courses');
+	// } catch (error) {
+	// 	throw new InsightError("Failed to load files, no courses folder found" + error);
+	// }
 
 	public async removeDataset(id: string): Promise<string> {
 		// TODO: Remove this once you implement the methods!
@@ -120,7 +119,8 @@ export default class InsightFacade implements IInsightFacade {
 		const MAX_SIZE = 5000;
 
 		// 1) validate query
-		if (!validateQuery(query)) { // TODO: write helper function in QueryHelper.ts
+		if (!validateQuery(query)) {
+			// TODO: write helper function in QueryHelper.ts
 			throw new InsightError("Invalid query format.");
 		}
 
@@ -169,10 +169,10 @@ export default class InsightFacade implements IInsightFacade {
 		checkValidId(id, this.datasetIds); // 3rd parameter false
 
 		// get dataset file path
-		const datasetPath = path.resolve(__dirname, '../data', id); // txt file?
+		const datasetPath = path.resolve(__dirname, "../data", id); // txt file?
 		try {
 			// read dataset file from disk
-			const data = await fs.readFile(datasetPath, 'utf8');
+			const data = await fs.readFile(datasetPath, "utf8");
 			const dataset = JSON.parse(data);
 
 			// count the number of sections (rows) in the dataset
@@ -183,7 +183,7 @@ export default class InsightFacade implements IInsightFacade {
 			return {
 				id: id,
 				kind: kind,
-				numRows: numRows
+				numRows: numRows,
 			};
 		} catch (error: any) {
 			throw new InsightError(`Failed to retrieve dataset info for id '${id}': ${error.message}`);

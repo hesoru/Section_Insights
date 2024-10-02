@@ -14,17 +14,15 @@
  * Audit -> audit
  */
 export interface Section {
-
-     readonly uuid: string; //can not be changed when set, unique identifier for the section
-     id: string; //course identifier
-     title: string;
-     instructor: string;
-     dept: string;
-     year: number;
-     avg: number;
-     pass: number;
-     fail: number;
-
+	readonly uuid: string; //can not be changed when set, unique identifier for the section
+	id: string; //course identifier
+	title: string;
+	instructor: string;
+	dept: string;
+	year: number;
+	avg: number;
+	pass: number;
+	fail: number;
 }
 
 /**
@@ -32,17 +30,13 @@ export interface Section {
  * inputted file
  */
 export interface JSONFile {
-
-     id: string;
-     Course: string;
-     Title: string;
-     Professor: string;
-     Subject: string;
-     Year: number;
-     Avg: number;
-     Pass: number;
-     Fail: number;
-
+	id: string;
+	Course: string;
+	Title: string;
+	Professor: string;
+	Subject: string;
+	Year: number;
+	Avg: number;
+	Pass: number;
+	Fail: number;
 }
-
-

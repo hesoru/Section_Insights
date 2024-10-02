@@ -120,18 +120,15 @@ describe("InsightFacade", function () {
 		it("should reject adding without courses folder", async function () {
 			try {
 				const noCoursesData = await getContentFromArchives("miniData1.zip");
-				await facade.addDataset(
-					"noCoursesData",
-					noCoursesData,
-					InsightDatasetKind.Sections
-				);
+				await facade.addDataset("noCoursesData", noCoursesData, InsightDatasetKind.Sections);
 				expect.fail("Should have thrown above.");
 			} catch (err) {
 				expect(err).to.be.instanceOf(InsightError);
 			}
 		});
 
-		it("should reject adding dataset with invalid sections", async function () { // TODO: what does this mean?
+		it("should reject adding dataset with invalid sections", async function () {
+			// TODO: what does this mean?
 			try {
 				const miniData6 = await getContentFromArchives("miniData6.zip"); // TODO: where is this??
 				await facade.addDataset("noCoursesData", miniData6, InsightDatasetKind.Sections);
@@ -242,7 +239,6 @@ describe("InsightFacade", function () {
 			} catch (err) {
 				expect.fail("Should have sucessfully added and removed" + err);
 			}
-
 		});
 	});
 
@@ -325,14 +321,12 @@ describe("InsightFacade", function () {
 			if (!this.test) {
 				throw new Error(
 					"Invalid call to checkQuery." +
-					"Usage: 'checkQuery' must be passed as the second parameter of Mocha's it(..) function." +
-					"Do not invoke the function directly."
+						"Usage: 'checkQuery' must be passed as the second parameter of Mocha's it(..) function." +
+						"Do not invoke the function directly."
 				);
 			}
 			// Destructuring assignment to reduce property accesses
-			const { input, expected, errorExpected } = await loadTestQuery(
-				this.test.title
-			);
+			const { input, expected, errorExpected } = await loadTestQuery(this.test.title);
 			let result: InsightResult[];
 
 			try {
@@ -340,9 +334,7 @@ describe("InsightFacade", function () {
 				expect(input).to.be.an("object");
 
 				if (errorExpected) {
-					expect.fail(
-						`performQuery resolved when it should have rejected with ${expected}`
-					);
+					expect.fail(`performQuery resolved when it should have rejected with ${expected}`);
 				}
 				expect(result).to.deep.equal(expected);
 				return;
@@ -375,9 +367,7 @@ describe("InsightFacade", function () {
 			try {
 				await Promise.all(loadDatasetPromises);
 			} catch (err) {
-				throw new Error(
-					`In PerformQuery Before hook, dataset(s) failed to be added. \n${err}`
-				);
+				throw new Error(`In PerformQuery Before hook, dataset(s) failed to be added. \n${err}`);
 			}
 		});
 
@@ -412,7 +402,6 @@ describe("InsightFacade", function () {
 		it("[invalid/columnsMissing.json] COLUMNS Missing", checkQuery);
 		it("[invalid/invalidFilterKeyXOR.json] Invalid Filter Key: XOR", checkQuery);
 		it("[invalid/wrongSyntaxNOT.json] Wrong Syntax: NOT", checkQuery);
-
 
 		// valid inputs //
 
