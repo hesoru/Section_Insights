@@ -4,7 +4,7 @@ import {
 	InsightDatasetKind,
 	InsightError,
 	InsightResult,
-	NotFoundError
+	NotFoundError, ResultTooLargeError
 } from "./IInsightFacade";
 import JSZip from "jszip";
 import fs from "fs-extra";
@@ -85,66 +85,66 @@ export default class InsightFacade implements IInsightFacade {
 		// TODO: Remove this once you implement the methods!
 
 		// validate id: if "", contains _, or only whitespace
-		if (!id || id.includes("_") || id.trim() === "") {
-			throw new InsightError("Invalid dataset id.");
-		}
+		// if (!id || id.includes("_") || id.trim() === "") {
+		// 	throw new InsightError("Invalid dataset id.");
+		// }
+		checkValidId(id, this.datasetIds); // 3rd parameter should be true
 
 		// check if dataset exists
 		const datasetIndex = this.datasetIds.indexOf(id);
 		if (datasetIndex === -1) {
-			throw new NotFoundError(`Dataset with id "${id}" not found.`);
+			throw new NotFoundError(`Dataset with id "${id}" not found.`); // steal this
 		}
 
 		try {
-			// remove from datasetId array
-			this.datasetIds.splice(datasetIndex, 1);
 			// remove from memory
 			// ..
 			// ..
 
 			// remove from disk
-			await fs.promises.unlink(`data/${id}.json`);
+			await fs.promises.unlink(`data/${id}`); // txt file?
+
+			// remove from datasetId array
+			this.datasetIds.splice(datasetIndex, 1);
 
 			// return removed id
 			return id;
-		} catch (error) {
+		} catch (error: any) {
 			throw new InsightError(`Error removing dataset with id "${id}": ${error.message}`);
 		}
 	}
 
 	public async performQuery(query: unknown): Promise<InsightResult[]> {
 		// TODO: Remove this once you implement the methods!
+		const MAX_SIZE = 5000;
 
-		// // 1. Validate query (this function should be implemented elsewhere)
-		// if (!validateQuery(query)) {
-		// 	throw new InsightError("Invalid query format.");
-		// }
-		//
-		// // 2. Extract the dataset id(s) from the query
-		// const datasetId = extractDatasetId(query); // A function to parse the query and extract the dataset id
-		//
-		// // 3. Ensure dataset exists in memory or disk
-		// if (!this.datasetIds.includes(datasetId)) {
-		// 	throw new InsightError(`Dataset '${datasetId}' has not been added.`);
-		// }
-		//
-		// // 4. Process the query on the dataset
-		// let results: InsightResult[];
-		// try {
-		// 	results = await processQueryOnDataset(query, datasetId);
-		// } catch (error) {
-		// 	throw new InsightError(`Error processing query: ${error.message}`);
-		// }
-		//
-		// // 5. Handle large result sets
-		// if (results.length > MAX_RESULT_SIZE) {
-		// 	throw new ResultTooLargeError("Query results exceed maximum size.");
-		// }
-		//
-		// // 6. Return the results
-		// return results;
-		//
-		// throw new Error(`InsightFacadeImpl::performQuery() is unimplemented! - query=${query};`);
+		// 1) validate query
+		if (!validateQuery(query)) { // TODO: write helper function in QueryHelper.ts
+			throw new InsightError("Invalid query format.");
+		}
+
+		// 2) extract dataset ids from query
+		const datasetId = extractDatasetId(query); // TODO: write helper function in QueryHelper.ts
+
+		// 3) ensure dataset exists
+		if (!this.datasetIds.includes(datasetId)) {
+			throw new InsightError(`Dataset '${datasetId}' does not exist.`);
+		}
+
+		// 4) process query on the dataset
+		let results: InsightResult[];
+		try {
+			results = await processQueryOnDataset(query, datasetId); // TODO: write helper function in QueryHelper.ts
+		} catch (error: any) {
+			throw new InsightError(`Error processing query: ${error.message}`);
+		}
+
+		// 5) handle results that are too large
+		if (results.length > MAX_SIZE) {
+			throw new ResultTooLargeError("Query results exceed maximum size (5000 sections).");
+		}
+
+		return results;
 	}
 
 	public async listDatasets(): Promise<InsightDataset[]> {
@@ -154,7 +154,7 @@ export default class InsightFacade implements IInsightFacade {
 
 		// get datasets in datasetIds array
 		for (const id of this.datasetIds) {
-			const datasetInfo = await getDatasetInfo(id); // need to write this
+			const datasetInfo = await this.getDatasetInfo(id); // need to write this
 			// list id, kind, and numRows
 			datasets.push({
 				id: id,
@@ -167,27 +167,14 @@ export default class InsightFacade implements IInsightFacade {
 	}
 
 	public async getDatasetInfo(id: string): Promise<InsightDataset> {
-		// validate the id
-		if (!id || id.trim().length === 0 || id.includes("_")) {
-			throw new InsightError(`Invalid dataset id: ${id}`);
-		}
-
-		// check if dataset is already in memory
-		if (!this.datasetIds.includes(id)) {
-			throw new InsightError(`Dataset with id '${id}' not found in memory.`);
-		}
+		checkValidId(id, this.datasetIds); // 3rd parameter false
 
 		// get dataset file path
-		const datasetPath = path.resolve(__dirname, '../data', id + ".json");
+		const datasetPath = path.resolve(__dirname, '../data', id); // txt file?
 		try {
 			// read dataset file from disk
 			const data = await fs.readFile(datasetPath, 'utf8');
 			const dataset = JSON.parse(data);
-
-			// check for expected data structure
-			// if (!dataset? || !dataset.sections?) {
-			// 	throw new InsightError(`Dataset format is invalid for id '${id}'`);
-			// }
 
 			// count the number of sections (rows) in the dataset
 			const numRows = dataset.sections.length;
