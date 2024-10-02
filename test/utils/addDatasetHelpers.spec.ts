@@ -1,13 +1,7 @@
 import {
-    IInsightFacade,
-    InsightDatasetKind,
     InsightError,
-    InsightResult,
-    ResultTooLargeError,
-    NotFoundError,
 } from "../../src/controller/IInsightFacade";
-import InsightFacade from "../../src/controller/InsightFacade";
-import { clearDisk, getContentFromArchives, loadTestQuery } from "../TestUtil";
+import { clearDisk } from "../TestUtil";
 
 import { expect, use } from "chai";
 import chaiAsPromised from "chai-as-promised";
@@ -16,22 +10,15 @@ import {JSONFile, Section} from "../../src/models/Section";
 
 use(chaiAsPromised);
 
-export interface ITestQuery {
-    title?: string;
-    input: unknown;
-    errorExpected: boolean;
-    expected: any;
-}
-
 describe("InsightFacade", function () {
-    let facade: IInsightFacade;
+    //let facade: IInsightFacade;
 
     // Declare datasets used in tests. You should add more datasets like this!
-    let sections: string;
+    //let sections: string;
 
     before(async function () {
         // This block runs once and loads the datasets.
-        sections = await getContentFromArchives("pair.zip");
+        //sections = await getContentFromArchives("pair.zip");
 
         // Just in case there is anything hanging around from a previous run of the test suite
         await clearDisk();
@@ -40,19 +27,11 @@ describe("InsightFacade", function () {
     describe("ParseSectionObject", function() {
         beforeEach(async function () {
             await clearDisk();
-            facade = new InsightFacade();
+            //facade = new InsightFacade();
         });
 
         afterEach(async function () {
             await clearDisk();
-        });
-
-        it("this test", async function () {
-            try{
-                //...
-            } catch (error) {
-                //...
-            }
         });
 
     });
@@ -60,7 +39,7 @@ describe("InsightFacade", function () {
     describe("CheckValidId", function() {
         beforeEach(async function () {
             await clearDisk();
-            facade = new InsightFacade();
+            //facade = new InsightFacade();
         });
 
         afterEach(async function () {
@@ -70,10 +49,10 @@ describe("InsightFacade", function () {
         it("valid ids with no existing ids", function () {
             const existingIds: string[] = [];
             try{
-                checkValidId('thisIsAValidID', existingIds);
-                checkValidId('Also a valid id', existingIds);
-                checkValidId('this^@$& to is@#$~^#$&* a valid id', existingIds);
-                checkValidId('123325345 3523532563//?><,,,.-=+]', existingIds);
+                checkValidId('thisIsAValidID', existingIds, false);
+                checkValidId('Also a valid id', existingIds, false);
+                checkValidId('this^@$& to is@#$~^#$&* a valid id', existingIds, false);
+                checkValidId('123325345 3523532563//?><,,,.-=+]', existingIds, false);
 
             } catch (error) {
                 expect.fail('should not thrown an error when adding valid ids' + error)
@@ -83,10 +62,10 @@ describe("InsightFacade", function () {
         it("valid ids with existing ids", function () {
             const existingIds: string[] = ['alreadyaddeddata', 'also23fds', 'thisissomedata', 'moreids!'];
             try{
-                checkValidId('thisIsAValidID', existingIds);
-                checkValidId('Another valid one cause why not', existingIds);
-                checkValidId('this^@$& to is@23471~`.,=-]a valid id', existingIds);
-                checkValidId('123332961023#^$*@(^/?><,,,.-=+]', existingIds);
+                checkValidId('thisIsAValidID', existingIds, false);
+                checkValidId('Another valid one cause why not', existingIds, false);
+                checkValidId('this^@$& to is@23471~`.,=-]a valid id', existingIds, false);
+                checkValidId('123332961023#^$*@(^/?><,,,.-=+]', existingIds, false);
 
             } catch (error) {
                 expect.fail('should not thrown an error when adding valid ids' + error)
@@ -96,7 +75,7 @@ describe("InsightFacade", function () {
         it("valid ids matching existing ids", function () {
             const existingIds: string[] = ["thisIsAValidID"];
             try{
-                checkValidId('thisIsAValidID', existingIds);
+                checkValidId('thisIsAValidID', existingIds, false);
                 expect.fail('should have thrown error when adding id that already exists in database')
             } catch (error) {
                 expect(error).to.be.instanceOf(InsightError);
@@ -106,25 +85,25 @@ describe("InsightFacade", function () {
         it("invalids with no existing ids", function () {
             const existingIds: string[] = [];
             try{
-                checkValidId('       ', existingIds);
+                checkValidId('       ', existingIds, false);
                 expect.fail('should have thrown error when id of only white space')
             } catch (error) {
                 expect(error).to.be.instanceOf(InsightError);
             }
             try{
-                checkValidId('this_has_underscores', existingIds);
+                checkValidId('has_underscores', existingIds, false);
                 expect.fail('should have thrown error when id with underscores')
             } catch (error) {
                 expect(error).to.be.instanceOf(InsightError);
             }
             try{
-                checkValidId('_underscores', existingIds);
+                checkValidId('_under', existingIds, false);
                 expect.fail('should have thrown error when id with underscores')
             } catch (error) {
                 expect(error).to.be.instanceOf(InsightError);
             }
             try{
-                checkValidId('underscore_', existingIds);
+                checkValidId('underscore_', existingIds, false);
                 expect.fail('should have thrown error when id with underscores')
             } catch (error) {
                 expect(error).to.be.instanceOf(InsightError);
@@ -135,25 +114,25 @@ describe("InsightFacade", function () {
         it("invalid ids with existing ids", function () {
             const existingIds: string[] = ['alreadyaddeddata', 'also23fds', 'thisissomedata', 'moreids!'];
             try{
-                checkValidId('       ', existingIds);
+                checkValidId('   ', existingIds, false);
                 expect.fail('should have thrown error when id of only white space');
             } catch (error) {
                 expect(error).to.be.instanceOf(InsightError);
             }
             try{
-                checkValidId('this_has_underscores', existingIds);
+                checkValidId('this_has_underscores', existingIds, false);
                 expect.fail('should have thrown error when id with underscores')
             } catch (error) {
                 expect(error).to.be.instanceOf(InsightError);
             }
             try{
-                checkValidId('_underscores', existingIds);
+                checkValidId('_underscores', existingIds, false);
                 expect.fail('should have thrown error when id with underscores')
             } catch (error) {
                 expect(error).to.be.instanceOf(InsightError);
             }
             try{
-                checkValidId('underscore_', existingIds);
+                checkValidId('underscore_', existingIds, false);
                 expect.fail('should have thrown error when id with underscores')
             } catch (error) {
                 expect(error).to.be.instanceOf(InsightError);
@@ -166,7 +145,7 @@ describe("InsightFacade", function () {
     describe("parseSectionObject", function() {
         beforeEach(async function () {
             await clearDisk();
-            facade = new InsightFacade();
+            //facade = new InsightFacade();
         });
 
         afterEach(async function () {
@@ -206,7 +185,7 @@ describe("InsightFacade", function () {
         });
 
         it("parsing invalid JSON file, missing fields", function () {
-            const section: JSONFile = <JSONFile>{  //idk if this test is valid
+            const section: JSONFile = <JSONFile>{  //I don't know if this test is valid
                 Avg: 72.82,
                 Course: "312",
                 Subject: "anth",
@@ -228,7 +207,7 @@ describe("InsightFacade", function () {
     describe("parseJSONtoSections", function() {
         beforeEach(async function () {
             await clearDisk();
-            facade = new InsightFacade();
+            //facade = new InsightFacade();
         });
 
         afterEach(async function () {
@@ -303,12 +282,7 @@ describe("InsightFacade", function () {
             try{
                 const result = parseJSONtoSections(file);
                 expect(result).to.be.an('array');
-                expect(result[0]).to.deep.equal(section1);
-                expect(result[1]).to.deep.equal(section2);
-                expect(result[2]).to.deep.equal(section3);
-                expect(result[3]).to.deep.equal(section4);
-                expect(result[4]).to.deep.equal(section5);
-                //expect(result).deep.equal(expected);
+                expect(result).deep.equal(expected);
             } catch (error) {
                 expect.fail('should not thrown an error parsing valid json section' + error);
             }
@@ -337,7 +311,7 @@ describe("InsightFacade", function () {
     describe("writeFilesToDisk", function() {
         beforeEach(async function () {
             await clearDisk();
-            facade = new InsightFacade();
+            //facade = new InsightFacade();
         });
 
         afterEach(async function () {

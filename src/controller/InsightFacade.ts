@@ -1,11 +1,20 @@
-import {IInsightFacade, InsightDataset, InsightDatasetKind, InsightError, InsightResult} from "./IInsightFacade";
+import {
+	IInsightFacade,
+	InsightDataset,
+	InsightDatasetKind,
+	InsightError,
+	InsightResult, NotFoundError,
+	ResultTooLargeError
+} from "./IInsightFacade";
 import {
 	checkValidId,
 	extractFileStrings,
 	parseJSONtoSections,
 	unzipContent,
-	writeFilesToDisk
+	writeFilesToDisk,
+	getDatasetInfo
 } from "../utils/JsonHelper";
+import fs from "fs-extra";
 
 
 /**
@@ -29,9 +38,9 @@ export default class InsightFacade implements IInsightFacade {
 		}
 		//2) Check validity of id: can not be only white space, can not have underscores, reject if id is already in database
 		try {
-			checkValidId(id, this.datasetIds);
-		} catch (e) {
-			throw new InsightError('id passed to addDataset invalid' + e); //is this catch block necessary?
+			checkValidId(id, this.datasetIds, false);
+		} catch (error) {
+			throw new InsightError('id passed to addDataset invalid' + error); //is this catch block necessary?
 		}
 
 		//3) Unzips content: checks for valid content, must be a base64 encoded string, all valid courses must be contained within courses folder
@@ -58,17 +67,97 @@ export default class InsightFacade implements IInsightFacade {
 
 
 	public async removeDataset(id: string): Promise<string> {
-		// TODO: Remove this once you implement the methods!
-		throw new Error(`InsightFacadeImpl::removeDataset() is unimplemented! - id=${id};`);
+		// validate id: if "", contains _, or only whitespace
+		// if (!id || id.includes("_") || id.trim() === "") {
+		// 	throw new InsightError("Invalid dataset id.");
+		// }
+		checkValidId(id, this.datasetIds, true); // 3rd parameter should be true
+
+		// check if dataset exists
+		const datasetIndex = this.datasetIds.indexOf(id);
+		if (datasetIndex === -1) {
+			throw new NotFoundError(`Dataset with id "${id}" not found.`); // steal this
+		}
+
+		try {
+			// remove from memory
+			// ..
+			// ..
+
+			// remove from disk
+			await fs.promises.unlink(`data/${id}`); // txt file?
+
+			// remove from datasetId array
+			this.datasetIds.splice(datasetIndex, 1);
+
+			// return removed id
+			return id;
+		} catch (error: any) {
+			throw new InsightError(`Error removing dataset with id "${id}": ${error.message}`);
+		}
 	}
 
 	public async performQuery(query: unknown): Promise<InsightResult[]> {
 		// TODO: Remove this once you implement the methods!
-		throw new Error(`InsightFacadeImpl::performQuery() is unimplemented! - query=${query};`);
+		const MAX_SIZE = 5000;
+
+		// 1) validate query
+		if (!validateQuery(query)) {
+			// TODO: write helper function in QueryHelper.ts
+			throw new InsightError("Invalid query format.");
+		}
+
+		// 2) extract dataset id from query
+		const id = extractDatasetId(query); // TODO: write helper function in QueryHelper.ts
+
+		// 3) ensure dataset exists
+		if (!this.datasetIds.includes(id)) {
+			throw new InsightError(`Dataset '${id}' does not exist.`);
+		}
+
+		// 4) process query on the dataset
+		let results: InsightResult[];
+		try {
+			results = await processQueryOnDataset(query, id); // TODO: write helper function in QueryHelper.ts
+		} catch (error: any) {
+			throw new InsightError(`Error processing query: ${error.message}`);
+		}
+
+		// 5) handle results that are too large
+		if (results.length > MAX_SIZE) {
+			throw new ResultTooLargeError("Query results exceed maximum size (5000 sections).");
+		}
+
+		return results;
 	}
 
 	public async listDatasets(): Promise<InsightDataset[]> {
-		// TODO: Remove this once you implement the methods!
-		throw new Error(`InsightFacadeImpl::listDatasets is unimplemented!`);
+		const datasetPromises: Promise<InsightDataset>[] = [];
+
+		// get datasets in datasetIds array
+		for (const id of this.datasetIds) {
+			datasetPromises.push(getDatasetInfo(id)); // need to write this
+		}
+		// list id, kind, and numRows
+		try {
+			return await Promise.all(datasetPromises);
+		} catch (error: any) {
+			throw new InsightError("Failed to list datasets: " + error.message);
+		}
 	}
 }
+
+// const fse = require('fs-extra')
+// fs.readFileSync()
+// fs.writeFileSync('wheretowritethefile.json', variablecontainingfile)
+// // fs.readFile('filePath', characterEncoding, callbackFunction(error, data))
+// if(relativePath.endsWith('.json')) {
+// 	const jsonContent = await file.async('text')
+// 	const queryJson = JSON.parse(jsonContent); JSON parse only takes a valid json string
+// }
+//could wrap these in a try catch:
+// const jsonData = await fs.readJson(inputFilePath)
+// await fs.outputJson(outputFilePath, jsonData)
+
+// save entire dataset json file to disk.
+// helper function inside utils folder.

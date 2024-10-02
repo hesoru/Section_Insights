@@ -1,5 +1,5 @@
 
-import {InsightError} from "../controller/IInsightFacade";
+import {InsightDataset, InsightDatasetKind, InsightError} from "../controller/IInsightFacade";
 import {JSONFile, Section} from "../models/Section";
 import fs from "fs-extra";
 import path from "node:path";
@@ -10,17 +10,26 @@ import JSZip from "jszip";
  * Will throw an InsightError otherwise
  * @param id
  * @param datasetIds
+ * @param includes
  */
-export function checkValidId(id: string, datasetIds: string[]): boolean {
+export function checkValidId(id: string, datasetIds: string[], includes: boolean): boolean {
     const validId = /^[^_]+$/; //Adapted from chatGPT generated response.
     if (!validId.test(id) || id.trim().length === 0) { //Adapted from chatGPT generated response.
         throw new InsightError(`id provided to addDataset not valid - id=${id};`);
     }
-    if (datasetIds.includes(id)) {
-        throw new InsightError(`id provided to addDataset already in database - id=${id};`)
+    if (includes) {
+        if (!datasetIds.includes(id)) {
+            throw new InsightError(`id provided to removeDataset is not in database - id=${id};`)
+        }
+    } else {
+        if (datasetIds.includes(id)) {
+            throw new InsightError(`id provided to addDataset already in database - id=${id};`)
+        }
     }
     return true;
 }
+
+//checkValidId(id, this.datasetIds, false) <- will say its a valid id if the id provided is already in the list of datasetIds
 
 /**
  * @param section - A section found within file passed to parseJSONtoSections. ASSUME param passed in the form of a
@@ -153,4 +162,29 @@ export async function unzipContent(content: string): Promise<JSZip> {
 // }).catch(() => {
 //     throw new InsightError("Failed to write file to disk");
 // })
+
+export async function getDatasetInfo(id: string): Promise<InsightDataset> {
+    //checkValidId(id, this.datasetIds, true); // 3rd parameter true
+
+    // get dataset file path
+    const datasetPath = path.resolve(__dirname, "../data", id); // txt file?
+    try {
+    // read dataset file from disk
+        const data = await fs.readFile(datasetPath, "utf8");
+        const dataset = JSON.parse(data);
+
+        // count the number of sections (rows) in the dataset
+        const numRows = dataset.sections.length;
+        const kind: InsightDatasetKind = InsightDatasetKind.Sections;
+
+        // Return dataset info
+        return {
+            id: id,
+            kind: kind,
+            numRows: numRows,
+        };
+    } catch (error: any) {
+        throw new InsightError(`Failed to retrieve dataset info for id '${id}': ${error.message}`);
+    }
+}
 
