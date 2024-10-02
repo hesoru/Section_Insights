@@ -3,8 +3,9 @@ import {
 	InsightDataset,
 	InsightDatasetKind,
 	InsightError,
-	InsightResult, NotFoundError,
-	ResultTooLargeError
+	InsightResult,
+	NotFoundError,
+	ResultTooLargeError,
 } from "./IInsightFacade";
 import {
 	checkValidId,
@@ -12,10 +13,10 @@ import {
 	parseJSONtoSections,
 	unzipContent,
 	writeFilesToDisk,
-	getDatasetInfo
+	getDatasetInfo,
 } from "../utils/JsonHelper";
 import fs from "fs-extra";
-
+import { extractDatasetId, processQueryOnDataset, validateQuery } from "../utils/QueryHelper";
 
 /**
  * This is the main programmatic entry point for the project.
@@ -40,7 +41,7 @@ export default class InsightFacade implements IInsightFacade {
 		try {
 			checkValidId(id, this.datasetIds, false);
 		} catch (error) {
-			throw new InsightError('id passed to addDataset invalid' + error); //is this catch block necessary?
+			throw new InsightError("id passed to addDataset invalid" + error); //is this catch block necessary?
 		}
 
 		//3) Unzips content: checks for valid content, must be a base64 encoded string, all valid courses must be contained within courses folder
@@ -49,22 +50,28 @@ export default class InsightFacade implements IInsightFacade {
 
 		//4) parse to Sections in memory and write files to disk
 		//Adapted from ChatGPT generated response
-		let fileStrings: string[]
+		let fileStrings: string[];
+		let index;
 		try {
 			fileStrings = await Promise.all(fileStringsPromises);
 			for (const fileString of fileStrings) {
 				parseJSONtoSections(fileString);
 			}
-			await writeFilesToDisk(fileStrings, id);
+			index = await writeFilesToDisk(fileStrings, id, this.datasetIds);
 		} catch (error) {
 			throw new InsightError("unable to convert all files to JSON formatted strings" + error);
 		}
 
 		//5) update datasetIds
 		this.datasetIds.push(id);
-		return fileStrings;
+		//Check to make sure name corresponds to position in datasetIds array
+		if (this.datasetIds.indexOf(id) !== index) {
+			throw new InsightError("index file name does not match dataset position in datasetIds array");
+		}
+		{
+			return fileStrings;
+		}
 	}
-
 
 	public async removeDataset(id: string): Promise<string> {
 		// validate id: if "", contains _, or only whitespace
