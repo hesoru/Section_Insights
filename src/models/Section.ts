@@ -1,3 +1,4 @@
+
 /**
  * Interface to represent the data of a course section in memory. Queries will be checked against Section objects.
  * Fields will be populated from JSON file fields according to specification:
@@ -40,3 +41,47 @@ export interface JSONFile {
 	Pass: number;
 	Fail: number;
 }
+
+export interface Query {
+	WHERE: Where;
+	OPTIONS: Options;
+}
+
+export interface Where {
+	FILTER?: Filter; //filter is optional and an empty where matches all entries
+}
+
+export interface Options {
+
+}
+
+export type Filter = LogicComparison | MComparison | SComparison | Negation;
+
+export interface LogicComparison {
+	AND: Filter[] //Logic Comparison
+	OR: Filter[]  //Logic Comparison
+}
+
+export interface MComparison {
+	LT: Record<MKey, number>; //M Comparison
+	GT: Record<MKey, number>; //M Comparison
+	EQ: Record<MKey, number>; //M Comparison
+}
+
+export interface SComparison {
+	IS: Record<SKey, string> //S Comparison
+}
+
+export interface Negation {
+	NOT: Filter;  //Negation
+}
+
+export interface Options {
+	COLUMNS: string[];
+	ORDER?: string;  //ordering is optional
+}
+
+export type MKey = `${string}_${MField}`;
+export type SKey = `${string}_${SField}`;
+export type MField = 'avg' | 'pass' | 'fail' | 'audit' | 'year';
+export type SField = 'dept' | 'id' | 'instructor' | 'title' | 'uuid';
