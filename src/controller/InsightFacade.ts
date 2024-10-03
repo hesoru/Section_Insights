@@ -24,13 +24,13 @@ import { extractDatasetId, processQueryOnDataset, validateQuery } from "../utils
  *
  */
 export default class InsightFacade implements IInsightFacade {
-	public datasetIds: Map<number, string>;
+	public datasetIds: Map<string, number>;
 	public nextAvailableName = 0;
 
 	//don't include any async code inside the constructor and make the constructor as simple as possible.
 	//A function itself could fail/succeed but a constructor should always pass.
 	constructor() {
-		this.datasetIds = new Map<number, string>();
+		this.datasetIds = new Map<string, number>();
 	}
 
 	public async addDataset(id: string, content: string, kind: InsightDatasetKind): Promise<string[]> {
@@ -40,7 +40,7 @@ export default class InsightFacade implements IInsightFacade {
 		}
 		//2) Check validity of id: can not be only white space, can not have underscores, reject if id is already in database
 		try {
-			checkValidId(id, Array.from(this.datasetIds.values()), false);
+			checkValidId(id, Array.from(this.datasetIds.keys()), false);
 		} catch (error) {
 			throw new InsightError("id passed to addDataset invalid" + error); //is this catch block necessary?
 		}
@@ -63,7 +63,7 @@ export default class InsightFacade implements IInsightFacade {
 		}
 
 		//5) update datasetIds
-		this.datasetIds.set(this.nextAvailableName, id);
+		this.datasetIds.set(id, this.nextAvailableName);
 		this.nextAvailableName++;
 		//Check to make sure name corresponds to position in datasetIds array
 		return fileStrings;
@@ -77,7 +77,7 @@ export default class InsightFacade implements IInsightFacade {
 		checkValidId(id, this.datasetIds, true); // 3rd parameter should be true
 
 		// check if dataset exists
-		const datasetIndex = this.datasetIds.indexOf(id);
+		const datasetIndex = this.datasetIds.has(id);
 		if (datasetIndex === -1) {
 			throw new NotFoundError(`Dataset with id "${id}" not found.`); // steal this
 		}
@@ -114,7 +114,7 @@ export default class InsightFacade implements IInsightFacade {
 		const id = extractDatasetId(query); // TODO: write helper function in QueryHelper.ts
 
 		// 3) ensure dataset exists
-		if (!this.datasetIds.includes(id)) {
+		if (!this.datasetIds.has(id)) {
 			throw new InsightError(`Dataset '${id}' does not exist.`);
 		}
 
