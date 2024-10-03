@@ -24,12 +24,13 @@ import { extractDatasetId, processQueryOnDataset, validateQuery } from "../utils
  *
  */
 export default class InsightFacade implements IInsightFacade {
-	public datasetIds: string[];
+	public datasetIds: Map<number, string>;
+	public nextAvailableName = 0;
 
 	//don't include any async code inside the constructor and make the constructor as simple as possible.
 	//A function itself could fail/succeed but a constructor should always pass.
 	constructor() {
-		this.datasetIds = [];
+		this.datasetIds = new Map<number, string>();
 	}
 
 	public async addDataset(id: string, content: string, kind: InsightDatasetKind): Promise<string[]> {
@@ -39,7 +40,7 @@ export default class InsightFacade implements IInsightFacade {
 		}
 		//2) Check validity of id: can not be only white space, can not have underscores, reject if id is already in database
 		try {
-			checkValidId(id, this.datasetIds, false);
+			checkValidId(id, Array.from(this.datasetIds.values()), false);
 		} catch (error) {
 			throw new InsightError("id passed to addDataset invalid" + error); //is this catch block necessary?
 		}
@@ -51,26 +52,21 @@ export default class InsightFacade implements IInsightFacade {
 		//4) parse to Sections in memory and write files to disk
 		//Adapted from ChatGPT generated response
 		let fileStrings: string[];
-		let index;
 		try {
 			fileStrings = await Promise.all(fileStringsPromises);
 			for (const fileString of fileStrings) {
 				parseJSONtoSections(fileString);
 			}
-			index = await writeFilesToDisk(fileStrings, id, this.datasetIds);
+			await writeFilesToDisk(fileStrings, this.nextAvailableName);
 		} catch (error) {
 			throw new InsightError("unable to convert all files to JSON formatted strings" + error);
 		}
 
 		//5) update datasetIds
-		this.datasetIds.push(id);
+		this.datasetIds.set(this.nextAvailableName, id);
+		this.nextAvailableName++;
 		//Check to make sure name corresponds to position in datasetIds array
-		if (this.datasetIds.indexOf(id) !== index) {
-			throw new InsightError("index file name does not match dataset position in datasetIds array");
-		}
-		{
-			return fileStrings;
-		}
+		return fileStrings;
 	}
 
 	public async removeDataset(id: string): Promise<string> {

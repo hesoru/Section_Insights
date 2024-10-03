@@ -3,6 +3,7 @@ import { JSONFile, Section } from "../models/Section";
 import fs from "fs-extra";
 import path from "node:path";
 import JSZip from "jszip";
+import InsightFacade from "../controller/InsightFacade";
 
 /**
  * @returns - true if id is a valid dataset id and has not already been used in the database
@@ -91,11 +92,11 @@ export function parseJSONtoSections(file: string): Section[] {
 
 /**
  * @param files - Files contained within an added Dataset, ASSUME files is a list of JSON formatted strings
- * @param id
+ * @param name
  * @returns - Sections[], separates file into its individual sections passing each section to parseSectionObject and adding the returned object to the array
  * Will throw an InsightDatasetError if file is not a JSON formatted string
  */
-export async function writeFilesToDisk(files: string[], id: string, datasetIds: string[]): Promise<number> {
+export async function writeFilesToDisk(files: string[], name: number): Promise<number> {
 	const acc = []; //this might cause problems down the line
 	for (const file of files) {
 		const JSONObject = JSON.parse(file);
@@ -103,14 +104,14 @@ export async function writeFilesToDisk(files: string[], id: string, datasetIds: 
 		acc.push(JSONObject);
 	}
 	//Adapted from ChatGPT generated response
-	const index = datasetIds.length;
-	const idPath = path.resolve(__dirname, "../data", String(index));
+	const idPath = path.resolve(__dirname, "../data", String(name));
 	try {
 		await fs.outputFile(idPath, JSON.stringify(acc, null, 2)); //How can I add the space argument?
 	} catch (error) {
-		throw new InsightError("failed to write files to disk" + id + error);
+		throw new InsightError("failed to write files to disk" + name + error);
 	}
-	return index;
+
+	return name;
 }
 
 /**
