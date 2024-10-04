@@ -24,6 +24,7 @@ export interface Section {
 	avg: number;
 	pass: number;
 	fail: number;
+	audit: number;
 }
 
 /**
@@ -40,6 +41,7 @@ export interface JSONFile {
 	Avg: number;
 	Pass: number;
 	Fail: number;
+	Audit: number;
 }
 
 /**
@@ -58,10 +60,10 @@ export interface Query {
 export interface Body {
 	AND?: Body[];
 	OR?: Body[];
-	GT?: Record<MKey, number>;
-	LT?: Record<MKey, number>;
-	EQ?: Record<MKey, number>;
-	IS?: Record<SKey, number>;
+	GT?: [MKey, number];
+	LT?: [MKey, number];
+	EQ?: [MKey, number];
+	IS?: [SKey, string];
 	NOT?: Body;
 }
 

@@ -3,7 +3,6 @@ import { JSONFile, Section } from "../models/Section";
 import fs from "fs-extra";
 import path from "node:path";
 import JSZip from "jszip";
-import InsightFacade from "../controller/InsightFacade";
 
 /**
  * @returns - true if id is a valid dataset id and has not already been used in the database
@@ -30,7 +29,7 @@ export function checkValidId(id: string, datasetIds: string[], includes: boolean
 	return true;
 }
 
-//checkValidId(id, this.datasetIds, false) <- will say its a valid id if the id provided is already in the list of datasetIds
+//checkValidId(id, this.datasetIds, false) <- will say it's a valid id if the id provided is already in the list of datasetIds
 
 /**
  * @param section - A section found within file passed to parseJSONtoSections. ASSUME param passed in the form of a
@@ -61,6 +60,7 @@ export function parseSectionObject(section: JSONFile): Section {
 			avg: section.Avg,
 			pass: section.Pass,
 			fail: section.Fail,
+			audit: section.Audit,
 		};
 	} catch (error) {
 		throw new InsightError("failed to create new Section Object in parse Section Object" + error);

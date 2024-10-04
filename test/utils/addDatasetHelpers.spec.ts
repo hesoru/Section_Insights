@@ -174,6 +174,7 @@ describe("InsightFacade", function () {
 				Title: "intr anth gender",
 				Year: 2014,
 				id: "12204",
+				Audit: 4
 			};
 
 			const expected: Section = {
@@ -186,6 +187,7 @@ describe("InsightFacade", function () {
 				title: "intr anth gender",
 				year: 2014,
 				uuid: "12204",
+				audit: 4
 			};
 			try {
 				const result = parseSectionObject(section);
@@ -239,6 +241,7 @@ describe("InsightFacade", function () {
 				avg: 72.82,
 				pass: 75,
 				fail: 1,
+				audit: 0
 			};
 
 			const section2: Section = {
@@ -251,6 +254,7 @@ describe("InsightFacade", function () {
 				avg: 72.82,
 				pass: 75,
 				fail: 1,
+				audit: 0
 			};
 
 			const section3: Section = {
@@ -263,6 +267,7 @@ describe("InsightFacade", function () {
 				year: 2007,
 				pass: 34,
 				fail: 1,
+				audit: 0
 			};
 
 			const section4: Section = {
@@ -275,6 +280,7 @@ describe("InsightFacade", function () {
 				avg: 76.03,
 				pass: 34,
 				fail: 1,
+				audit: 0
 			};
 
 			const section5: Section = {
@@ -287,6 +293,8 @@ describe("InsightFacade", function () {
 				avg: 74.7,
 				pass: 76,
 				fail: 0,
+				audit: 0
+
 			};
 			const expected: Section[] = [section1, section2, section3, section4, section5];
 

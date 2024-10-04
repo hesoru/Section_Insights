@@ -8,37 +8,6 @@ import fs from "fs-extra";
 import path from "node:path";
 import {parseJSONtoSections} from "./JsonHelper";
 
-const testQuery =  {
-	"WHERE":{
-		"GT":{
-			"sections_avg":97
-		}
-	},
-	"OPTIONS":{
-		"COLUMNS":[
-			"sections_dept",
-			"sections_avg"
-		],
-		"ORDER":"sections_avg"
-	}
-}
-
-// { "sections_dept": "math", "sections_avg": 97.09 },
-// { "sections_dept": "math", "sections_avg": 97.09 },
-// { "sections_dept": "epse", "sections_avg": 97.09 },
-// { "sections_dept": "epse", "sections_avg": 97.09 },
-// { "sections_dept": "math", "sections_avg": 97.25 },
-// { "sections_dept": "math", "sections_avg": 97.25 },
-// { "sections_dept": "epse", "sections_avg": 97.29 },
-// { "sections_dept": "epse", "sections_avg": 97.29 },
-// { "sections_dept": "nurs", "sections_avg": 97.33 },
-// { "sections_dept": "nurs", "sections_avg": 97.33 },
-// { "sections_dept": "epse", "sections_avg": 97.41 },
-// { "sections_dept": "epse", "sections_avg": 97.41 },
-// { "sections_dept": "cnps", "sections_avg": 97.47 },
-
-
-
 export async function processQueryOnDataset(query: unknown): Promise<InsightResult[]> {
 	let validatedQuery: Query;
 	try {
@@ -53,7 +22,10 @@ export async function processQueryOnDataset(query: unknown): Promise<InsightResu
 }
 
 
-
+/**
+ * @returns - Query, validates that the query param conforms to Query structure, if not throws InsightError
+ * @param query
+ */
 export function validateQuery(query: unknown): Query {
 	//1) check that query is an object
 	if(typeof query !== 'object' || query === null) {
@@ -184,7 +156,6 @@ function isMKey(key: string): boolean {
 	return validMFields.includes(parts[1]);
 }
 
-
 function isSKey(key: string): boolean {
 	if (!key.includes('_')) {
 		return false;
@@ -279,21 +250,6 @@ export function extractDatasetId(query: unknown): string {
 	return "stub";
 }
 
-export async function loadDatasets(id: string, fileName: string): Promise<Section[]> {
-	const datasetPath = path.resolve(__dirname, "../data", fileName);
-	let dataset;
-	try {
-		dataset = await fs.readJson(datasetPath)
-	} catch (error) {
-		throw new NotFoundError(`Could not find dataset with - id=${id};` + error)
-	}
-
-	return parseJSONtoSections(dataset);
-}
-
-
-
-
 function handleLogicComparison(filter: LogicComparison): void {
 	if('AND' in filter && Array.isArray(filter.AND)) {
 		for(const f of filter.AND) {
@@ -324,9 +280,101 @@ function handleNegation(filter: Negation): void {
 
 
 //THIS IS THE HELPER TO CALL IN EACH BASE CASE FOR WHERE FUNCTION: MCOMPARATOR, SCOMPARATOR
-function getMatchingSections(op: string, field: (Record<MKey, number> | Record<SKey, number>), sects: Section[]): void {
-	//decode Record to find id and Mfield or Sfield.
-	//loadDatasets(id)
-	//searchSections and collect those that fit the criteria
-	//Get sections that match
+/**
+ * @returns - Section[] of sections returned by loadDatasets contained in the data set specified in the id string of
+ * param field. Sections have been filtered according to op and Mfield|Sfield.
+ * @param op
+ * @param record
+ */
+function getMatchingSections(op: string, record: [MKey, number] | [SKey, string]): Section[] {
+
+	const key = record[0];
+	const value = record[1];
+	const parts = key.split('_');
+	const idString = parts[0];
+	const field = parts[1];
+
+	//Adapted form ChatGPT generated response
+	type CompFunction = (a: any, b: any) => boolean;
+	let comp: CompFunction;
+
+	switch(op) {
+		case 'GT':
+			comp = (a: number, b: number) => a > b;
+			break;
+		case 'LT':
+			comp = (a: number, b: number) => a < b;
+			break;
+		case 'EQ':
+			comp = (a: number, b: number) => a === b;
+			break;
+		case 'IS':
+			comp = (a: string, b: string) => a === b;
+			break;
+		default:
+			throw new InsightError('not good very bad, no teneís un Quixote')
+	}
+
+	const sections = await loadDatasets(idString, 'testname0');
+	let results: Section[] = [];
+	for (const section of sections) {
+		let keep: boolean = false;
+		switch(field) {
+			case 'avg':
+				keep = comp(section.avg, value);
+				break;
+			case 'pass':
+				keep = comp(section.pass, value);
+				break;
+			case 'fail':
+				keep = comp(section.fail, value);
+				break;
+			case 'audit':
+				keep = comp(section.audit, value);
+				break;
+			case 'year':
+				keep = comp(section.year, value);
+				break;
+			case 'dept':
+				keep = comp(section.dept, value);
+				break;
+			case 'id':
+				keep = comp(section.id, value);
+				break;
+			case 'instructor':
+				keep = comp(section.instructor, value);
+				break;
+			case 'title':
+				keep = comp(section.title, value);
+				break;
+			case 'uuid':
+				keep = comp(section.uuid, value);
+				break;
+			default:
+				throw new InsightError('invalid key passed to getMatchingSections');
+		}
+
+		if(keep) {
+			results.push(section);
+		}
+	}
+	return results;
+}
+
+/**
+ * @returns - Promise<Section[]> an array of the sections contained in the data specified by param id.
+ * If dataset with name data/fileName can not be found throws NotFoundError
+ * @param fileName
+ * @param id
+ */
+export async function loadDatasets(id: string, fileName: string): Promise<Section[]> {
+	const datasetPath = path.resolve(__dirname, "../data", fileName);
+	let dataset;
+	try {
+		dataset = await fs.readJson(datasetPath)
+	} catch (error) {
+		throw new NotFoundError(`Could not find dataset with - id=${id};` + error)
+	}
+
+	return parseJSONtoSections(dataset);
 }
