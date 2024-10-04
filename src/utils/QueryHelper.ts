@@ -1,38 +1,13 @@
 import {InsightError, InsightResult, NotFoundError} from "../controller/IInsightFacade";
 import {
-	Filter,
-	LogicComparison,
-	MComparison,
-	MKey,
-	Negation,
-	SComparison,
+	MKey, Query,
 	Section,
-	SKey,
-	Where
+	SKey
 } from "../models/Section";
 import fs from "fs-extra";
 import path from "node:path";
 import {parseJSONtoSections} from "./JsonHelper";
-import {constructor} from "mocha";
 
-interface Query {
-	WHERE?: Body;
-	OPTIONS?: Options;
-}
-
-interface Body {
-	AND?: Body[];
-	OR?: Body[];
-	LT?: Record<string, number>;
-	EQ?: Record<string, number>;
-	IS?: Record<string, number>;
-	NOT?: Body;
-}
-
-interface Options {
-	COLUMNS: string[];
-	ORDER?: string;
-}
 
 export function handleQuery(queryString: string): Query {
 	try {
@@ -109,6 +84,7 @@ handleLogicComparison(logic: Body): object | string {
 export function validateQuery(query: Query): Query {
 	return query;
 	//only accept things that are in the form of JSON object.
+	//can you return a Query Object here which can be used in processQuery
 }
 
 /**
@@ -127,9 +103,8 @@ export function extractDatasetId(query: unknown): string {
 	return "stub";
 }
 
-export async function loadDatasets(id: string, datasetIds: Map<string, number>): Promise<Section[]> {
-	const name = datasetIds.get(id)
-	const datasetPath = path.resolve(__dirname, "../data", String(name));
+export async function loadDatasets(id: string, fileName: string): Promise<Section[]> {
+	const datasetPath = path.resolve(__dirname, "../data", fileName);
 	let dataset;
 	try {
 		dataset = await fs.readJson(datasetPath)
@@ -159,7 +134,7 @@ export function handleWhere(where: Where, id: string): void {
 
 export function handleFilter(filter: Filter): void {
 
-	if ('AND' in filter || 'OR' in filter) {
+	if (filter.type === 'AND') {
 		handleLogicComparison(filter);
 	} else if ('LT' in filter || 'GT' in filter || 'EQ' in filter) {
 		handleMComparator(filter);

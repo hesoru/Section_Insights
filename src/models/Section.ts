@@ -43,42 +43,23 @@ export interface JSONFile {
 }
 
 export interface Query {
-	WHERE: Where;
-	OPTIONS: Options;
+	WHERE: Body;
+	OPTIONS?: Options;
 }
 
-export interface Where {
-	FILTER?: Filter; //filter is optional and an empty where matches all entries
+export interface Body {
+	AND?: Body[];
+	OR?: Body[];
+	GT?: Record<MField, number>;
+	LT?: Record<MField, number>;
+	EQ?: Record<MField, number>;
+	IS?: Record<SField, number>;
+	NOT?: Body;
 }
 
-export interface Options {
-
-}
-
-export type Filter = LogicComparison | MComparison | SComparison | Negation;
-
-export interface LogicComparison {
-	AND: Filter[] //Logic Comparison
-	OR: Filter[]  //Logic Comparison
-}
-
-export interface MComparison {
-	LT: Record<MKey, number>; //M Comparison
-	GT: Record<MKey, number>; //M Comparison
-	EQ: Record<MKey, number>; //M Comparison
-}
-
-export interface SComparison {
-	IS: Record<SKey, string> //S Comparison
-}
-
-export interface Negation {
-	NOT: Filter;  //Negation
-}
-
-export interface Options {
+interface Options {
 	COLUMNS: string[];
-	ORDER?: string;  //ordering is optional
+	ORDER?: string;
 }
 
 export type MKey = `${string}_${MField}`;
