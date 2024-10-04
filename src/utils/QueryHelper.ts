@@ -13,9 +13,101 @@ import {
 import fs from "fs-extra";
 import path from "node:path";
 import {parseJSONtoSections} from "./JsonHelper";
+import {constructor} from "mocha";
 
-export function validateQuery(query: unknown): boolean {
-	return true;
+interface Query {
+	WHERE?: Body;
+	OPTIONS?: Options;
+}
+
+interface Body {
+	AND?: Body[];
+	OR?: Body[];
+	LT?: Record<string, number>;
+	EQ?: Record<string, number>;
+	IS?: Record<string, number>;
+	NOT?: Body;
+}
+
+interface Options {
+	COLUMNS: string[];
+	ORDER?: string;
+}
+
+export function handleQuery(queryString: string): Query {
+	try {
+		// convert query string to JSON
+		const queryJSON = JSON.parse(queryString);
+		// validate that query is in a valid EBNF format
+		const validQuery = validateQuery(queryJSON);
+
+		const parsedQuery: Record<string, any> = {};
+
+		// Parse WHERE
+		if (validQuery.WHERE) {
+			parsedQuery.BODY = handleBody(validQuery.WHERE);
+		}
+		// Parse OPTIONS
+		if (validQuery.OPTIONS) {
+			parsedQuery.OPTIONS = handleOptions(validQuery.OPTIONS);
+		}
+
+		return parsedQuery;
+	} catch (error: any) {
+		throw new Error(`Query not a valid format: ${error.message}`);
+	}
+}
+
+export function handleBody(body: Body): InsightResult[] {
+	if (!body) {
+		// no filter - return all entries
+		return InsightResult[];
+	}
+	// handle filters within the body
+	return handleFilter(body);
+}
+
+export function handleOptions(options: Options): object {
+	const columns = options.COLUMNS;
+	const order = options.ORDER;
+	if (options.ORDER) {
+
+	}
+	return { COLUMNS: columns, ORDER: order };
+}
+
+export function handleFilter(filter: Body): object | string {
+	if (filter.AND || filter.OR) {
+		return handleLogicComparison(filter);
+	} else if (filter.LT || filter.GT || filter.EQ) {
+		return handleMComparison(filter);
+	} else if (filter.IS) {
+		return handleSComparison(filter);
+	} else if (filter.NOT) {
+		return handleNegation(filter);
+	}
+	return "Unknown filter";
+}
+
+handleLogicComparison(logic: Body): object | string {
+	if (logic.AND) {
+		const filters = logic.AND;
+		const parsedFilters = filters.map((f) => handleFilter(f));
+		return { AND: parsedFilters };
+	} else if (logic.OR) {
+		const filters = logic.OR;
+		const parsedFilters = filters.map((f) => handleFilter(f));
+		return { OR: parsedFilters };
+	}
+	return "Invalid logic comparison";
+}
+
+
+
+
+
+export function validateQuery(query: Query): Query {
+	return query;
 	//only accept things that are in the form of JSON object.
 }
 
@@ -61,7 +153,7 @@ export function handleWhere(where: Where, id: string): void {
 		} else {
 			//if there is no filter specified so matches all entries
 		}
-	console.log(id)
+	console.log(id);
 	}
 
 
