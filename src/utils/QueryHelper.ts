@@ -40,37 +40,162 @@ const testQuery =  {
 
 
 export async function processQueryOnDataset(query: unknown): Promise<InsightResult[]> {
+	let validatedQuery: Query;
 	try {
+		validatedQuery = validateQuery(query);
 
-		//1) Check if query is of type object
-		//isInstance(query, Object)
-
-		//2) How do we map unknown query to Query
-		//if Where exists
-
-		const parsedQuery: Record<string, any> = {};
-
-		//validate query syntax, if follows rules call it a query
-
-		// try query.WHERE, if not reject
-		if (query.WHERE) {
-			parsedQuery.BODY = handleBody(query.WHERE);
-		}
-		// Parse OPTIONS
-		if (query.OPTIONS) {
-			parsedQuery.OPTIONS = handleOptions(query.OPTIONS);
-		}
-
-		return parsedQuery;
-	} catch (error: any) {
+	} catch (error) {
 		throw new Error(`Query not a valid format: ${error.message}`);
+	}
+	handleBody(validatedQuery.WHERE);  //should return InsightResult[] that matches Body specifications
+	handleOptions(validatedQuery.OPTIONS); //should return same InsightResult[] but sorted to Option specifications
+	return [];
+}
+
+
+
+export function validateQuery(query: unknown): Query {
+	//1) check that query is an object
+	if(typeof query !== 'object' || query === null) {
+		throw new InsightError('invalid query, query is not a non-null object');
+	}
+
+	//2) check WHERE fields
+	if('WHERE' in query)  {
+		if(query.WHERE === null || typeof query.WHERE !== 'object')  {
+			throw new InsightError('invalid query, query contains null WHERE field');
+		}
+		validateBody(query.WHERE);
+	} else {
+		throw new InsightError('invalid query, query does not contain WHERE field');
+	}
+
+	//3) check OPTION fields
+	if('OPTIONS' in query)  {
+		//is the OPTIONS field allowed to be null? I don't think so
+		if(query.OPTIONS === null || typeof query.OPTIONS !== 'object')  {
+			throw new InsightError('invalid query, query contains invalid OPTIONS field');
+		}
+		validateOptions(query.OPTIONS);
+	} else {
+		//throw new InsightError('invalid query, query does not contain OPTION field');
+		//this is okay right
+	}
+	return query as Query;
+}
+
+function validateBody(filter: any) {
+	const keys = Object.keys(filter);
+	if(keys.length !== 1) {
+		throw new InsightError('invalid query, query.WHERE contains more than one key');
+	}
+
+	//checks type of each possible filter stopping at Mkey and Skey
+	switch(keys[0]) {
+		case 'OR':
+			if(filter.OR === null || typeof filter.OR !== 'object') {
+				throw new InsightError('invalid query, query.WHERE.OR is invalid')
+			}
+			for(const body in filter.OR) {
+				validateBody(filter.OR);
+			}
+			break;
+		case 'AND':
+			if(filter.AND === null || typeof filter.AND !== 'object') {
+				throw new InsightError('invalid query, query.WHERE.AND is invalid')
+			}
+			for(const body in filter.OR) {
+				validateBody(filter.OR);
+			}
+			break;
+		case 'GT':
+			if(filter.GT === null || typeof filter.GT !== 'string') {
+				throw new InsightError('invalid query, query.WHERE.GT is invalid')
+			}
+			break;
+		case 'LT':
+			if(filter.LT === null || typeof filter.LT !== 'string') {
+				throw new InsightError('invalid query, query.WHERE.LT is invalid')
+			}
+			break;
+		case 'EQ':
+			if(filter.EQ === null || typeof filter.EQ !== 'string') {
+				throw new InsightError('invalid query, query.WHERE.EQ is invalid')
+			}
+			break;
+		case 'IS':
+			if(filter.IS === null || typeof filter.IS !== 'string') {
+				throw new InsightError('invalid query, query.WHERE.IS is invalid')
+			}
+			break;
+		case 'NOT':
+			if(filter.NOT === null || typeof filter.NOT !== 'object') {
+				throw new InsightError('invalid query, query.WHERE.NOT is invalid')
+			}
+			validateBody(filter.NOT);
+			break;
+		default:
+			throw new InsightError('invalid query, query.WHERE contains an invalid key');
 	}
 }
 
-export function validateQuery(query: Query): Query {
-	return query;
-	//only accept things that are in the form of JSON object.
-	//can you return a Query Object here which can be used in processQuery
+function validateOptions(options: any) {
+	const keys = Object.keys(options);
+	if(keys.length === 0 || keys.length > 2) {
+		throw new InsightError('invalid query, query.OPTIONS incorrect number of keys');
+	}
+	//validate columns
+	if(keys[0] === 'COLUMNS') {
+		throw new InsightError('invalid query, query.OPTIONS does not contain COLUMNS');
+	}
+	if(!Array.isArray(options.COLUMNS) || options.COLUMNS.length === 0) {
+		throw new InsightError('invalid query, query.OPTIONS.COLUMNS is not an array');
+	}
+	for(const key in options.COLUMNS) {
+		validateKey(key);
+	}
+
+	//validate order
+	if(keys[1] && keys[1] !== 'ORDER') {
+		throw new InsightError('invalid query, query.OPTIONS does not contain ORDER as 2nd key');
+	}
+	validateKey(options.ORDER);
+}
+
+function validateKey(key: any) {
+	if(typeof key === 'string') {
+		throw new InsightError('invalid query, key is not a string');
+	}
+	if(!isMKey(key) || isSKey(key)) {
+		throw new InsightError('invalid query, key is not an Mkey or Skey')
+	}
+}
+
+function isMKey(key: string): boolean {
+	if (!key.includes('_')) {
+		return false;
+	}
+	const parts = key.split('_');
+	const validId = /^[^_]+$/; //Adapted from chatGPT generated response.
+	if (!validId.test(parts[0]) || parts[0].trim().length === 0) {
+		return false;
+	}
+	const validMFields = ['avg', 'pass', 'fail', 'audit', 'year'];
+	return validMFields.includes(parts[1]);
+}
+
+
+function isSKey(key: string): boolean {
+	if (!key.includes('_')) {
+		return false;
+	}
+	const parts = key.split('_');
+	const validId = /^[^_]+$/; //Adapted from chatGPT generated response.
+	if (!validId.test(parts[0]) || parts[0].trim().length === 0) {
+		return false;
+	}
+	const validSFields = ['dept', 'id', 'instructor', 'title', 'uuid'];
+	return validSFields.includes(parts[1]);
 }
 
 export function handleBody(body: Body): InsightResult[] {  //param is type body because we know it follows structure of body
@@ -205,6 +330,3 @@ function getMatchingSections(op: string, field: (Record<MKey, number> | Record<S
 	//searchSections and collect those that fit the criteria
 	//Get sections that match
 }
-
-
-

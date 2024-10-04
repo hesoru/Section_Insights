@@ -42,27 +42,42 @@ export interface JSONFile {
 	Fail: number;
 }
 
+/**
+ * Interface to represent a Query, structure of inputted query must be previously validated by validateQuery()
+ */
 export interface Query {
 	WHERE: Body;
 	OPTIONS?: Options;
 }
 
+
+/**
+ * Interface to represent the WHERE portion of a Query, must be present in every valid query. Specifies which sections
+ * are included in InsightResult[]
+ */
 export interface Body {
 	AND?: Body[];
 	OR?: Body[];
-	GT?: Record<MField, number>;
-	LT?: Record<MField, number>;
-	EQ?: Record<MField, number>;
-	IS?: Record<SField, number>;
+	GT?: Record<MKey, number>;
+	LT?: Record<MKey, number>;
+	EQ?: Record<MKey, number>;
+	IS?: Record<SKey, number>;
 	NOT?: Body;
 }
 
+/**
+ * Interface to represent the OPTIONS portion of a query, may be present or absent from Query. Specifies which sections
+ * are included in the InsightResult[] and in what order
+ */
 interface Options {
 	COLUMNS: string[];
 	ORDER?: string;
 }
 
-export type MKey = `${string}_${MField}`;
-export type SKey = `${string}_${SField}`;
+/**
+ * Types to represent specific fields in Body interface in accordance with InsightFacade EBNF
+ */
+export type MKey = `${string}_${MField}`;  //adapted from ChatGPT generated response
+export type SKey = `${string}_${SField}`; //adapted from ChatGPT generated response
 export type MField = 'avg' | 'pass' | 'fail' | 'audit' | 'year';
 export type SField = 'dept' | 'id' | 'instructor' | 'title' | 'uuid';
