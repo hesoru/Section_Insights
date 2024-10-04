@@ -55,6 +55,24 @@ describe("InsightFacade", function () {
 			}
 		});
 
+		it('query test', function() {
+			const testQuery =  {
+				"WHERE":{
+					"GT":{
+						"sections_avg":97
+					}
+				},
+				"OPTIONS":{
+					"COLUMNS":[
+						"sections_dept",
+						"sections_avg"
+					],
+					"ORDER":"sections_avg"
+				}
+			}
+			console.log(testQuery);
+		})
+
 		it("valid ids with existing ids", function () {
 			const existingIds: string[] = ["alreadyaddeddata", "also23fds", "thisissomedata", "moreids!"];
 			try {

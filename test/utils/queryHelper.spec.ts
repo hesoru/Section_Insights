@@ -32,11 +32,18 @@ describe("InsightFacade", function () {
         });
 
         it("valid ids with no existing ids", async function () {
-            const testQuery = {
+            const testQuery =  {
                 "WHERE":{
                     "GT":{
                         "sections_avg":97
                     }
+                },
+                "OPTIONS":{
+                    "COLUMNS":[
+                        "sections_dept",
+                        "sections_avg"
+                    ],
+                    "ORDER":"sections_avg"
                 }
             }
             try {

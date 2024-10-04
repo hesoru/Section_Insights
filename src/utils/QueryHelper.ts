@@ -8,23 +8,57 @@ import fs from "fs-extra";
 import path from "node:path";
 import {parseJSONtoSections} from "./JsonHelper";
 
+const testQuery =  {
+	"WHERE":{
+		"GT":{
+			"sections_avg":97
+		}
+	},
+	"OPTIONS":{
+		"COLUMNS":[
+			"sections_dept",
+			"sections_avg"
+		],
+		"ORDER":"sections_avg"
+	}
+}
 
-export function handleQuery(queryString: string): Query {
+// { "sections_dept": "math", "sections_avg": 97.09 },
+// { "sections_dept": "math", "sections_avg": 97.09 },
+// { "sections_dept": "epse", "sections_avg": 97.09 },
+// { "sections_dept": "epse", "sections_avg": 97.09 },
+// { "sections_dept": "math", "sections_avg": 97.25 },
+// { "sections_dept": "math", "sections_avg": 97.25 },
+// { "sections_dept": "epse", "sections_avg": 97.29 },
+// { "sections_dept": "epse", "sections_avg": 97.29 },
+// { "sections_dept": "nurs", "sections_avg": 97.33 },
+// { "sections_dept": "nurs", "sections_avg": 97.33 },
+// { "sections_dept": "epse", "sections_avg": 97.41 },
+// { "sections_dept": "epse", "sections_avg": 97.41 },
+// { "sections_dept": "cnps", "sections_avg": 97.47 },
+
+
+
+export async function processQueryOnDataset(query: unknown): Promise<InsightResult[]> {
 	try {
-		// convert query string to JSON
-		const queryJSON = JSON.parse(queryString);
-		// validate that query is in a valid EBNF format
-		const validQuery = validateQuery(queryJSON);
+
+		//1) Check if query is of type object
+		//isInstance(query, Object)
+
+		//2) How do we map unknown query to Query
+		//if Where exists
 
 		const parsedQuery: Record<string, any> = {};
 
-		// Parse WHERE
-		if (validQuery.WHERE) {
-			parsedQuery.BODY = handleBody(validQuery.WHERE);
+		//validate query syntax, if follows rules call it a query
+
+		// try query.WHERE, if not reject
+		if (query.WHERE) {
+			parsedQuery.BODY = handleBody(query.WHERE);
 		}
 		// Parse OPTIONS
-		if (validQuery.OPTIONS) {
-			parsedQuery.OPTIONS = handleOptions(validQuery.OPTIONS);
+		if (query.OPTIONS) {
+			parsedQuery.OPTIONS = handleOptions(query.OPTIONS);
 		}
 
 		return parsedQuery;
@@ -33,7 +67,13 @@ export function handleQuery(queryString: string): Query {
 	}
 }
 
-export function handleBody(body: Body): InsightResult[] {
+export function validateQuery(query: Query): Query {
+	return query;
+	//only accept things that are in the form of JSON object.
+	//can you return a Query Object here which can be used in processQuery
+}
+
+export function handleBody(body: Body): InsightResult[] {  //param is type body because we know it follows structure of body
 	if (!body) {
 		// no filter - return all entries
 		return InsightResult[];
@@ -42,6 +82,7 @@ export function handleBody(body: Body): InsightResult[] {
 	return handleFilter(body);
 }
 
+//Helena:
 export function handleOptions(options: Options): object {
 	const columns = options.COLUMNS;
 	const order = options.ORDER;
@@ -51,6 +92,8 @@ export function handleOptions(options: Options): object {
 	return { COLUMNS: columns, ORDER: order };
 }
 
+
+//Helena:
 export function handleFilter(filter: Body): object | string {
 	if (filter.AND || filter.OR) {
 		return handleLogicComparison(filter);
@@ -64,7 +107,7 @@ export function handleFilter(filter: Body): object | string {
 	return "Unknown filter";
 }
 
-handleLogicComparison(logic: Body): object | string {
+handleLogicComparison(logic: Body): object | string {  //return array of insight result.
 	if (logic.AND) {
 		const filters = logic.AND;
 		const parsedFilters = filters.map((f) => handleFilter(f));
@@ -78,14 +121,22 @@ handleLogicComparison(logic: Body): object | string {
 }
 
 
+export function handleFilter(filter: Filter): void {
 
+	if (filter.type === 'AND') {
+		handleLogicComparison(filter);
+	} else if ('LT' in filter || 'GT' in filter || 'EQ' in filter) {
+		handleMComparator(filter);
+	} else if ('IS' in filter) {
+		handleSComparator(filter);
+	} else if ('NOT' in filter) {
+		handleNegation(filter);
+	} else {
+		throw new InsightError('There was some problem here!')
+	}
 
-
-export function validateQuery(query: Query): Query {
-	return query;
-	//only accept things that are in the form of JSON object.
-	//can you return a Query Object here which can be used in processQuery
 }
+
 
 /**
  * @returns -
@@ -115,38 +166,8 @@ export async function loadDatasets(id: string, fileName: string): Promise<Sectio
 	return parseJSONtoSections(dataset);
 }
 
-export async function processQueryOnDataset(query: unknown): Promise<InsightResult[]> {
-	//query should come in as a json object
-	//handleWhere(query.WHERE);
-
-	return [];
-}
-
-export function handleWhere(where: Where, id: string): void {
-		if (where.FILTER !== undefined) {
-			handleFilter(where.FILTER);
-		} else {
-			//if there is no filter specified so matches all entries
-		}
-	console.log(id);
-	}
 
 
-export function handleFilter(filter: Filter): void {
-
-	if (filter.type === 'AND') {
-		handleLogicComparison(filter);
-	} else if ('LT' in filter || 'GT' in filter || 'EQ' in filter) {
-		handleMComparator(filter);
-	} else if ('IS' in filter) {
-		handleSComparator(filter);
-	} else if ('NOT' in filter) {
-		handleNegation(filter);
-	} else {
-		throw new InsightError('There was some problem here!')
-	}
-
-}
 
 function handleLogicComparison(filter: LogicComparison): void {
 	if('AND' in filter && Array.isArray(filter.AND)) {
@@ -176,6 +197,8 @@ function handleNegation(filter: Negation): void {
 
 }
 
+
+//THIS IS THE HELPER TO CALL IN EACH BASE CASE FOR WHERE FUNCTION: MCOMPARATOR, SCOMPARATOR
 function getMatchingSections(op: string, field: (Record<MKey, number> | Record<SKey, number>), sects: Section[]): void {
 	//decode Record to find id and Mfield or Sfield.
 	//loadDatasets(id)
