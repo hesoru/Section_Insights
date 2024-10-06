@@ -4,7 +4,6 @@ import {
 	InsightDatasetKind,
 	InsightError,
 	InsightResult,
-	NotFoundError,
 	ResultTooLargeError,
 } from "./IInsightFacade";
 import {
@@ -40,7 +39,7 @@ export default class InsightFacade implements IInsightFacade {
 		}
 		//2) Check validity of id: can not be only white space, can not have underscores, reject if id is already in database
 		try {
-			checkValidId(id, Array.from(this.datasetIds.keys()), false);
+			checkValidId(id, Array.from(this.datasetIds.keys()), false); // adjusted function for map
 		} catch (error) {
 			throw new InsightError("id passed to addDataset invalid" + error); //is this catch block necessary?
 		}
@@ -74,25 +73,13 @@ export default class InsightFacade implements IInsightFacade {
 		// if (!id || id.includes("_") || id.trim() === "") {
 		// 	throw new InsightError("Invalid dataset id.");
 		// }
-		checkValidId(id, this.datasetIds, true); // 3rd parameter should be true
-
-		// check if dataset exists
-		const datasetIndex = this.datasetIds.has(id);
-		if (datasetIndex === -1) {
-			throw new NotFoundError(`Dataset with id "${id}" not found.`); // steal this
-		}
+		checkValidId(id, Array.from(this.datasetIds.keys()), true); // 3rd parameter should be true
 
 		try {
-			// remove from memory
-			// ..
-			// ..
-
 			// remove from disk
 			await fs.promises.unlink(`data/${id}`); // txt file?
-
 			// remove from datasetId array
-			this.datasetIds.splice(datasetIndex, 1);
-
+			this.datasetIds["delete"](id);
 			// return removed id
 			return id;
 		} catch (error: any) {
@@ -121,7 +108,7 @@ export default class InsightFacade implements IInsightFacade {
 		// 4) process query on the dataset
 		let results: InsightResult[];
 		try {
-			results = await processQueryOnDataset(query, id); // TODO: write helper function in QueryHelper.ts
+			results = await processQueryOnDataset(query); // TODO: write helper function in QueryHelper.ts
 		} catch (error: any) {
 			throw new InsightError(`Error processing query: ${error.message}`);
 		}
@@ -138,7 +125,7 @@ export default class InsightFacade implements IInsightFacade {
 		const datasetPromises: Promise<InsightDataset>[] = [];
 
 		// get datasets in datasetIds array
-		for (const id of this.datasetIds) {
+		for (const [id] of this.datasetIds) {
 			datasetPromises.push(getDatasetInfo(id)); // need to write this
 		}
 		// list id, kind, and numRows
