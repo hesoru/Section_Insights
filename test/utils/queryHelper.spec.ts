@@ -1,9 +1,9 @@
 import { InsightError } from "../../src/controller/IInsightFacade";
-import { clearDisk } from "../TestUtil";
+import {clearDisk, loadTestQuery} from "../TestUtil";
 
 import { expect, use } from "chai";
 import chaiAsPromised from "chai-as-promised";
-import {processQueryOnDataset} from "../../src/utils/QueryHelper";
+import {processQueryOnDataset, validateBody} from "../../src/utils/QueryHelper";
 
 use(chaiAsPromised);
 
@@ -21,7 +21,7 @@ describe("InsightFacade", function () {
         await clearDisk();
     });
 
-    describe("ParseSectionObject", function () {
+    describe("validateQuery", function () {
         beforeEach(async function () {
             await clearDisk();
             //facade = new InsightFacade();
@@ -31,26 +31,95 @@ describe("InsightFacade", function () {
             await clearDisk();
         });
 
-        it("valid ids with no existing ids", async function () {
-            const testQuery =  {
-                "WHERE":{
-                    "GT":{
-                        "sections_avg":97
-                    }
-                },
-                "OPTIONS":{
-                    "COLUMNS":[
-                        "sections_dept",
-                        "sections_avg"
-                    ],
-                    "ORDER":"sections_avg"
-                }
-            }
-            try {
-                await processQueryOnDataset(testQuery);
-            } catch (error) {
-                expect.fail("should not thrown an error when adding valid ids" + error);
+        it("valid query", function () {
+            //readable format of file can be found in src/utils/ANTH312
+        });
+
+    });
+
+    describe("validateBody", function () {
+        beforeEach(async function () {
+            await clearDisk();
+            //facade = new InsightFacade();
+        });
+
+        afterEach(async function () {
+            await clearDisk();
+        });
+
+        it("testValidBodies", async function () {
+            try{
+                const test = await loadTestQuery('[body/validGT.json]');
+                validateBody(test.input);
+            } catch (e) {
+                //did not expect error
+                console.log(e);
             }
         });
+
+    });
+
+    describe("validateOptions", function () {
+        beforeEach(async function () {
+            await clearDisk();
+            //facade = new InsightFacade();
+        });
+
+        afterEach(async function () {
+            await clearDisk();
+        });
+
+        it("valid query", function () {
+            //readable format of file can be found in src/utils/ANTH312
+        });
+
+    });
+
+    describe("validateKey", function () {
+        beforeEach(async function () {
+            await clearDisk();
+            //facade = new InsightFacade();
+        });
+
+        afterEach(async function () {
+            await clearDisk();
+        });
+
+        it("valid query", function () {
+            //readable format of file can be found in src/utils/ANTH312
+        });
+
+    });
+
+    describe("isMKey", function () {
+        beforeEach(async function () {
+            await clearDisk();
+            //facade = new InsightFacade();
+        });
+
+        afterEach(async function () {
+            await clearDisk();
+        });
+
+        it("valid query", function () {
+            //readable format of file can be found in src/utils/ANTH312
+        });
+
+    });
+
+    describe("isSKey", function () {
+        beforeEach(async function () {
+            await clearDisk();
+            //facade = new InsightFacade();
+        });
+
+        afterEach(async function () {
+            await clearDisk();
+        });
+
+        it("valid query", function () {
+            //readable format of file can be found in src/utils/ANTH312
+        });
+
     });
 })

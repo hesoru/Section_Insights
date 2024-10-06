@@ -52,7 +52,6 @@ export interface Query {
 	OPTIONS?: Options;
 }
 
-
 /**
  * Interface to represent the WHERE portion of a Query, must be present in every valid query. Specifies which sections
  * are included in InsightResult[]
@@ -71,7 +70,7 @@ export interface Body {
  * Interface to represent the OPTIONS portion of a query, may be present or absent from Query. Specifies which sections
  * are included in the InsightResult[] and in what order
  */
-interface Options {
+export interface Options {
 	COLUMNS: string[];
 	ORDER?: string;
 }

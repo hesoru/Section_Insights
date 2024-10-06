@@ -2,7 +2,7 @@ import {InsightError, InsightResult, NotFoundError} from "../controller/IInsight
 import {
 	MKey, Query,
 	Section,
-	SKey
+	SKey, Body, Options
 } from "../models/Section";
 import fs from "fs-extra";
 import path from "node:path";
@@ -14,10 +14,10 @@ export async function processQueryOnDataset(query: unknown): Promise<InsightResu
 		validatedQuery = validateQuery(query);
 
 	} catch (error) {
-		throw new Error(`Query not a valid format: ${error.message}`);
+		throw new Error(`Query not a valid format: ` + error);
 	}
-	handleBody(validatedQuery.WHERE);  //should return InsightResult[] that matches Body specifications
-	handleOptions(validatedQuery.OPTIONS); //should return same InsightResult[] but sorted to Option specifications
+	//const allMatchingSections: Section[] = handleBody(validatedQuery.WHERE);  //should return InsightResult[] that matches Body specifications
+	//const orderedMatchingSections = handleOptions(validatedQuery.OPTIONS, allMatchingSections); //should return same InsightResult[] but sorted to Option specifications
 	return [];
 }
 
@@ -56,7 +56,7 @@ export function validateQuery(query: unknown): Query {
 	return query as Query;
 }
 
-function validateBody(filter: any) {
+export function validateBody(filter: any): void {
 	const keys = Object.keys(filter);
 	if(keys.length !== 1) {
 		throw new InsightError('invalid query, query.WHERE contains more than one key');
@@ -65,7 +65,7 @@ function validateBody(filter: any) {
 	//checks type of each possible filter stopping at Mkey and Skey
 	switch(keys[0]) {
 		case 'OR':
-			if(filter.OR === null || typeof filter.OR !== 'object') {
+			if(filter.OR === null || !Array.isArray(filter.OR)) {
 				throw new InsightError('invalid query, query.WHERE.OR is invalid')
 			}
 			for(const body in filter.OR) {
@@ -73,7 +73,7 @@ function validateBody(filter: any) {
 			}
 			break;
 		case 'AND':
-			if(filter.AND === null || typeof filter.AND !== 'object') {
+			if(filter.AND === null || !Array.isArray(filter.AND)) {
 				throw new InsightError('invalid query, query.WHERE.AND is invalid')
 			}
 			for(const body in filter.OR) {
@@ -177,17 +177,6 @@ export function handleBody(body: Body): InsightResult[] {  //param is type body 
 	// handle filters within the body
 	return handleFilter(body);
 }
-
-//Helena:
-export function handleOptions(options: Options): object {
-	const columns = options.COLUMNS;
-	const order = options.ORDER;
-	if (options.ORDER) {
-
-	}
-	return { COLUMNS: columns, ORDER: order };
-}
-
 
 //Helena:
 export function handleFilter(filter: Body): object | string {
@@ -378,3 +367,59 @@ export async function loadDatasets(id: string, fileName: string): Promise<Sectio
 
 	return parseJSONtoSections(dataset);
 }
+
+
+/**
+ * @returns - InsightResult[], selects columns from array of sections as specified by options.COLUMNS and parses them
+ * into InsightResult. Creates one Insight Result per section. Final InsightResult[] ordered according to column specified
+ * by options.ORDER if applicable.
+ * @param options
+ * @param sections
+ */
+export function handleOptions(options: Options, sections: Section[]): InsightResult[] {
+	const columns = options.COLUMNS;
+
+	let column_keys: string[] = [];
+	for(const column of columns) {
+		if(!isMKey(column) && !isSKey(column)) {
+			throw new InsightError('invalid keys passed to OPTIONS.COLUMNS, NOTE THIS WAS NOT CAUGHT IN VALIDATE QUERY');
+		}
+		const parts = column.split('_');
+		column_keys.push(parts[1]);
+	}
+
+	const insight_results: InsightResult[] = [];
+	for(const section of sections) {
+		let section_result: InsightResult = {};
+		for (let i = 0; i < column_keys.length; i++) {  //iterate through indicies
+			section_result[columns[i]] = section[column_keys[i] as keyof Section]; //WILL THIS LINE WORK? PROBABLY BUG HERE
+		}
+		insight_results.push(section_result);
+	}
+
+	if (options.ORDER) {
+		const order = options.ORDER;
+		if(!isMKey(order) && !isSKey(order)) {
+			throw new InsightError('invalid keys passed to OPTIONS.COLUMNS, NOTE THIS WAS NOT CAUGHT IN VALIDATE QUERY');
+		}
+		const parts = order.split('_');
+		const field = parts[1];
+
+		//Adapted from ChatGPT generated response:
+		insight_results.sort((a, b) => {
+			const valueA = a[field];
+			const valueB = b[field];
+
+			if(typeof valueA === 'number' && typeof valueB === 'number') {
+				return valueA - valueB;
+			} else if(typeof valueA === 'string' && typeof valueB === 'string') {
+				return valueA.localeCompare(valueB, undefined, {sensitivity: 'base'});
+			} else {
+				throw new InsightError('fields in handleOptions.ORDER not of same type.')
+			}
+		})
+
+	}
+	return insight_results;
+}
+
