@@ -82,3 +82,4 @@ export type MKey = `${string}_${MField}`;  //adapted from ChatGPT generated resp
 export type SKey = `${string}_${SField}`; //adapted from ChatGPT generated response
 export type MField = 'avg' | 'pass' | 'fail' | 'audit' | 'year';
 export type SField = 'dept' | 'id' | 'instructor' | 'title' | 'uuid';
+export type CompFunction = (a: any, b: any) => boolean;
