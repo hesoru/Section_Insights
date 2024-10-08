@@ -394,7 +394,7 @@ describe("InsightFacade", function () {
 
 		// improper EBNF formatting
 		it("[invalid/orderKeyMissing.json] ORDER's key not found in COLUMN's KEY_LIST array", checkQuery);
-		it("[invalid/invalid.json] Query missing WHERE", checkQuery);
+		it("[invalid/invalidEmptyColumns.json] Query missing WHERE", checkQuery);
 		it("[invalid/mkeyUsedForIS.json] mkey used for IS", checkQuery);
 		it("[invalid/skeyUsedForMComparator.json] skey used for mcomparator", checkQuery);
 		it("[invalid/invalidSField.json] Invalid SField", checkQuery);

@@ -16,7 +16,7 @@ import {
 	getDatasetInfo,
 } from "../utils/JsonHelper";
 import fs from "fs-extra";
-import { extractDatasetId, processQueryOnDataset, validateQuery } from "../utils/QueryHelper";
+import {processQueryOnDataset, validateQuery } from "../utils/QueryHelper";
 
 /**
  * This is the main programmatic entry point for the project.
@@ -74,11 +74,11 @@ export default class InsightFacade implements IInsightFacade {
 		// if (!id || id.includes("_") || id.trim() === "") {
 		// 	throw new InsightError("Invalid dataset id.");
 		// }
-		checkValidId(id, this.datasetIds, true); // 3rd parameter should be true
+		checkValidId(id, Array.from(this.datasetIds.keys()), true); // 3rd parameter should be true
 
 		// check if dataset exists
 		const datasetIndex = this.datasetIds.has(id);
-		if (datasetIndex === -1) {
+		if (!datasetIndex) {
 			throw new NotFoundError(`Dataset with id "${id}" not found.`); // steal this
 		}
 
@@ -91,7 +91,7 @@ export default class InsightFacade implements IInsightFacade {
 			await fs.promises.unlink(`data/${id}`); // txt file?
 
 			// remove from datasetId array
-			this.datasetIds.splice(datasetIndex, 1);
+			//this.datasetIds.splice(datasetIndex, 1);
 
 			// return removed id
 			return id;
@@ -111,17 +111,17 @@ export default class InsightFacade implements IInsightFacade {
 		}
 
 		// 2) extract dataset id from query
-		const id = extractDatasetId(query); // TODO: write helper function in QueryHelper.ts
+		//const id = extractDatasetId(query); // TODO: write helper function in QueryHelper.ts
 
 		// 3) ensure dataset exists
-		if (!this.datasetIds.has(id)) {
-			throw new InsightError(`Dataset '${id}' does not exist.`);
-		}
+		// if (!this.datasetIds.has(id)) {
+		// 	throw new InsightError(`Dataset '${id}' does not exist.`);
+		// }
 
 		// 4) process query on the dataset
 		let results: InsightResult[];
 		try {
-			results = await processQueryOnDataset(query, id); // TODO: write helper function in QueryHelper.ts
+			results = await processQueryOnDataset(query); // TODO: write helper function in QueryHelper.ts
 		} catch (error: any) {
 			throw new InsightError(`Error processing query: ${error.message}`);
 		}
@@ -138,7 +138,7 @@ export default class InsightFacade implements IInsightFacade {
 		const datasetPromises: Promise<InsightDataset>[] = [];
 
 		// get datasets in datasetIds array
-		for (const id of this.datasetIds) {
+		for (const id of this.datasetIds.keys()) {
 			datasetPromises.push(getDatasetInfo(id)); // need to write this
 		}
 		// list id, kind, and numRows
