@@ -85,6 +85,7 @@ export function parseJSONtoSections(file: string): Section[] {
 		}
 	} catch (error) {
 		throw new InsightError("Unable to parse to JSON, file is not a JSON formatted string" + error);
+		//skip dont add section?
 	}
 
 	return addedSections;

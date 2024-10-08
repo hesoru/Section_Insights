@@ -1,4 +1,4 @@
-import {InsightDatasetKind, InsightError} from "../../src/controller/IInsightFacade";
+import {InsightDatasetKind, InsightError, ResultTooLargeError} from "../../src/controller/IInsightFacade";
 import {clearDisk, getContentFromArchives, loadTestQuery} from "../TestUtil";
 
 import { expect, use } from "chai";
@@ -379,9 +379,9 @@ describe("InsightFacade", function () {
                 const result2 = await getMatchingSections('LT', ['sections_pass', 2]);
                 expect(result2).to.be.an("array");
                 expect(result2.length).to.equal(188);
-                const result3 = await getMatchingSections('EQ', ['sections_year', 2010]);
+                const result3 = await getMatchingSections('EQ', ['sections_year', 2007]);
                 expect(result3).to.be.an("array");
-                expect(result3.length).to.equal(4305);
+                expect(result3.length).to.equal(3950);
                 const result4 = await getMatchingSections('GT', ['sections_audit', 4]);
                 expect(result4).to.be.an("array");
                 expect(result4.length).to.equal(186);
@@ -393,6 +393,17 @@ describe("InsightFacade", function () {
             }
 
         });
+
+        it("result too large", async function () {
+            try {
+                await getMatchingSections('GT', ['sections_year', 2009]);
+                expect.fail('should have thrown result too large error')
+            } catch (e) {
+                expect(e).to.be.instanceOf(ResultTooLargeError);
+            }
+        });
+
+
 
     });
 

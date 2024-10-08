@@ -1,4 +1,4 @@
-import {InsightError, InsightResult, NotFoundError} from "../controller/IInsightFacade";
+import {InsightError, InsightResult, NotFoundError, ResultTooLargeError} from "../controller/IInsightFacade";
 import {
 	MKey, Query,
 	Section,
@@ -6,7 +6,7 @@ import {
 } from "../models/Section";
 import fs from "fs-extra";
 import path from "node:path";
-import {parseJSONtoSections} from "./JsonHelper";
+import {parseJSONtoSections, parseSectionObject} from "./JsonHelper";
 
 export async function processQueryOnDataset(query: unknown): Promise<InsightResult[]> {
 	//let validatedQuery: Query;
@@ -261,6 +261,7 @@ export function filterSection(section: Section, comp: CompFunction, value: strin
  * @param id
  */
 export async function loadDatasets(id: string, fileName: string): Promise<Section[]> {
+	const MAX_SIZE = 5000;
 	const datasetPath = path.resolve(__dirname, "../data", fileName);
 	let dataset;
 	try {
@@ -268,8 +269,17 @@ export async function loadDatasets(id: string, fileName: string): Promise<Sectio
 	} catch (error) {
 		throw new NotFoundError(`Could not find dataset with - id=${id};` + error)
 	}
-
-	return parseJSONtoSections(dataset);
+	const parsedSections: Section[] = [];
+	for(const file of dataset) {
+		for (const section of file.result) {
+			const newSection = parseSectionObject(section);
+			parsedSections.push(newSection);
+			if(parsedSections.length > MAX_SIZE) {
+				throw new ResultTooLargeError('result exceeded 5000 sections');
+			}
+		}
+	}
+	return parsedSections;
 }
 
 
