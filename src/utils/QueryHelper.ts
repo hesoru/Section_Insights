@@ -6,7 +6,7 @@ import {
 } from "../models/Section";
 import fs from "fs-extra";
 import path from "node:path";
-import {parseJSONtoSections, parseSectionObject} from "./JsonHelper";
+import {parseSectionObject} from "./JsonHelper";
 
 export async function processQueryOnDataset(query: unknown): Promise<InsightResult[]> {
 	//let validatedQuery: Query;
@@ -58,18 +58,16 @@ export function validateQuery(query: unknown): Query {
 }
 
 export function validateBody(filter: any): void {
-	const keys = Object.keys(filter);
-	if(keys.length !== 1) {
-		throw new InsightError('invalid query, query.WHERE contains more than one key'); }
-
+	const keys = checkKeys(filter);
+	const lengthLimit = 2
 	//checks type of each possible filter stopping at Mkey and Skey
 	switch(keys[0]) {
-		case 'OR': if(filter.OR === null || !Array.isArray(filter.OR) || filter.OR.length !== 2) {
+		case 'OR': if(filter.OR === null || !Array.isArray(filter.OR) || filter.OR.length !== lengthLimit) {
 				throw new InsightError('invalid query, query.WHERE.OR is invalid') }
 			for(const body of filter.OR) {
 				validateBody(body); }
 			break;
-		case 'AND': if(filter.AND === null || !Array.isArray(filter.AND) || filter.AND.length !== 2) {
+		case 'AND': if(filter.AND === null || !Array.isArray(filter.AND) || filter.AND.length !== lengthLimit) {
 				throw new InsightError('invalid query, query.WHERE.AND is invalid') }
 			for(const body of filter.AND) {
 				validateBody(body); }
@@ -95,6 +93,13 @@ export function validateBody(filter: any): void {
 			validateBody(filter.NOT);
 			break;
 		default: throw new InsightError('invalid query, query.WHERE contains an invalid key'); }
+}
+
+export function checkKeys(filter: any): string[] {
+	const keys = Object.keys(filter);
+	if(keys.length !== 1) {
+		throw new InsightError('invalid query, query.WHERE contains more than one key'); }
+	return keys;
 }
 
 export function validateOptions(options: any): void {

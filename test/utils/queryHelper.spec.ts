@@ -204,15 +204,10 @@ describe("InsightFacade", function () {
                 const test4 = await loadTestQuery('[body/validLT.json]');
                 const test5 = await loadTestQuery('[body/validOR.AND.GT.EQ.json]');
                 validateBody(test1.input);
-                console.log('passed validGT.json');
                 validateBody(test2.input);
-                console.log('passed validAND.LT.IS.json');
                 validateBody(test3.input);
-                console.log('passed validIS.json');
                 validateBody(test4.input);
-                console.log('passed validLT.json');
                 validateBody(test5.input);
-                console.log('passed validOR.AND.GT.EQ.json');
             } catch (e) {
                 //did not expect error
                 expect.fail('should not have thrown error' + e);
@@ -372,22 +367,32 @@ describe("InsightFacade", function () {
         });
 
         it("MKey examples", async function () {
+            const input1 = 97
+            const input2 = 2
+            const input3 =  2007
+            const input4 = 4
+            const input5 = 21
+            const answer1 = 49
+            const answer2 = 188
+            const answer3 = 3950
+            const answer4 = 186
+            const answer5 = 126
             try {
-                const result1 = await getMatchingSections('GT', ['sections_avg', 97]);
+                const result1 = await getMatchingSections('GT', ['sections_avg', input1]);
                 expect(result1).to.be.an("array");
-                expect(result1.length).to.equal(49);
-                const result2 = await getMatchingSections('LT', ['sections_pass', 2]);
+                expect(result1.length).to.equal(answer1);
+                const result2 = await getMatchingSections('LT', ['sections_pass', input2]);
                 expect(result2).to.be.an("array");
-                expect(result2.length).to.equal(188);
-                const result3 = await getMatchingSections('EQ', ['sections_year', 2007]);
+                expect(result2.length).to.equal(answer2);
+                const result3 = await getMatchingSections('EQ', ['sections_year', input3]);
                 expect(result3).to.be.an("array");
-                expect(result3.length).to.equal(3950);
-                const result4 = await getMatchingSections('GT', ['sections_audit', 4]);
+                expect(result3.length).to.equal(answer3);
+                const result4 = await getMatchingSections('GT', ['sections_audit', input4]);
                 expect(result4).to.be.an("array");
-                expect(result4.length).to.equal(186);
-                const result5 = await getMatchingSections('EQ', ['sections_fail', 21]);
+                expect(result4.length).to.equal(answer4);
+                const result5 = await getMatchingSections('EQ', ['sections_fail', input5]);
                 expect(result5).to.be.an("array");
-                expect(result5.length).to.equal(126);
+                expect(result5.length).to.equal(answer5);
             } catch (e) {
                 expect.fail('should not have thrown an error here' + e);
             }
@@ -396,7 +401,8 @@ describe("InsightFacade", function () {
 
         it("result too large", async function () {
             try {
-                await getMatchingSections('GT', ['sections_year', 2009]);
+                const input1 = 2009
+                await getMatchingSections('GT', ['sections_year', input1]);
                 expect.fail('should have thrown result too large error')
             } catch (e) {
                 expect(e).to.be.instanceOf(ResultTooLargeError);
