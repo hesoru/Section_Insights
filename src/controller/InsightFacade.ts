@@ -79,7 +79,7 @@ export default class InsightFacade implements IInsightFacade {
 			// remove from disk
 			await fs.promises.unlink(`data/${id}`); // txt file?
 			// remove from datasetId array
-			this.datasetIds["delete"](id);
+			this.datasetIds.delete(id);
 			// return removed id
 			return id;
 		} catch (error: any) {
@@ -88,7 +88,6 @@ export default class InsightFacade implements IInsightFacade {
 	}
 
 	public async performQuery(query: unknown): Promise<InsightResult[]> {
-		// TODO: Remove this once you implement the methods!
 		const MAX_SIZE = 5000;
 
 		// 1) validate query

@@ -3,7 +3,13 @@ import {clearDisk, getContentFromArchives, loadTestQuery} from "../TestUtil";
 
 import { expect, use } from "chai";
 import chaiAsPromised from "chai-as-promised";
-import {getMatchingSections, validateBody, validateOptions, validateQuery} from "../../src/utils/QueryHelper";
+import {
+    getAllSections,
+    getMatchingSections,
+    validateBody,
+    validateOptions,
+    validateQuery
+} from "../../src/utils/QueryHelper";
 import IInsightFacade from "../../src/controller/InsightFacade";
 import InsightFacade from "../../src/controller/InsightFacade";
 
@@ -333,18 +339,25 @@ describe("InsightFacade", function () {
 
     });
 
-    describe("isSKey", function () {
+    describe("getAllSections", function () {
         beforeEach(async function () {
             await clearDisk();
-            //facade = new InsightFacade();
+            facade = new InsightFacade();
+            try {
+                const result = await facade.addDataset("sections", sections, InsightDatasetKind.Sections);
+                //expect(result).to.have.members(["sections"]);
+                expect(result).to.be.an("array");
+            } catch (err) {
+                expect.fail("Should not have thrown an error" + err);
+            }
         });
 
         afterEach(async function () {
             await clearDisk();
         });
 
-        it("valid query", function () {
-            //readable format of file can be found in src/utils/ANTH312
+        it("valid queries", function () {
+            const test1 = await loadTestQuery('[valid/simple.json]');
         });
 
     });
