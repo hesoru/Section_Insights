@@ -1,6 +1,4 @@
 import {
-	InsightDataset,
-	InsightDatasetKind,
 	InsightError,
 	InsightResult,
 	NotFoundError
@@ -28,22 +26,22 @@ export async function processQueryOnDataset(query: unknown): Promise<InsightResu
 	}
 
 	// 2) obtain data for all sections
-	const allSections = getAllSections(validatedQuery);
+	const allSections = await getAllSections(validatedQuery);
 
 	// 3) filter results if necessary (WHERE)
 	let filteredResults: InsightResult[];
 	if (validatedQuery.WHERE) {
 		filteredResults = handleFilter(validatedQuery.WHERE, allSections);
 	} else {
-		//
+		filteredResults = allSections;
 	}
 
 	// 4) select only specified columns (OPTIONS.COLUMNS)
-	if (validatedQuery.OPTIONS.COLUMNS) {
+	if (validatedQuery.OPTIONS?.COLUMNS) {
 		filteredResults = filteredResults.map((section) => {
 			// can be string | number
 			const result: any = {};
-			validatedQuery.OPTIONS.COLUMNS.forEach((column) => {
+			validatedQuery.OPTIONS?.COLUMNS.forEach((column) => {
 				result[column] = section[column];
 			});
 			return result;
@@ -51,8 +49,8 @@ export async function processQueryOnDataset(query: unknown): Promise<InsightResu
 	}
 
 	// 5) sort results if necessary (OPTIONS.ORDER)
-	let sortedFilteredResults: InsightResult[];
-	if (validatedQuery.OPTIONS.ORDER) {
+	let sortedFilteredResults: InsightResult[] = [];
+	if (validatedQuery.OPTIONS?.ORDER) {
 		sortedFilteredResults = sortResults(validatedQuery.OPTIONS, filteredResults);
 	}
 
