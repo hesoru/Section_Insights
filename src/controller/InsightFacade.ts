@@ -4,7 +4,6 @@ import {
 	InsightDatasetKind,
 	InsightError,
 	InsightResult,
-	NotFoundError,
 	ResultTooLargeError,
 } from "./IInsightFacade";
 import {
@@ -16,7 +15,7 @@ import {
 	getDatasetInfo,
 } from "../utils/JsonHelper";
 import fs from "fs-extra";
-import {processQueryOnDataset, validateQuery } from "../utils/QueryHelper";
+import { extractDatasetId, processQueryOnDataset, validateQuery } from "../utils/QueryHelper";
 
 /**
  * This is the main programmatic entry point for the project.
@@ -40,7 +39,7 @@ export default class InsightFacade implements IInsightFacade {
 		}
 		//2) Check validity of id: can not be only white space, can not have underscores, reject if id is already in database
 		try {
-			checkValidId(id, Array.from(this.datasetIds.keys()), false);
+			checkValidId(id, Array.from(this.datasetIds.keys()), false); // adjusted function for map
 		} catch (error) {
 			throw new InsightError("id passed to addDataset invalid" + error); //is this catch block necessary?
 		}
@@ -76,23 +75,11 @@ export default class InsightFacade implements IInsightFacade {
 		// }
 		checkValidId(id, Array.from(this.datasetIds.keys()), true); // 3rd parameter should be true
 
-		// check if dataset exists
-		const datasetIndex = this.datasetIds.has(id);
-		if (!datasetIndex) {
-			throw new NotFoundError(`Dataset with id "${id}" not found.`); // steal this
-		}
-
 		try {
-			// remove from memory
-			// ..
-			// ..
-
 			// remove from disk
 			await fs.promises.unlink(`data/${id}`); // txt file?
-
 			// remove from datasetId array
-			//this.datasetIds.splice(datasetIndex, 1);
-
+			this.datasetIds["delete"](id);
 			// return removed id
 			return id;
 		} catch (error: any) {
@@ -111,12 +98,12 @@ export default class InsightFacade implements IInsightFacade {
 		}
 
 		// 2) extract dataset id from query
-		//const id = extractDatasetId(query); // TODO: write helper function in QueryHelper.ts
+		const id = extractDatasetId(query); // TODO: write helper function in QueryHelper.ts
 
 		// 3) ensure dataset exists
-		// if (!this.datasetIds.has(id)) {
-		// 	throw new InsightError(`Dataset '${id}' does not exist.`);
-		// }
+		if (!this.datasetIds.has(id)) {
+			throw new InsightError(`Dataset '${id}' does not exist.`);
+		}
 
 		// 4) process query on the dataset
 		let results: InsightResult[];
@@ -138,7 +125,7 @@ export default class InsightFacade implements IInsightFacade {
 		const datasetPromises: Promise<InsightDataset>[] = [];
 
 		// get datasets in datasetIds array
-		for (const id of this.datasetIds.keys()) {
+		for (const [id] of this.datasetIds) {
 			datasetPromises.push(getDatasetInfo(id)); // need to write this
 		}
 		// list id, kind, and numRows

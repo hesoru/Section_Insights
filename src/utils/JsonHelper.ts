@@ -1,4 +1,4 @@
-import { InsightDataset, InsightDatasetKind, InsightError } from "../controller/IInsightFacade";
+import {InsightDataset, InsightDatasetKind, InsightError, NotFoundError} from "../controller/IInsightFacade";
 import { JSONFile, Section } from "../models/Section";
 import fs from "fs-extra";
 import path from "node:path";
@@ -19,7 +19,7 @@ export function checkValidId(id: string, datasetIds: string[], includes: boolean
 	}
 	if (includes) {
 		if (!datasetIds.includes(id)) {
-			throw new InsightError(`id provided to removeDataset is not in database - id=${id};`);
+			throw new NotFoundError(`Dataset with id "${id}" not found.`);
 		}
 	} else {
 		if (datasetIds.includes(id)) {
@@ -28,6 +28,24 @@ export function checkValidId(id: string, datasetIds: string[], includes: boolean
 	}
 	return true;
 }
+
+// TODO: make this function return void?
+// export function checkValidId(id: string, datasetIds: Map<string, number>, includes: boolean): boolean {
+// 	const validId = /^[^_]+$/; //Adapted from chatGPT generated response.
+// 	if (!validId.test(id) || id.trim().length === 0) {
+// 		//Adapted from chatGPT generated response.
+// 		throw new InsightError(`id provided to addDataset not valid - id=${id};`);
+// 	}
+//
+// 	const idExists = datasetIds.has(id);
+//
+// 	if (includes && !idExists) {
+// 		throw new NotFoundError(`Dataset with id "${id}" not found.`);
+// 	} else if (!includes && idExists) {
+// 		throw new InsightError(`id provided to addDataset already in database - id=${id}`);
+// 	}
+// 	return true;
+// }
 
 //checkValidId(id, this.datasetIds, false) <- will say it's a valid id if the id provided is already in the list of datasetIds
 
@@ -107,7 +125,8 @@ export async function writeFilesToDisk(files: string[], name: number): Promise<n
 	//Adapted from ChatGPT generated response
 	const idPath = path.resolve(__dirname, "../data", String(name));
 	try {
-		await fs.outputFile(idPath, JSON.stringify(acc, null, 2)); //How can I add the space argument?
+		const space = 2;
+		await fs.outputFile(idPath, JSON.stringify(acc, null, space)); //How can I add the space argument?
 	} catch (error) {
 		throw new InsightError("failed to write files to disk" + name + error);
 	}
@@ -170,7 +189,8 @@ export async function unzipContent(content: string): Promise<JSZip> {
 // })
 
 export async function getDatasetInfo(id: string): Promise<InsightDataset> {
-	//checkValidId(id, this.datasetIds, true); // 3rd parameter true
+	// shouldn't have to validate id in listDataset()
+	// checkValidId(id, datasetIds, true); // 3rd parameter true
 
 	// get dataset file path
 	const datasetPath = path.resolve(__dirname, "../data", id); // txt file?

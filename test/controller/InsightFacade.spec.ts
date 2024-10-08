@@ -11,6 +11,8 @@ import { clearDisk, getContentFromArchives, loadTestQuery } from "../TestUtil";
 
 import { expect, use } from "chai";
 import chaiAsPromised from "chai-as-promised";
+import fs from "fs-extra";
+import path from "node:path";
 
 use(chaiAsPromised);
 
@@ -148,11 +150,14 @@ describe("InsightFacade", function () {
 			}
 		});
 
-		it("should successfully add valid large dataset", async function () {
+		it("should successfully add valid large dataset, and create file on disk", async function () {
 			try {
 				const result = await facade.addDataset("sections", sections, InsightDatasetKind.Sections);
 				expect(result).to.have.members(["sections"]);
 				expect(result).to.be.an("array");
+				// read file from disk
+				const datasetPath = path.resolve(__dirname, "../data", "sections");
+				await fs.readFile(datasetPath, "utf8");
 			} catch (err) {
 				expect.fail("Should not have thrown an error" + err);
 			}
@@ -210,21 +215,27 @@ describe("InsightFacade", function () {
 			}
 		});
 
-		it("should successfully remove a dataset", async function () {
+		it("should successfully remove a dataset, and delete it from disk", async function () {
 			try {
-				await facade.addDataset("data", sections, InsightDatasetKind.Sections);
-				const removeResult = await facade.removeDataset("data");
-				expect(removeResult).to.equal("data");
+				await facade.addDataset("mcgill", sections, InsightDatasetKind.Sections);
+				const removeResult = await facade.removeDataset("mcgill");
+				expect(removeResult).to.equal("mcgill");
 			} catch (err) {
 				expect.fail("Should have successfully added and removed" + err);
 			}
 
-			const results = await facade.listDatasets();
-			const contains: boolean = results.some((result) => result.id === "data");
-			if (contains) {
-				expect.fail("Should have removed the id");
-			} else {
-				expect("Correctly removed dataset");
+			try {
+				// attempt to read deleted file from disk
+				const datasetPath = path.resolve(__dirname, "../data", "mcgill");
+				await fs.readFile(datasetPath, "utf8");
+				expect.fail("Should not be able to read deleted file from disk.");
+			} catch {
+				// use listDataset() to check that dataset deleted
+				const results = await facade.listDatasets();
+				const contains: boolean = results.some((result) => result.id === "mcgill");
+				if (contains) {
+					expect.fail("Should have removed the id");
+				}
 			}
 		});
 
@@ -237,9 +248,10 @@ describe("InsightFacade", function () {
 				const result = await facade.removeDataset("data");
 				expect(result).to.equal("data");
 			} catch (err) {
-				expect.fail("Should have sucessfully added and removed" + err);
+				expect.fail("Should have successfully added and removed" + err);
 			}
 		});
+
 	});
 
 	describe("ListDatasets", function () {

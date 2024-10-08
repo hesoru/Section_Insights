@@ -1,22 +1,24 @@
-import { InsightError } from "../../src/controller/IInsightFacade";
-import { clearDisk } from "../TestUtil";
+import {IInsightFacade, InsightDataset, InsightDatasetKind, InsightError} from "../../src/controller/IInsightFacade";
+import { clearDisk, getContentFromArchives } from "../TestUtil";
 
 import { expect, use } from "chai";
 import chaiAsPromised from "chai-as-promised";
-import { checkValidId, parseJSONtoSections, parseSectionObject } from "../../src/utils/JsonHelper";
+// checkValidId,
+import {checkValidId, getDatasetInfo, parseJSONtoSections, parseSectionObject} from "../../src/utils/JsonHelper";
 import { JSONFile, Section } from "../../src/models/Section";
+import InsightFacade from "../../src/controller/InsightFacade";
 
 use(chaiAsPromised);
 
 describe("InsightFacade", function () {
-	//let facade: IInsightFacade;
+	let facade: IInsightFacade;
 
 	// Declare datasets used in tests. You should add more datasets like this!
-	//let sections: string;
+	let sections: string;
 
 	before(async function () {
 		// This block runs once and loads the datasets.
-		//sections = await getContentFromArchives("pair.zip");
+		sections = await getContentFromArchives("pair.zip");
 
 		// Just in case there is anything hanging around from a previous run of the test suite
 		await clearDisk();
@@ -342,4 +344,43 @@ describe("InsightFacade", function () {
 			//readable format of file can be found in src/utils/ANTH312
 		});
 	});
+
+	describe("GetDatasetInfo", function () {
+		beforeEach(async function () {
+			await clearDisk();
+			facade = new InsightFacade();
+		});
+
+		afterEach(async function () {
+			await clearDisk();
+		});
+
+		it("should produce correct InsightDataset info", async function () {
+			try {
+				// successfully add dataset - tested elsewhere
+				await facade.addDataset("sections", sections, InsightDatasetKind.Sections);
+
+				// return dataset info
+				const expected: InsightDataset = {
+					id: "sections",
+					kind: InsightDatasetKind.Sections,
+					numRows: 64612
+				}
+				const result = getDatasetInfo("sections");
+				expect(result).to.deep.equal(expected);
+			} catch (err) {
+				expect.fail("Should not have thrown an error" + err);
+			}
+		});
+
+		it("should throw error retrieving dataset that does not exist on disk", async function () {
+			try {
+				await getDatasetInfo("sections");
+				expect.fail("Should have thrown an error");
+			} catch (err) {
+				expect(err).to.be.instanceOf(InsightError);
+			}
+		});
+	});
+
 });
