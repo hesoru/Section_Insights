@@ -14,10 +14,11 @@ import fs from "fs-extra";
 import path from "node:path";
 import {parseJSONtoSections} from "./JsonHelper";
 
-declare var query: Query;
-declare var columns = [];
+// declare let query: Query;
+// declare const columns = [];
 
 export async function processQueryOnDataset(query: unknown): Promise<InsightResult[]> {
+	// 1) validate query
 	let validatedQuery: Query;
 	try {
 		validatedQuery = validateQuery(query);
@@ -25,11 +26,42 @@ export async function processQueryOnDataset(query: unknown): Promise<InsightResu
 	} catch (error) {
 		throw new Error(`Query not a valid format: ` + error);
 	}
-	//const allMatchingSections: Section[] = handleBody(validatedQuery.WHERE);  //should return InsightResult[] that matches Body specifications
-	//const orderedMatchingSections = handleOptions(validatedQuery.OPTIONS, allMatchingSections); //should return same InsightResult[] but sorted to Option specifications
-	return [];
-}
 
+	// 2) obtain data for all sections
+	const allSections = getAllSections(validatedQuery);
+
+	// 3) filter results if necessary (WHERE)
+	let filteredResults: InsightResult[];
+	if (validatedQuery.WHERE) {
+		filteredResults = handleFilter(validatedQuery.WHERE, allSections);
+	} else {
+		//
+	}
+
+	// 4) select only specified columns (OPTIONS.COLUMNS)
+	if (validatedQuery.OPTIONS.COLUMNS) {
+		filteredResults = filteredResults.map((section) => {
+			// can be string | number
+			const result: any = {};
+			validatedQuery.OPTIONS.COLUMNS.forEach((column) => {
+				result[column] = section[column];
+			});
+			return result;
+		});
+	}
+
+	// 5) sort results if necessary (OPTIONS.ORDER)
+	let sortedFilteredResults: InsightResult[];
+	if (validatedQuery.OPTIONS.ORDER) {
+		sortedFilteredResults = sortResults(validatedQuery.OPTIONS, filteredResults);
+	}
+
+	return sortedFilteredResults;
+
+	// //const allMatchingSections: Section[] = handleBody(validatedQuery.WHERE);  //should return InsightResult[] that matches Body specifications
+	// //const orderedMatchingSections = handleOptions(validatedQuery.OPTIONS, allMatchingSections); //should return same InsightResult[] but sorted to Option specifications
+	// return [];
+}
 
 /**
  * @returns - Query, validates that the query param conforms to Query structure, if not throws InsightError
@@ -126,7 +158,7 @@ function validateOptions(options: any) {
 		throw new InsightError('invalid query, query.OPTIONS incorrect number of keys');
 	}
 	//validate columns
-	if (keys[0] === 'COLUMNS') {
+	if (keys[0] === 'COLUMNS') { //!==?
 		throw new InsightError('invalid query, query.OPTIONS does not contain COLUMNS');
 	}
 	if (!Array.isArray(options.COLUMNS) || options.COLUMNS.length === 0) {
@@ -178,50 +210,43 @@ function isSKey(key: string): boolean {
 	return validSFields.includes(parts[1]);
 }
 
-export function handleBody(body: Body): InsightResult[] {  //param is type body because we know it follows structure of body
-	if (!body || Object.keys(body).length === 0) {
-		// no filter - return all sections
-		return getAllSections();
-	}
-	// handle filters within the body
-	return handleFilter(body);
-}
+// export function handleBody(body: Body): InsightResult[] {  //param is type body because we know it follows structure of body
+// 	if (!body || Object.keys(body).length === 0) {
+// 		// no filter - return all sections
+// 		return getAllSections();
+// 	}
+// 	// handle filters within the body
+// 	return handleFilter(body);
+// }
 
 //Helena:
-export function handleFilter(filter: Body): object | string {
+export function handleFilter(filter: Body, data: InsightResult[]): InsightResult[] {
 	if (filter.AND || filter.OR) {
-		return handleLogicComparison(filter);
+		return handleLogicComparison(filter, data);
 	} else if (filter.LT || filter.GT || filter.EQ) {
-		return handleMComparison(filter);
+		return handleMComparison(filter, data);
 	} else if (filter.IS) {
-		return handleSComparison(filter);
+		return handleSComparison(filter, data);
 	} else if (filter.NOT) {
-		return handleNegation(filter);
+		return handleNegation(filter, data);
 	} else {
 		throw new InsightError('Invalid filter');
 	}
 }
 
-function handleLogicComparison(logic: Body): InsightResult[] {  //return array of insight result.
+function handleLogicComparison(filter: Body, data: InsightResult[]): InsightResult[] {  //return array of insight result.
 	let results: InsightResult[] = [];
 
-	if (logic.AND) {
+	if (filter.AND) {
 		// intersection of all results: all filters must be true
-		results = getAllSections(); // Start with all sections
-		for (const subFilter of logic.AND) {
-			const subResults = handleFilter(subFilter);
+		// return filter.AND.reduce((acc, subBody) => handleBody(subBody, acc), data);
+		for (const subFilter of filter.AND) {
+			const subResults = handleFilter(subFilter, data);
 			results = results.filter(section => subResults.includes(section)); // Intersection of results
 		}
-
-		// const filters = logic.AND;
-		// const results = filters.map(handleFilter);
-		// // intersection of all results (every filter must match)
-		// return results.reduce((acc, curr) => acc.filter(section => curr.includes(section)));
-		// // const parsedFilters = filters.map((f) => handleFilter(f));
-		// // return {AND: parsedFilters};
-	} else if (logic.OR) {
-		for (const subFilter of logic.OR) {
-			const subResults = handleFilter(subFilter);
+	} else if (filter.OR) {
+		for (const subFilter of filter.OR) {
+			const subResults = handleFilter(subFilter, data);
 			results = results.concat(subResults); // Union of results
 		}
 		results = Array.from(new Set(results)); // Remove duplicates
@@ -254,25 +279,20 @@ function handleLogicComparison(logic: Body): InsightResult[] {  //return array o
 // 	return "stub";
 // }
 
-// function handleLogicComparison(filter: LogicComparison): void {
-// 	if ('AND' in filter && Array.isArray(filter.AND)) {
-// 		for (const f of filter.AND) {
-// 			handleFilter(f);
-// 		}
-//
-// 	} else if ('OR' in filter && Array.isArray(filter.OR)) {
-// 		for (const f of filter.OR) {
-// 			handleFilter(f);
-// 		}
-// 	} else {
-// 		throw new InsightError('There was some problem here!')
-// 	}
-// }
 
-function handleMComparison(filter: any): InsightResult[] {
-	const [skey, value] = comparison;
-	return getMatchingSections("IS", comparison);
-
+function handleMComparison(filter: any, data: InsightResult[]): InsightResult[] {
+	if (filter.GT) {
+		const [mKey, value] = filter.GT;
+		return data.filter((section) => section[mKey] > value);
+	}
+	if (filter.LT) {
+		const [mKey, value] = filter.LT;
+		return data.filter((section) => section[mKey] < value);
+	}
+	if (filter.EQ) {
+		const [mKey, value] = filter.EQ;
+		return data.filter((section) => section[mKey] === value);
+	}
 
 	// const comparator = Object.keys(filter)[0];  // 'GT', 'LT', or 'EQ'
 	// const mKey = Object.keys(filter[comparator])[0];  // Example: 'courses_avg'
@@ -281,48 +301,69 @@ function handleMComparison(filter: any): InsightResult[] {
 	// return getMatchingSections(comparator, [mKey, value]);
 }
 
-function handleSComparison(filter: any): InsightResult[] {
-	const sKey = Object.keys(filter.IS)[0];  // Example: 'courses_dept'
-	const value = filter.IS[sKey];
-
-	// Handle wildcard "*" at the beginning or end of the string
-	if (value.includes('*')) {
-		const regexStr = '^' + value.replace(/\*/g, '.*') + '$';
-		const regex = new RegExp(regexStr, 'i');  // Case-insensitive match
-		return getMatchingSections('IS', [sKey, regex]);
-	} else {
-		return getMatchingSections('IS', [sKey, value]);
-	}
+function handleSComparison(filter: any, data: InsightResult[]): InsightResult[] {
+	const [sKey, value] = filter.IS;
+	const regex = new RegExp(`^${value.replace(/\*/g, ".*")}$`); // Handle wildcards
+	return data.filter((section) => regex.test(section[sKey]));
 }
 
-function handleNegation(filter: any): InsightResult[] {
-	const allSections = getAllSections();
-	const matchingSections = handleFilter(filter);
-	return allSections.filter(section => !matchingSections.includes(section)); // Exclude matching sections
+function handleNegation(filter: any, data: InsightResult[]): InsightResult[] {
+	// Exclude matching sections
+	const notData = handleFilter(filter.NOT, data);
+	return data.filter((section) => !notData.includes(section));
 }
 
-function getAllSections(): InsightResult[] {
+async function getAllSections(query: Query): Promise<InsightResult[]> {
 	const columns = query.OPTIONS.COLUMNS;
-
-	const column_keys: string[] = [];
+	const columnKeys: string[] = [];
 	for (const column of columns) {
 		if (!isMKey(column) && !isSKey(column)) {
 			throw new InsightError('invalid keys passed to OPTIONS.COLUMNS, NOTE THIS WAS NOT CAUGHT IN VALIDATE QUERY');
 		}
 		const parts = column.split('_');
-		column_keys.push(parts[1]);
+		columnKeys.push(parts[1]);
 	}
 
-	const insight_results: InsightResult[] = [];
-	for (const section of sections) {
-		const section_result: InsightResult = {};
-		for (let i = 0; i < column_keys.length; i++) {  //iterate through indicies
-			section_result[columns[i]] = section[column_keys[i] as keyof Section]; //WILL THIS LINE WORK? PROBABLY BUG HERE
+	const record = query.OPTIONS.COLUMNS[0]
+	const key = record[0];
+	const parts = key.split('_');
+	const idString = parts[0];
+
+	const allSections = await loadDatasets(idString, 'testname0');
+	const allResults: InsightResult[] = [];
+	for (const section of allSections) {
+		const sectionResult: InsightResult = {};
+		for (let i = 0; i < columnKeys.length; i++) {  //iterate through indicies
+			sectionResult[columns[i]] = section[columnKeys[i] as keyof Section]; //WILL THIS LINE WORK? PROBABLY BUG HERE
 		}
-		insight_results.push(section_result);
+		allResults.push(sectionResult);
 	}
+
+	return allResults;
 }
 
+function sortResults(options: Options, results: InsightResult[]): InsightResult[] {
+	if (options.ORDER) {
+		return results.sort((a, b) => {
+			const aValue = a[options.ORDER];
+			const bValue = b[options.ORDER];
+
+			if (typeof aValue === 'string' && typeof bValue === 'string') {
+				// string comparison (case-insensitive)
+				return aValue.localeCompare(bValue, undefined, { sensitivity: 'base' });
+			}
+
+			if (typeof aValue === 'number' && typeof bValue === 'number') {
+				// numeric comparison
+				return aValue - bValue;
+			}
+
+			// types differ
+			throw new InsightError("Comparison column contains strings and numbers together!")
+		});
+	}
+	return results;
+}
 
 //THIS IS THE HELPER TO CALL IN EACH BASE CASE FOR WHERE FUNCTION: MCOMPARATOR, SCOMPARATOR
 /**
@@ -360,7 +401,7 @@ function getMatchingSections(op: string, record: [MKey, number] | [SKey, string]
 			throw new InsightError('not good very bad, no teneís un Quixote')
 	}
 
-	const sections = await loadDatasets(idString, 'testname0');
+	const sections = await loadDatasets(idString, 'testname0') // TODO: change file name?
 	const results: Section[] = [];
 	for (const section of sections) {
 		let keep = false;
@@ -478,4 +519,4 @@ export function handleOptions(options: Options, sections: Section[]): InsightRes
 	}
 	return insight_results;
 }
-}
+
