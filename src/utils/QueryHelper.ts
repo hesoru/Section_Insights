@@ -1,4 +1,10 @@
-import {InsightError, InsightResult, NotFoundError} from "../controller/IInsightFacade";
+import {
+	InsightDataset,
+	InsightDatasetKind,
+	InsightError,
+	InsightResult,
+	NotFoundError
+} from "../controller/IInsightFacade";
 import {
 	MKey, Query,
 	Section,
@@ -7,6 +13,9 @@ import {
 import fs from "fs-extra";
 import path from "node:path";
 import {parseJSONtoSections} from "./JsonHelper";
+
+declare var query: Query;
+declare var columns = [];
 
 export async function processQueryOnDataset(query: unknown): Promise<InsightResult[]> {
 	let validatedQuery: Query;
@@ -28,13 +37,13 @@ export async function processQueryOnDataset(query: unknown): Promise<InsightResu
  */
 export function validateQuery(query: unknown): Query {
 	//1) check that query is an object
-	if(typeof query !== 'object' || query === null) {
+	if (typeof query !== 'object' || query === null) {
 		throw new InsightError('invalid query, query is not a non-null object');
 	}
 
 	//2) check WHERE fields
-	if('WHERE' in query)  {
-		if(query.WHERE === null || typeof query.WHERE !== 'object')  {
+	if ('WHERE' in query) {
+		if (query.WHERE === null || typeof query.WHERE !== 'object') {
 			throw new InsightError('invalid query, query contains null WHERE field');
 		}
 		validateBody(query.WHERE);
@@ -43,9 +52,9 @@ export function validateQuery(query: unknown): Query {
 	}
 
 	//3) check OPTION fields
-	if('OPTIONS' in query)  {
+	if ('OPTIONS' in query) {
 		//is the OPTIONS field allowed to be null? I don't think so
-		if(query.OPTIONS === null || typeof query.OPTIONS !== 'object')  {
+		if (query.OPTIONS === null || typeof query.OPTIONS !== 'object') {
 			throw new InsightError('invalid query, query contains invalid OPTIONS field');
 		}
 		validateOptions(query.OPTIONS);
@@ -58,50 +67,50 @@ export function validateQuery(query: unknown): Query {
 
 export function validateBody(filter: any): void {
 	const keys = Object.keys(filter);
-	if(keys.length !== 1) {
+	if (keys.length !== 1) {
 		throw new InsightError('invalid query, query.WHERE contains more than one key');
 	}
 
 	//checks type of each possible filter stopping at Mkey and Skey
-	switch(keys[0]) {
+	switch (keys[0]) {
 		case 'OR':
-			if(filter.OR === null || !Array.isArray(filter.OR)) {
+			if (filter.OR === null || !Array.isArray(filter.OR)) {
 				throw new InsightError('invalid query, query.WHERE.OR is invalid')
 			}
-			for(const body in filter.OR) {
+			for (const body in filter.OR) {
 				validateBody(filter.OR);
 			}
 			break;
 		case 'AND':
-			if(filter.AND === null || !Array.isArray(filter.AND)) {
+			if (filter.AND === null || !Array.isArray(filter.AND)) {
 				throw new InsightError('invalid query, query.WHERE.AND is invalid')
 			}
-			for(const body in filter.OR) {
+			for (const body in filter.OR) {
 				validateBody(filter.OR);
 			}
 			break;
 		case 'GT':
-			if(filter.GT === null || typeof filter.GT !== 'string') {
+			if (filter.GT === null || typeof filter.GT !== 'string') {
 				throw new InsightError('invalid query, query.WHERE.GT is invalid')
 			}
 			break;
 		case 'LT':
-			if(filter.LT === null || typeof filter.LT !== 'string') {
+			if (filter.LT === null || typeof filter.LT !== 'string') {
 				throw new InsightError('invalid query, query.WHERE.LT is invalid')
 			}
 			break;
 		case 'EQ':
-			if(filter.EQ === null || typeof filter.EQ !== 'string') {
+			if (filter.EQ === null || typeof filter.EQ !== 'string') {
 				throw new InsightError('invalid query, query.WHERE.EQ is invalid')
 			}
 			break;
 		case 'IS':
-			if(filter.IS === null || typeof filter.IS !== 'string') {
+			if (filter.IS === null || typeof filter.IS !== 'string') {
 				throw new InsightError('invalid query, query.WHERE.IS is invalid')
 			}
 			break;
 		case 'NOT':
-			if(filter.NOT === null || typeof filter.NOT !== 'object') {
+			if (filter.NOT === null || typeof filter.NOT !== 'object') {
 				throw new InsightError('invalid query, query.WHERE.NOT is invalid')
 			}
 			validateBody(filter.NOT);
@@ -113,32 +122,32 @@ export function validateBody(filter: any): void {
 
 function validateOptions(options: any) {
 	const keys = Object.keys(options);
-	if(keys.length === 0 || keys.length > 2) {
+	if (keys.length === 0 || keys.length > 2) {
 		throw new InsightError('invalid query, query.OPTIONS incorrect number of keys');
 	}
 	//validate columns
-	if(keys[0] === 'COLUMNS') {
+	if (keys[0] === 'COLUMNS') {
 		throw new InsightError('invalid query, query.OPTIONS does not contain COLUMNS');
 	}
-	if(!Array.isArray(options.COLUMNS) || options.COLUMNS.length === 0) {
+	if (!Array.isArray(options.COLUMNS) || options.COLUMNS.length === 0) {
 		throw new InsightError('invalid query, query.OPTIONS.COLUMNS is not an array');
 	}
-	for(const key in options.COLUMNS) {
+	for (const key in options.COLUMNS) {
 		validateKey(key);
 	}
 
 	//validate order
-	if(keys[1] && keys[1] !== 'ORDER') {
+	if (keys[1] && keys[1] !== 'ORDER') {
 		throw new InsightError('invalid query, query.OPTIONS does not contain ORDER as 2nd key');
 	}
 	validateKey(options.ORDER);
 }
 
 function validateKey(key: any) {
-	if(typeof key === 'string') {
+	if (typeof key === 'string') {
 		throw new InsightError('invalid query, key is not a string');
 	}
-	if(!isMKey(key) || isSKey(key)) {
+	if (!isMKey(key) || isSKey(key)) {
 		throw new InsightError('invalid query, key is not an Mkey or Skey')
 	}
 }
@@ -170,9 +179,9 @@ function isSKey(key: string): boolean {
 }
 
 export function handleBody(body: Body): InsightResult[] {  //param is type body because we know it follows structure of body
-	if (!body) {
-		// no filter - return all entries
-		return InsightResult[];
+	if (!body || Object.keys(body).length === 0) {
+		// no filter - return all sections
+		return getAllSections();
 	}
 	// handle filters within the body
 	return handleFilter(body);
@@ -188,83 +197,130 @@ export function handleFilter(filter: Body): object | string {
 		return handleSComparison(filter);
 	} else if (filter.NOT) {
 		return handleNegation(filter);
+	} else {
+		throw new InsightError('Invalid filter');
 	}
-	return "Unknown filter";
 }
 
-handleLogicComparison(logic: Body): object | string {  //return array of insight result.
+function handleLogicComparison(logic: Body): InsightResult[] {  //return array of insight result.
+	let results: InsightResult[] = [];
+
 	if (logic.AND) {
-		const filters = logic.AND;
-		const parsedFilters = filters.map((f) => handleFilter(f));
-		return { AND: parsedFilters };
+		// intersection of all results: all filters must be true
+		results = getAllSections(); // Start with all sections
+		for (const subFilter of logic.AND) {
+			const subResults = handleFilter(subFilter);
+			results = results.filter(section => subResults.includes(section)); // Intersection of results
+		}
+
+		// const filters = logic.AND;
+		// const results = filters.map(handleFilter);
+		// // intersection of all results (every filter must match)
+		// return results.reduce((acc, curr) => acc.filter(section => curr.includes(section)));
+		// // const parsedFilters = filters.map((f) => handleFilter(f));
+		// // return {AND: parsedFilters};
 	} else if (logic.OR) {
-		const filters = logic.OR;
-		const parsedFilters = filters.map((f) => handleFilter(f));
-		return { OR: parsedFilters };
-	}
-	return "Invalid logic comparison";
-}
-
-
-export function handleFilter(filter: Filter): void {
-
-	if (filter.type === 'AND') {
-		handleLogicComparison(filter);
-	} else if ('LT' in filter || 'GT' in filter || 'EQ' in filter) {
-		handleMComparator(filter);
-	} else if ('IS' in filter) {
-		handleSComparator(filter);
-	} else if ('NOT' in filter) {
-		handleNegation(filter);
-	} else {
-		throw new InsightError('There was some problem here!')
-	}
-
-}
-
-
-/**
- * @returns -
- * @param query - ASSUME that query is a valid and in JSON format
- */
-export function extractDatasetId(query: unknown): string {
-	//Adapted from ChatGPT:
-	// const regex = /"([^_]+)_(mfield|sfield)"/g
-	// const id = regex.exec(query);
-	// if (!id) {
-	// 	throw new InsightError('Could not find idString within query passed to performQuery');
-	// }
-	// return id[1];
-	console.log(query);
-	return "stub";
-}
-
-function handleLogicComparison(filter: LogicComparison): void {
-	if('AND' in filter && Array.isArray(filter.AND)) {
-		for(const f of filter.AND) {
-			handleFilter(f);
+		for (const subFilter of logic.OR) {
+			const subResults = handleFilter(subFilter);
+			results = results.concat(subResults); // Union of results
 		}
+		results = Array.from(new Set(results)); // Remove duplicates
 
-	} else if ('OR' in filter && Array.isArray(filter.OR)) {
-		for(const f of filter.OR) {
-			handleFilter(f);
-		}
+		// const filters = logic.OR;
+		// // union of all results (any filter can match)
+		// const results = filters.map(handleFilter);
+		// return results.reduce((acc, curr) => acc.concat(curr.filter(section => !acc.includes(section))));
+		// // const parsedFilters = filters.map((f) => handleFilter(f));
+		// // return {OR: parsedFilters};
 	} else {
-		throw new InsightError('There was some problem here!')
+		throw new InsightError('Invalid logic filter');
+	}
+	return results;
+}
+
+// /**
+//  * @returns -
+//  * @param query - ASSUME that query is a valid and in JSON format
+//  */
+// export function extractDatasetId(query: unknown): string {
+// 	//Adapted from ChatGPT:
+// 	// const regex = /"([^_]+)_(mfield|sfield)"/g
+// 	// const id = regex.exec(query);
+// 	// if (!id) {
+// 	// 	throw new InsightError('Could not find idString within query passed to performQuery');
+// 	// }
+// 	// return id[1];
+// 	console.log(query);
+// 	return "stub";
+// }
+
+// function handleLogicComparison(filter: LogicComparison): void {
+// 	if ('AND' in filter && Array.isArray(filter.AND)) {
+// 		for (const f of filter.AND) {
+// 			handleFilter(f);
+// 		}
+//
+// 	} else if ('OR' in filter && Array.isArray(filter.OR)) {
+// 		for (const f of filter.OR) {
+// 			handleFilter(f);
+// 		}
+// 	} else {
+// 		throw new InsightError('There was some problem here!')
+// 	}
+// }
+
+function handleMComparison(filter: any): InsightResult[] {
+	const [skey, value] = comparison;
+	return getMatchingSections("IS", comparison);
+
+
+	// const comparator = Object.keys(filter)[0];  // 'GT', 'LT', or 'EQ'
+	// const mKey = Object.keys(filter[comparator])[0];  // Example: 'courses_avg'
+	// const value = filter[comparator][mKey];
+	//
+	// return getMatchingSections(comparator, [mKey, value]);
+}
+
+function handleSComparison(filter: any): InsightResult[] {
+	const sKey = Object.keys(filter.IS)[0];  // Example: 'courses_dept'
+	const value = filter.IS[sKey];
+
+	// Handle wildcard "*" at the beginning or end of the string
+	if (value.includes('*')) {
+		const regexStr = '^' + value.replace(/\*/g, '.*') + '$';
+		const regex = new RegExp(regexStr, 'i');  // Case-insensitive match
+		return getMatchingSections('IS', [sKey, regex]);
+	} else {
+		return getMatchingSections('IS', [sKey, value]);
 	}
 }
 
-function handleMComparator(filter: MComparison): void {
-
+function handleNegation(filter: any): InsightResult[] {
+	const allSections = getAllSections();
+	const matchingSections = handleFilter(filter);
+	return allSections.filter(section => !matchingSections.includes(section)); // Exclude matching sections
 }
 
-function handleSComparator(filter: SComparison): void {
+function getAllSections(): InsightResult[] {
+	const columns = query.OPTIONS.COLUMNS;
 
+	const column_keys: string[] = [];
+	for (const column of columns) {
+		if (!isMKey(column) && !isSKey(column)) {
+			throw new InsightError('invalid keys passed to OPTIONS.COLUMNS, NOTE THIS WAS NOT CAUGHT IN VALIDATE QUERY');
+		}
+		const parts = column.split('_');
+		column_keys.push(parts[1]);
+	}
 
-}
-
-function handleNegation(filter: Negation): void {
-
+	const insight_results: InsightResult[] = [];
+	for (const section of sections) {
+		const section_result: InsightResult = {};
+		for (let i = 0; i < column_keys.length; i++) {  //iterate through indicies
+			section_result[columns[i]] = section[column_keys[i] as keyof Section]; //WILL THIS LINE WORK? PROBABLY BUG HERE
+		}
+		insight_results.push(section_result);
+	}
 }
 
 
@@ -287,7 +343,7 @@ function getMatchingSections(op: string, record: [MKey, number] | [SKey, string]
 	type CompFunction = (a: any, b: any) => boolean;
 	let comp: CompFunction;
 
-	switch(op) {
+	switch (op) {
 		case 'GT':
 			comp = (a: number, b: number) => a > b;
 			break;
@@ -305,10 +361,10 @@ function getMatchingSections(op: string, record: [MKey, number] | [SKey, string]
 	}
 
 	const sections = await loadDatasets(idString, 'testname0');
-	let results: Section[] = [];
+	const results: Section[] = [];
 	for (const section of sections) {
-		let keep: boolean = false;
-		switch(field) {
+		let keep = false;
+		switch (field) {
 			case 'avg':
 				keep = comp(section.avg, value);
 				break;
@@ -343,7 +399,7 @@ function getMatchingSections(op: string, record: [MKey, number] | [SKey, string]
 				throw new InsightError('invalid key passed to getMatchingSections');
 		}
 
-		if(keep) {
+		if (keep) {
 			results.push(section);
 		}
 	}
@@ -379,9 +435,9 @@ export async function loadDatasets(id: string, fileName: string): Promise<Sectio
 export function handleOptions(options: Options, sections: Section[]): InsightResult[] {
 	const columns = options.COLUMNS;
 
-	let column_keys: string[] = [];
-	for(const column of columns) {
-		if(!isMKey(column) && !isSKey(column)) {
+	const column_keys: string[] = [];
+	for (const column of columns) {
+		if (!isMKey(column) && !isSKey(column)) {
 			throw new InsightError('invalid keys passed to OPTIONS.COLUMNS, NOTE THIS WAS NOT CAUGHT IN VALIDATE QUERY');
 		}
 		const parts = column.split('_');
@@ -389,8 +445,8 @@ export function handleOptions(options: Options, sections: Section[]): InsightRes
 	}
 
 	const insight_results: InsightResult[] = [];
-	for(const section of sections) {
-		let section_result: InsightResult = {};
+	for (const section of sections) {
+		const section_result: InsightResult = {};
 		for (let i = 0; i < column_keys.length; i++) {  //iterate through indicies
 			section_result[columns[i]] = section[column_keys[i] as keyof Section]; //WILL THIS LINE WORK? PROBABLY BUG HERE
 		}
@@ -399,7 +455,7 @@ export function handleOptions(options: Options, sections: Section[]): InsightRes
 
 	if (options.ORDER) {
 		const order = options.ORDER;
-		if(!isMKey(order) && !isSKey(order)) {
+		if (!isMKey(order) && !isSKey(order)) {
 			throw new InsightError('invalid keys passed to OPTIONS.COLUMNS, NOTE THIS WAS NOT CAUGHT IN VALIDATE QUERY');
 		}
 		const parts = order.split('_');
@@ -410,9 +466,9 @@ export function handleOptions(options: Options, sections: Section[]): InsightRes
 			const valueA = a[field];
 			const valueB = b[field];
 
-			if(typeof valueA === 'number' && typeof valueB === 'number') {
+			if (typeof valueA === 'number' && typeof valueB === 'number') {
 				return valueA - valueB;
-			} else if(typeof valueA === 'string' && typeof valueB === 'string') {
+			} else if (typeof valueA === 'string' && typeof valueB === 'string') {
 				return valueA.localeCompare(valueB, undefined, {sensitivity: 'base'});
 			} else {
 				throw new InsightError('fields in handleOptions.ORDER not of same type.')
@@ -422,4 +478,4 @@ export function handleOptions(options: Options, sections: Section[]): InsightRes
 	}
 	return insight_results;
 }
-
+}
