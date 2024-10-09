@@ -113,10 +113,10 @@ export async function getAllSections(query: Query, datasets: Map<string, number>
 
 export function sortResults(options: Options, results: InsightResult[]): InsightResult[] {
 	return results.sort((a, b) => {
-		if(!options.ORDER) {
-			throw new InsightError('invalid options passed to sortResults');
+		if (!options.ORDER) {
+			throw new InsightError("invalid options passed to sortResults");
 		}
-		const parts = options.ORDER.split('_');
+		const parts = options.ORDER.split("_");
 		const field = parts[1];
 
 		const aValue = a[field];
