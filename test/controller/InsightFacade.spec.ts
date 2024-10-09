@@ -413,5 +413,10 @@ describe("InsightFacade", function () {
 		it("[invalid/idDoesNotExist.json]", checkQuery);
 		it("[valid/negativeAverage(Valid).json]", checkQuery);
 		it("[valid/filterNOT.json]", checkQuery); //works but timesout at 2.47
+		it("[invalid/notObject.json]", checkQuery);
+		it("[invalid/badWHERE.json]", checkQuery);
+		it("[invalid/badOptions.json]", checkQuery);
+		it("[invalid/badOR.json]", checkQuery);
+		it("[invalid/emptyOptions.json]", checkQuery);
 	});
 });

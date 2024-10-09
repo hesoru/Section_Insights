@@ -33,9 +33,8 @@ export function validateQuery(query: unknown): Query {
 
 export function validateBody(filter: any): void {
 	const keys = checkKeys(filter);
-	const lengthLimit = 2;
 	const validateArray = (key: string, value: any): void => {
-		if (!Array.isArray(value) || value.length > lengthLimit) {
+		if (!Array.isArray(value) || value.length === 0) {
 			throw new InsightError(`invalid query, query.WHERE.${key} is invalid`);
 		}
 		value.forEach(validateBody);
