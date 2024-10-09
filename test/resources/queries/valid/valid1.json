@@ -2,8 +2,8 @@
   "title":"WHERE: OR, GT, LT",
   "input":{
     "WHERE":{
-      "NOT":{
-        "LT":{
+      "OR":{
+        "GT":{
           "sections_avg":93
         }
       }

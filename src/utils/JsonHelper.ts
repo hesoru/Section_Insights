@@ -3,6 +3,7 @@ import { JSONFile, Section } from "../models/Section";
 import fs from "fs-extra";
 import path from "node:path";
 import JSZip from "jszip";
+import { loadDatasets } from "./QueryHelper";
 
 /**
  * @returns - true if id is a valid dataset id and has not already been used in the database
@@ -28,26 +29,6 @@ export function checkValidId(id: string, datasetIds: string[], includes: boolean
 	}
 	return true;
 }
-
-// TODO: make this function return void?
-// export function checkValidId(id: string, datasetIds: Map<string, number>, includes: boolean): boolean {
-// 	const validId = /^[^_]+$/; //Adapted from chatGPT generated response.
-// 	if (!validId.test(id) || id.trim().length === 0) {
-// 		//Adapted from chatGPT generated response.
-// 		throw new InsightError(`id provided to addDataset not valid - id=${id};`);
-// 	}
-//
-// 	const idExists = datasetIds.has(id);
-//
-// 	if (includes && !idExists) {
-// 		throw new NotFoundError(`Dataset with id "${id}" not found.`);
-// 	} else if (!includes && idExists) {
-// 		throw new InsightError(`id provided to addDataset already in database - id=${id}`);
-// 	}
-// 	return true;
-// }
-
-//checkValidId(id, this.datasetIds, false) <- will say it's a valid id if the id provided is already in the list of datasetIds
 
 /**
  * @param section - A section found within file passed to parseJSONtoSections. ASSUME param passed in the form of a
@@ -193,14 +174,9 @@ export async function getDatasetInfo(id: string, fileName: string): Promise<Insi
 	// checkValidId(id, datasetIds, true); // 3rd parameter true
 
 	// get dataset file path
-	const datasetPath = path.resolve(__dirname, "../data", fileName); // txt file?
 	try {
-		// read dataset file from disk
-		const data = await fs.readFile(datasetPath, "utf8");
-		const dataset = JSON.parse(data);
-
-		// count the number of sections (rows) in the dataset
-		const numRows = dataset.length;
+		const sections = await loadDatasets(id, fileName);
+		const numRows = sections.length;
 
 		// Return dataset info
 		return {
