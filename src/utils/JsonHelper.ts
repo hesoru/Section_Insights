@@ -3,7 +3,7 @@ import { JSONFile, Section } from "../models/Section";
 import fs from "fs-extra";
 import path from "node:path";
 import JSZip from "jszip";
-import {loadDatasets} from "./QueryHelper";
+import { loadDatasets } from "./QueryHelper";
 
 /**
  * @returns - true if id is a valid dataset id and has not already been used in the database

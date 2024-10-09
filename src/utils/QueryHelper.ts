@@ -11,7 +11,7 @@ import { parseSectionObject } from "./JsonHelper";
  */
 
 export function handleFilter(filter: Body, data: InsightResult[]): InsightResult[] {
-	if (!filter) {
+	if (Object.keys(filter).length === 0) {
 		return data;
 	}
 	if (filter.AND || filter.OR) {
@@ -80,9 +80,17 @@ function handleMComparison(filter: any, data: InsightResult[]): InsightResult[] 
 }
 
 function handleSComparison(filter: any, data: InsightResult[]): InsightResult[] {
-	const [sKey, value] = filter.IS;
-	const regex = new RegExp(`^${value.replace(/\*/g, ".*")}$`); // Handle wildcards
-	return data.filter((section) => regex.test(section[sKey] as string));
+	const sKey = Object.keys(filter.IS)[0];
+	const parts = sKey.split("_");
+	const field = parts[1];
+	const value = Object.values(filter.IS)[0] as string;
+
+	const regex = new RegExp(/^\*?[^*]*\*?$/); // Handle wildcards
+	if (!regex.test(value)) {
+		throw new InsightError("invalid SComparator operator, bad wildcard.");
+	}
+	const validValue = new RegExp(`^${value.replace(/\*/g, ".*")}$`); // Handle wildcards
+	return data.filter((section) => validValue.test(section[field] as string));
 }
 
 function handleNegation(filter: any, data: InsightResult[]): InsightResult[] {

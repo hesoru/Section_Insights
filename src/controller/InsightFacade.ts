@@ -68,7 +68,8 @@ export default class InsightFacade implements IInsightFacade {
 		this.datasetIds.set(id, this.nextAvailableName);
 		this.nextAvailableName++;
 		//Check to make sure name corresponds to position in datasetIds array
-		return fileStrings;
+
+		return Array.from(this.datasetIds.keys());
 	}
 
 	public async removeDataset(id: string): Promise<string> {
@@ -100,7 +101,7 @@ export default class InsightFacade implements IInsightFacade {
 		try {
 			validatedQuery = validateQuery(query);
 		} catch (error) {
-			throw new Error(`Query not a valid format: ` + error);
+			throw new InsightError(`Query not a valid format: ` + error);
 		}
 
 		// 2) extract dataset id from validated query, ensure dataset exists

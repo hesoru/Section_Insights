@@ -54,7 +54,10 @@ export function validateBody(filter: any): void {
 				validateBody(filter.NOT);
 				break;
 			default:
-				throw new InsightError("invalid query, query.WHERE contains an invalid key");
+				if (keys.length !== 0) {
+					throw new InsightError("invalid query, query.WHERE contains an invalid key");
+				}
+			//I think this is fine because WHERE can be empty
 		}
 	}
 }
@@ -84,7 +87,7 @@ export function validateLogicComparator(key: string, filter: any): void {
 
 export function checkKeys(filter: any): string[] {
 	const keys = Object.keys(filter);
-	if (keys.length !== 1) {
+	if (keys.length > 1) {
 		throw new InsightError("invalid query, query.WHERE contains more than one key");
 	}
 	return keys;
