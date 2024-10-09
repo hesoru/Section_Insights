@@ -82,43 +82,6 @@ export function validateBody(filter: any): void {
 	}
 }
 
-// export function validateBody(filter: any): void {
-// 	const keys = checkKeys(filter);
-// 	const lengthLimit = 2
-// 	//checks type of each possible filter stopping at Mkey and Skey
-// 	switch(keys[0]) {
-// 		case 'OR': if(filter.OR === null || !Array.isArray(filter.OR) || filter.OR.length !== lengthLimit) {
-// 			throw new InsightError('invalid query, query.WHERE.OR is invalid') }
-// 			for(const body of filter.OR) {
-// 				validateBody(body); }
-// 			break;
-// 		case 'AND': if(filter.AND === null || !Array.isArray(filter.AND) || filter.AND.length !== lengthLimit) {
-// 			throw new InsightError('invalid query, query.WHERE.AND is invalid') }
-// 			for(const body of filter.AND) {
-// 				validateBody(body); }
-// 			break;
-// 		case 'GT': if(filter.GT === null || typeof filter.GT !== 'object')  {
-// 			throw new InsightError('invalid query, query.WHERE.GT is invalid') }
-// 			validateComparator(filter.GT, "Mkey");
-// 			break;
-// 		case 'LT': if(filter.LT === null || typeof filter.LT !== 'object') {
-// 			throw new InsightError('invalid query, query.WHERE.LT is invalid') }
-// 			validateComparator(filter.LT, "Mkey");
-// 			break;
-// 		case 'EQ': if(filter.EQ === null || typeof filter.EQ !== 'object') {
-// 			throw new InsightError('invalid query, query.WHERE.EQ is invalid') }
-// 			validateComparator(filter.EQ, "Mkey");
-// 			break;
-// 		case 'IS': if(filter.IS === null || typeof filter.IS !== 'object'){
-// 			throw new InsightError('invalid query, query.WHERE.IS is invalid') }
-// 			validateComparator(filter.IS, "SKey");
-// 			break;
-// 		case 'NOT': if(filter.NOT === null || typeof filter.NOT !== 'object') {
-// 			throw new InsightError('invalid query, query.WHERE.NOT is invalid') }
-// 			validateBody(filter.NOT);
-// 			break;
-// 		default: throw new InsightError('invalid query, query.WHERE contains an invalid key'); }
-// }
 
 export function checkKeys(filter: any): string[] {
 	const keys = Object.keys(filter);
