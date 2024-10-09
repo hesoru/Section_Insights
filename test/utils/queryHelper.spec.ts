@@ -1,12 +1,15 @@
-import {InsightDatasetKind, InsightError} from "../../src/controller/IInsightFacade";
+import {
+	InsightDatasetKind,
+	InsightError
+} from "../../src/controller/IInsightFacade";
 import {clearDisk, getContentFromArchives, loadTestQuery} from "../TestUtil";
 
 import { expect, use } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import {
-    validateBody,
-    validateOptions,
-    validateQuery
+	validateBody,
+	validateOptions,
+	validateQuery
 } from "../../src/utils/QueryHelper";
 import IInsightFacade from "../../src/controller/InsightFacade";
 import InsightFacade from "../../src/controller/InsightFacade";
@@ -424,5 +427,62 @@ describe("InsightFacade", function () {
 	//
     // });
 
+	// describe("handleFilter", function () {
+	//
+	// 	async function checkFilter(this: Mocha.Context): Promise<void> {
+	// 		if (!this.test) {
+	// 			throw new Error(
+	// 				"Invalid call to checkQuery." +
+	// 				"Usage: 'checkQuery' must be passed as the second parameter of Mocha's it(..) function." +
+	// 				"Do not invoke the function directly."
+	// 			);
+	// 		}
+	// 		// Destructuring assignment to reduce property accesses
+	// 		const { input, expected, errorExpected } = await loadTestQuery(this.test.title);
+	// 		let result: InsightResult[];
+	//
+	// 		try {
+	// 			result = await facade.performQuery(input);
+	// 			expect(input).to.be.an("object");
+	//
+	// 			if (errorExpected) {
+	// 				expect.fail(`performQuery resolved when it should have rejected with ${expected}`);
+	// 			}
+	// 			expect(result).to.deep.equal(expected);
+	// 			return;
+	// 		} catch (err) {
+	// 			if (!errorExpected) {
+	// 				expect.fail(`performQuery threw unexpected error: ${err}`);
+	// 			}
+	// 			//Specify types of errors...
+	// 			if (expected === "ResultTooLargeError") {
+	// 				expect(err).to.be.instanceOf(ResultTooLargeError);
+	// 			}
+	// 			if (expected === "InsightError") {
+	// 				expect(err).to.be.instanceOf(InsightError);
+	// 			}
+	// 			expect("performQuery passed threw error when expected"); // TODO: replace with your assertions
+	// 			return;
+	// 		}
+	// 	}
+	//
+	// 	beforeEach(async function () {
+	// 		await clearDisk();
+	// 		facade = new InsightFacade();
+	// 		sections = await getContentFromArchives("pair.zip");
+	// 		await facade.addDataset("ubc", sections, InsightDatasetKind.Sections);
+	// 		const allSections = await getAllSections(validatedQuery);
+	// 	});
+	//
+	// 	afterEach(async function () {
+	// 		await clearDisk();
+	// 	});
+	//
+	// 	it("valid query", function () {
+	//
+	// 		//readable format of file can be found in src/utils/ANTH312
+	// 	});
+	//
+	// });
 
 })

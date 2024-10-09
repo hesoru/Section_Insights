@@ -15,7 +15,7 @@ import {
 	getDatasetInfo,
 } from "../utils/JsonHelper";
 import fs from "fs-extra";
-import {extractDatasetId, processQueryOnDataset, validateQuery} from "../utils/QueryHelper";
+import {extractDatasetId, getAllSections, handleFilter, sortResults, validateQuery} from "../utils/QueryHelper";
 import {Query} from "../models/Section";
 
 /**
@@ -105,20 +105,37 @@ export default class InsightFacade implements IInsightFacade {
 			throw new InsightError(`Dataset '${id}' does not exist.`);
 		}
 
-		// 3) process query on the dataset
-		let results: InsightResult[];
-		try {
-			results = await processQueryOnDataset(validatedQuery); // TODO: write helper function in QueryHelper.ts
-		} catch (error: any) {
-			throw new InsightError(`Error processing query: ${error.message}`);
-		}
+		// process query on the dataset
+
+		// 3) start with data for all sections
+		const allSections = await getAllSections(validatedQuery);
+
+		// 4) filter results if necessary (WHERE)
+		let filteredResults: InsightResult[];
+		filteredResults = handleFilter(validatedQuery.WHERE, allSections);
 
 		// 5) handle results that are too large
-		if (results.length > MAX_SIZE) {
+		if (filteredResults.length > MAX_SIZE) {
 			throw new ResultTooLargeError("Query results exceed maximum size (5000 sections).");
 		}
 
-		return results;
+		// 6) select only specified columns (OPTIONS.COLUMNS)
+		filteredResults = filteredResults.map((section) => {
+			// can be string | number
+			const result: any = {};
+			validatedQuery.OPTIONS.COLUMNS.forEach((column) => {
+				result[column] = section[column];
+			});
+			return result;
+		});
+
+		// 7) sort results if necessary (OPTIONS.ORDER)
+		let sortedFilteredResults: InsightResult[] = [];
+		if (validatedQuery.OPTIONS.ORDER) {
+			sortedFilteredResults = sortResults(validatedQuery.OPTIONS, filteredResults);
+		}
+
+		return sortedFilteredResults;
 	}
 
 	public async listDatasets(): Promise<InsightDataset[]> {
