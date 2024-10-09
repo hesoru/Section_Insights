@@ -1,4 +1,3 @@
-
 /**
  * Interface to represent the data of a course section in memory. Queries will be checked against Section objects.
  * Fields will be populated from JSON file fields according to specification:
@@ -78,8 +77,8 @@ export interface Options {
 /**
  * Types to represent specific fields in Body interface in accordance with InsightFacade EBNF
  */
-export type MKey = `${string}_${MField}`;  //adapted from ChatGPT generated response
+export type MKey = `${string}_${MField}`; //adapted from ChatGPT generated response
 export type SKey = `${string}_${SField}`; //adapted from ChatGPT generated response
-export type MField = 'avg' | 'pass' | 'fail' | 'audit' | 'year';
-export type SField = 'dept' | 'id' | 'instructor' | 'title' | 'uuid';
+export type MField = "avg" | "pass" | "fail" | "audit" | "year";
+export type SField = "dept" | "id" | "instructor" | "title" | "uuid";
 export type CompFunction = (a: any, b: any) => boolean;

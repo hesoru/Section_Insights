@@ -15,8 +15,9 @@ import {
 	getDatasetInfo,
 } from "../utils/JsonHelper";
 import fs from "fs-extra";
-import {extractDatasetId, getAllSections, handleFilter, sortResults, validateQuery} from "../utils/QueryHelper";
-import {Query} from "../models/Section";
+import { extractDatasetId, getAllSections, handleFilter, sortResults } from "../utils/QueryHelper";
+import { Query } from "../models/Section";
+import { validateQuery } from "../utils/ValidateHelper";
 
 /**
  * This is the main programmatic entry point for the project.
@@ -100,7 +101,7 @@ export default class InsightFacade implements IInsightFacade {
 		}
 
 		// 2) extract dataset id from validated query, ensure dataset exists
-		const id = extractDatasetId(validatedQuery); // TODO: write helper function in QueryHelper.ts
+		const id = extractDatasetId(validatedQuery);
 		if (!this.datasetIds.has(id)) {
 			throw new InsightError(`Dataset '${id}' does not exist.`);
 		}
@@ -120,12 +121,16 @@ export default class InsightFacade implements IInsightFacade {
 		}
 
 		// 6) select only specified columns (OPTIONS.COLUMNS)
+		//do we need to check if options exists?
 		filteredResults = filteredResults.map((section) => {
 			// can be string | number
 			const result: any = {};
-			validatedQuery.OPTIONS.COLUMNS.forEach((column) => {
-				result[column] = section[column];
-			});
+			const columns = validatedQuery.OPTIONS.COLUMNS;
+			for (const column of columns) {
+				const parts = column.split("_");
+				const field = parts[1];
+				result[field] = section[field];
+			}
 			return result;
 		});
 
@@ -153,18 +158,3 @@ export default class InsightFacade implements IInsightFacade {
 		}
 	}
 }
-
-// const fse = require('fs-extra')
-// fs.readFileSync()
-// fs.writeFileSync('wheretowritethefile.json', variablecontainingfile)
-// // fs.readFile('filePath', characterEncoding, callbackFunction(error, data))
-// if(relativePath.endsWith('.json')) {
-// 	const jsonContent = await file.async('text')
-// 	const queryJson = JSON.parse(jsonContent); JSON parse only takes a valid json string
-// }
-//could wrap these in a try catch:
-// const jsonData = await fs.readJson(inputFilePath)
-// await fs.outputJson(outputFilePath, jsonData)
-
-// save entire dataset json file to disk.
-// helper function inside utils folder.

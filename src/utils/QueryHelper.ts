@@ -1,179 +1,13 @@
-import {
-	InsightError,
-	InsightResult,
-	NotFoundError
-} from "../controller/IInsightFacade";
-import {
-	MKey, Query,
-	Section,
-	SKey, Body, Options
-} from "../models/Section";
+import { InsightError, InsightResult, NotFoundError } from "../controller/IInsightFacade";
+import { Query, Section, Body, Options } from "../models/Section";
 import fs from "fs-extra";
 import path from "node:path";
-import {parseSectionObject} from "./JsonHelper";
+import { parseSectionObject } from "./JsonHelper";
 
 /**
  * @returns - Query, validates that the query param conforms to Query structure, if not throws InsightError
  * @param query
  */
-export function validateQuery(query: unknown): Query {
-	//1) check that query is an object
-	if(typeof query !== 'object' || query === null) {
-		throw new InsightError('invalid query, query is not a non-null object');
-	}
-
-	//2) check WHERE fields
-	if('WHERE' in query)  {
-		if(query.WHERE === null || typeof query.WHERE !== 'object')  {
-			throw new InsightError('invalid query, query contains null WHERE field');
-		}
-		validateBody(query.WHERE);
-	} else {
-		throw new InsightError('invalid query, query does not contain WHERE field');
-	}
-
-	//3) check OPTION fields
-	if('OPTIONS' in query)  {
-		//is the OPTIONS field allowed to be null? I don't think so
-		if(query.OPTIONS === null || typeof query.OPTIONS !== 'object')  {
-			throw new InsightError('invalid query, query contains invalid OPTIONS field');
-		}
-		validateOptions(query.OPTIONS);
-	} else {
-		//throw new InsightError('invalid query, query does not contain OPTION field');
-		//this is okay right
-	}
-	return query as Query;
-}
-
-export function validateBody(filter: any): void {
-	const keys = checkKeys(filter);
-	const lengthLimit = 2;
-	const validateArray = (key: string, value: any): void => {
-		if (!Array.isArray(value) || value.length !== lengthLimit) {
-			throw new InsightError(`invalid query, query.WHERE.${key} is invalid`);
-		}
-		value.forEach(validateBody);
-	};
-
-	const validateObject = (key: string, value: any, type: string): void => {
-		if (value === null || typeof value !== 'object') {
-			throw new InsightError(`invalid query, query.WHERE.${key} is invalid`);
-		}
-		validateComparator(value, type);
-	};
-
-	switch (keys[0]) {
-		case 'OR': validateArray('OR', filter.OR);
-			break;
-		case 'AND': validateArray('AND', filter.AND);
-			break;
-		case 'GT': validateObject('GT', filter.GT, "Mkey");
-			break;
-		case 'LT': validateObject('LT', filter.LT, "Mkey");
-			break;
-		case 'EQ': validateObject('EQ', filter.EQ, "Mkey");
-			break;
-		case 'IS': validateObject('IS', filter.IS, "SKey");
-			break;
-		case 'NOT': validateBody(filter.NOT);
-			break;
-		default: throw new InsightError('invalid query, query.WHERE contains an invalid key');
-	}
-}
-
-
-export function checkKeys(filter: any): string[] {
-	const keys = Object.keys(filter);
-	if(keys.length !== 1) {
-		throw new InsightError('invalid query, query.WHERE contains more than one key'); }
-	return keys;
-}
-
-export function validateOptions(options: any): void {
-	const keys = Object.keys(options);
-	const KEY_LENGTH = 2;
-	if(keys.length === 0 || keys.length > KEY_LENGTH) {
-		throw new InsightError('invalid query, query.OPTIONS incorrect number of keys');
-	}
-	//validate columns
-	if(keys[0] !== 'COLUMNS') {
-		throw new InsightError('invalid query, query.OPTIONS does not contain COLUMNS');
-	}
-	if(!Array.isArray(options.COLUMNS) || options.COLUMNS.length === 0) {
-		throw new InsightError('invalid query, query.OPTIONS.COLUMNS is not an array');
-	}
-	for(const key of options.COLUMNS) {
-		validateKey(key);
-	}
-
-	//validate order
-	if(keys[1]) {
-		if (keys[1] !== 'ORDER') {
-			throw new InsightError('invalid query, query.OPTIONS does not contain ORDER as 2nd key');
-		}
-		if (!Object.values(options.COLUMNS).includes(options.ORDER)) {
-			throw new InsightError('invalid query, query.ORDER specifies key not in OPTIONS')
-		}
-		{validateKey(options.ORDER);}
-	}
-
-}
-
-function validateComparator(comparator: [MKey, number] | [SKey, number], field: string): void {
-	const keys = Object.keys(comparator);
-	const values = Object.values(comparator);
-	if(keys.length !== 1 || values.length !== 1) {
-		throw new InsightError('invalid key in comparator');
-	}
-
-	if(field === "Mkey") {
-		if(typeof values[0] !== 'number' || !isMKey(keys[0])) {
-			throw new InsightError('invalid Mkey in comparator');
-		}
-	}
-
-	if(field === "SKey") {
-		if(typeof values[0] !== 'string' || !isSKey(keys[0])) {
-			throw new InsightError('invalid Skey in comparator');
-		}
-	}
-}
-
-function validateKey(key: any): void {
-	if(typeof key !== 'string') {
-		throw new InsightError('invalid query, key is not a string');
-	}
-	if(!isMKey(key) && !isSKey(key)) {
-		throw new InsightError('invalid query, key is not an Mkey or Skey')
-	}
-}
-
-function isMKey(key: string): boolean {
-	if (!key.includes('_')) {
-		return false;
-	}
-	const parts = key.split('_');
-	const validId = /^[^_]+$/; //Adapted from chatGPT generated response.
-	if (!validId.test(parts[0]) || parts[0].trim().length === 0) {
-		return false;
-	}
-	const validMFields = ['avg', 'pass', 'fail', 'audit', 'year'];
-	return validMFields.includes(parts[1]);
-}
-
-function isSKey(key: string): boolean {
-	if (!key.includes('_')) {
-		return false;
-	}
-	const parts = key.split('_');
-	const validId = /^[^_]+$/; //Adapted from chatGPT generated response.
-	if (!validId.test(parts[0]) || parts[0].trim().length === 0) {
-		return false;
-	}
-	const validSFields = ['dept', 'id', 'instructor', 'title', 'uuid'];
-	return validSFields.includes(parts[1]);
-}
 
 export function handleFilter(filter: Body, data: InsightResult[]): InsightResult[] {
 	if (!filter) {
@@ -188,11 +22,12 @@ export function handleFilter(filter: Body, data: InsightResult[]): InsightResult
 	} else if (filter.NOT) {
 		return handleNegation(filter, data);
 	} else {
-		throw new InsightError('Invalid filter');
+		throw new InsightError("Invalid filter");
 	}
 }
 
-function handleLogicComparison(filter: Body, data: InsightResult[]): InsightResult[] {  //return array of insight result.
+function handleLogicComparison(filter: Body, data: InsightResult[]): InsightResult[] {
+	//return array of insight result.
 	let results: InsightResult[] = [];
 
 	if (filter.AND) {
@@ -200,10 +35,10 @@ function handleLogicComparison(filter: Body, data: InsightResult[]): InsightResu
 		// return filter.AND.reduce((acc, subBody) => handleBody(subBody, acc), data);
 		for (const subFilter of filter.AND) {
 			const subResults = handleFilter(subFilter, data);
-			if(results.length === 0) {
+			if (results.length === 0) {
 				results = subResults;
 			} else {
-				results = results.filter(section => subResults.includes(section)); // Intersection of results
+				results = results.filter((section) => subResults.includes(section)); // Intersection of results
 			}
 		}
 	} else if (filter.OR) {
@@ -212,9 +47,8 @@ function handleLogicComparison(filter: Body, data: InsightResult[]): InsightResu
 			results = results.concat(subResults); // Union of results
 		}
 		results = Array.from(new Set(results)); // Remove duplicates
-
 	} else {
-		throw new InsightError('Invalid logic filter');
+		throw new InsightError("Invalid logic filter");
 	}
 	return results;
 }
@@ -222,26 +56,26 @@ function handleLogicComparison(filter: Body, data: InsightResult[]): InsightResu
 function handleMComparison(filter: any, data: InsightResult[]): InsightResult[] {
 	if (filter.GT) {
 		const mKey = Object.keys(filter.GT)[0];
-		const parts = mKey.split('_');
+		const parts = mKey.split("_");
 		const field = parts[1];
 		const value = Object.values(filter.GT)[0];
 		return data.filter((section) => section[field] > (value as number));
 	}
 	if (filter.LT) {
 		const mKey = Object.keys(filter.LT)[0];
-		const parts = mKey.split('_');
+		const parts = mKey.split("_");
 		const field = parts[1];
 		const value = Object.values(filter.LT)[0];
 		return data.filter((section) => section[field] < (value as number));
 	}
 	if (filter.EQ) {
 		const mKey = Object.keys(filter.EQ)[0];
-		const parts = mKey.split('_');
+		const parts = mKey.split("_");
 		const field = parts[1];
 		const value = Object.values(filter.EQ)[0];
 		return data.filter((section) => section[field] === (value as number));
 	}
-	throw new InsightError("Invalid MComparator operator.")
+	throw new InsightError("Invalid MComparator operator.");
 }
 
 function handleSComparison(filter: any, data: InsightResult[]): InsightResult[] {
@@ -258,14 +92,15 @@ function handleNegation(filter: any, data: InsightResult[]): InsightResult[] {
 
 export async function getAllSections(query: Query): Promise<InsightResult[]> {
 	const idString = extractDatasetId(query);
-	const allSections = await loadDatasets(idString, 'sections');
+	const allSections = await loadDatasets(idString, "sections");
 
 	const columns = Object.keys(allSections[0]);
 
 	const allResults: InsightResult[] = [];
 	for (const section of allSections) {
 		const sectionResult: InsightResult = {};
-		for (const item of columns) {  //iterate through indicies
+		for (const item of columns) {
+			//iterate through indicies
 			sectionResult[item] = section[item as keyof Section];
 		}
 		allResults.push(sectionResult);
@@ -279,49 +114,51 @@ export function sortResults(options: Options, results: InsightResult[]): Insight
 		const aValue = a[options.ORDER as string | number];
 		const bValue = b[options.ORDER as string | number];
 
-		if (typeof aValue === 'string' && typeof bValue === 'string') {
+		if (typeof aValue === "string" && typeof bValue === "string") {
 			// string comparison (case-insensitive)
-			return aValue.localeCompare(bValue, undefined, { sensitivity: 'base' });
+			return aValue.localeCompare(bValue, undefined, { sensitivity: "base" });
 		}
 
-		if (typeof aValue === 'number' && typeof bValue === 'number') {
+		if (typeof aValue === "number" && typeof bValue === "number") {
 			// numeric comparison
 			return aValue - bValue;
 		}
 
 		// types differ
-		throw new InsightError("Comparison column contains strings and numbers together!")
+		throw new InsightError("Comparison column contains strings and numbers together!");
 	});
 }
 
 export function extractDatasetId(query: Query): string {
 	const key = extractKey(query.WHERE);
-	const keyParts = key.split('_');
+	const keyParts = key.split("_");
 	return keyParts[0];
 }
 
 export function extractKey(body: Body): string {
-	if(body.EQ) {
+	if (body.EQ) {
 		return Object.keys(body.EQ)[0];
-	} else if(body.GT) {
+	} else if (body.GT) {
 		return Object.keys(body.GT)[0];
-	} else if(body.LT) {
+	} else if (body.LT) {
 		return Object.keys(body.LT)[0];
 	}
 
-	if(body.AND) {
+	if (body.AND) {
 		for (const b of body.AND) {
 			const key = extractKey(b);
-			if(key) {
-				return key;}
+			if (key) {
+				return key;
+			}
 		}
-	} else if(body.OR) {
-		for(const b of body.OR) {
+	} else if (body.OR) {
+		for (const b of body.OR) {
 			const key = extractKey(b);
-			if(key) {
-				return key;}
+			if (key) {
+				return key;
+			}
 		}
-	} else if(body.NOT) {
+	} else if (body.NOT) {
 		return extractKey(body.NOT);
 	}
 	throw new InsightError("Invalid body");
@@ -408,12 +245,12 @@ export async function loadDatasets(id: string, fileName: string): Promise<Sectio
 	const datasetPath = path.resolve(__dirname, "../data", fileName);
 	let dataset;
 	try {
-		dataset = await fs.readJson(datasetPath)
+		dataset = await fs.readJson(datasetPath);
 	} catch (error) {
-		throw new NotFoundError(`Could not find dataset with - id=${id};` + error)
+		throw new NotFoundError(`Could not find dataset with - id=${id};` + error);
 	}
 	const parsedSections: Section[] = [];
-	for(const file of dataset) {
+	for (const file of dataset) {
 		for (const section of file.result) {
 			const newSection = parseSectionObject(section);
 			parsedSections.push(newSection);
@@ -425,7 +262,6 @@ export async function loadDatasets(id: string, fileName: string): Promise<Sectio
 	}
 	return parsedSections;
 }
-
 
 /**
  * @returns - InsightResult[], selects columns from array of sections as specified by options.COLUMNS and parses them
@@ -480,4 +316,3 @@ export async function loadDatasets(id: string, fileName: string): Promise<Sectio
 // 	}
 // 	return insight_results;
 // }
-

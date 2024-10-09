@@ -251,7 +251,6 @@ describe("InsightFacade", function () {
 				expect.fail("Should have successfully added and removed" + err);
 			}
 		});
-
 	});
 
 	describe("ListDatasets", function () {

@@ -1,10 +1,10 @@
-import {IInsightFacade, InsightDataset, InsightDatasetKind, InsightError} from "../../src/controller/IInsightFacade";
+import { IInsightFacade, InsightDataset, InsightDatasetKind, InsightError } from "../../src/controller/IInsightFacade";
 import { clearDisk, getContentFromArchives } from "../TestUtil";
 
 import { expect, use } from "chai";
 import chaiAsPromised from "chai-as-promised";
 // checkValidId,
-import {checkValidId, getDatasetInfo, parseJSONtoSections, parseSectionObject} from "../../src/utils/JsonHelper";
+import { checkValidId, getDatasetInfo, parseJSONtoSections, parseSectionObject } from "../../src/utils/JsonHelper";
 import { JSONFile, Section } from "../../src/models/Section";
 import InsightFacade from "../../src/controller/InsightFacade";
 
@@ -56,24 +56,6 @@ describe("InsightFacade", function () {
 				expect.fail("should not thrown an error when adding valid ids" + error);
 			}
 		});
-
-		it('query test', function() {
-			const testQuery =  {
-				"WHERE":{
-					"GT":{
-						"sections_avg":97
-					}
-				},
-				"OPTIONS":{
-					"COLUMNS":[
-						"sections_dept",
-						"sections_avg"
-					],
-					"ORDER":"sections_avg"
-				}
-			}
-			console.log(testQuery);
-		})
 
 		it("valid ids with existing ids", function () {
 			const existingIds: string[] = ["alreadyaddeddata", "also23fds", "thisissomedata", "moreids!"];
@@ -176,7 +158,7 @@ describe("InsightFacade", function () {
 				Title: "intr anth gender",
 				Year: 2014,
 				id: "12204",
-				Audit: 4
+				Audit: 4,
 			};
 
 			const expected: Section = {
@@ -189,7 +171,7 @@ describe("InsightFacade", function () {
 				title: "intr anth gender",
 				year: 2014,
 				uuid: "12204",
-				audit: 4
+				audit: 4,
 			};
 			try {
 				const result = parseSectionObject(section);
@@ -243,7 +225,7 @@ describe("InsightFacade", function () {
 				avg: 72.82,
 				pass: 75,
 				fail: 1,
-				audit: 0
+				audit: 0,
 			};
 
 			const section2: Section = {
@@ -256,7 +238,7 @@ describe("InsightFacade", function () {
 				avg: 72.82,
 				pass: 75,
 				fail: 1,
-				audit: 0
+				audit: 0,
 			};
 
 			const section3: Section = {
@@ -269,7 +251,7 @@ describe("InsightFacade", function () {
 				year: 2007,
 				pass: 34,
 				fail: 1,
-				audit: 0
+				audit: 0,
 			};
 
 			const section4: Section = {
@@ -282,7 +264,7 @@ describe("InsightFacade", function () {
 				avg: 76.03,
 				pass: 34,
 				fail: 1,
-				audit: 0
+				audit: 0,
 			};
 
 			const section5: Section = {
@@ -295,8 +277,7 @@ describe("InsightFacade", function () {
 				avg: 74.7,
 				pass: 76,
 				fail: 0,
-				audit: 0
-
+				audit: 0,
 			};
 			const expected: Section[] = [section1, section2, section3, section4, section5];
 
@@ -364,8 +345,8 @@ describe("InsightFacade", function () {
 				const expected: InsightDataset = {
 					id: "sections",
 					kind: InsightDatasetKind.Sections,
-					numRows: 64612
-				}
+					numRows: 64612,
+				};
 				const result = getDatasetInfo("sections");
 				expect(result).to.deep.equal(expected);
 			} catch (err) {
@@ -382,5 +363,4 @@ describe("InsightFacade", function () {
 			}
 		});
 	});
-
 });

@@ -1,5 +1,5 @@
-import {InsightDataset, InsightDatasetKind, InsightError, NotFoundError} from "../controller/IInsightFacade";
-import {JSONFile, Section} from "../models/Section";
+import { InsightDataset, InsightDatasetKind, InsightError, NotFoundError } from "../controller/IInsightFacade";
+import { JSONFile, Section } from "../models/Section";
 import fs from "fs-extra";
 import path from "node:path";
 import JSZip from "jszip";
@@ -67,7 +67,7 @@ export function parseSectionObject(section: JSONFile): Section {
 
 	let newSection: Section;
 	try {
-		(newSection = {
+		newSection = {
 			//I like it this way it is more explicit.
 			uuid: String(section.id), //how to I specify that the parameter contains these fields.
 			id: section.Course,
@@ -79,7 +79,7 @@ export function parseSectionObject(section: JSONFile): Section {
 			pass: section.Pass,
 			fail: section.Fail,
 			audit: section.Audit,
-		});
+		};
 	} catch (error) {
 		throw new InsightError("failed to create new Section Object in parse Section Object" + error);
 	}
@@ -174,7 +174,7 @@ export async function unzipContent(content: string): Promise<JSZip> {
 	const zip = new JSZip();
 	let unzipped: JSZip;
 	try {
-		unzipped = await zip.loadAsync(content, {base64: true});
+		unzipped = await zip.loadAsync(content, { base64: true });
 	} catch (error) {
 		throw new InsightError("content passed to addDataset is not a valid base64 string" + error);
 	}
