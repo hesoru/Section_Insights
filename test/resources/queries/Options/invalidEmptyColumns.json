@@ -1,0 +1,9 @@
+{
+  "title":"invalidEmptyColumns",
+  "input":{
+    "COLUMNS":"",
+    "ORDER":"ubc_avg"
+  },
+  "errorExpected":true,
+  "expected":""
+}

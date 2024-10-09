@@ -1,0 +1,10 @@
+{
+   "title":"InvalidGT, empty GT body",
+   "input":{
+      "GT":{
+
+      }
+   },
+   "errorExpected":true,
+   "expected":"InsightError"
+}
