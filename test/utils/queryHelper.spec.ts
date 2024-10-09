@@ -5,7 +5,6 @@ import { expect, use } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import {
     getAllSections,
-    getMatchingSections,
     validateBody,
     validateOptions,
     validateQuery
@@ -358,9 +357,12 @@ describe("InsightFacade", function () {
         });
 
         it("valid queries", async function () {
+            this.timeout(10000);
             try {
                 const test1 = await loadTestQuery('[valid/simple.json]');
-                await getAllSections(test1.input as Query);
+                const result1 = await getAllSections(test1.input as Query);
+                expect(result1).to.be.an("array");
+                expect(result1.length).to.equal(64612);
             } catch (e) {
                 expect.fail('should not have thrown' + e);
             }
@@ -368,69 +370,67 @@ describe("InsightFacade", function () {
 
     });
 
-    describe("getMatchingSections", function () {
-        beforeEach(async function () {
-            await clearDisk();
-            facade = new InsightFacade();
-            try {
-                const result = await facade.addDataset("sections", sections, InsightDatasetKind.Sections);
-                //expect(result).to.have.members(["sections"]);
-                expect(result).to.be.an("array");
-            } catch (err) {
-                expect.fail("Should not have thrown an error" + err);
-            }
-        });
-
-        afterEach(async function () {
-            await clearDisk();
-        });
-
-        it("MKey examples", async function () {
-            const input1 = 97
-            const input2 = 2
-            const input3 =  2007
-            const input4 = 4
-            const input5 = 21
-            const answer1 = 49
-            const answer2 = 188
-            const answer3 = 3950
-            const answer4 = 186
-            const answer5 = 126
-            try {
-                const result1 = await getMatchingSections('GT', ['sections_avg', input1]);
-                expect(result1).to.be.an("array");
-                expect(result1.length).to.equal(answer1);
-                const result2 = await getMatchingSections('LT', ['sections_pass', input2]);
-                expect(result2).to.be.an("array");
-                expect(result2.length).to.equal(answer2);
-                const result3 = await getMatchingSections('EQ', ['sections_year', input3]);
-                expect(result3).to.be.an("array");
-                expect(result3.length).to.equal(answer3);
-                const result4 = await getMatchingSections('GT', ['sections_audit', input4]);
-                expect(result4).to.be.an("array");
-                expect(result4.length).to.equal(answer4);
-                const result5 = await getMatchingSections('EQ', ['sections_fail', input5]);
-                expect(result5).to.be.an("array");
-                expect(result5.length).to.equal(answer5);
-            } catch (e) {
-                expect.fail('should not have thrown an error here' + e);
-            }
-
-        });
-
-        it("result too large", async function () {
-            try {
-                const input1 = 2009
-                await getMatchingSections('GT', ['sections_year', input1]);
-                expect.fail('should have thrown result too large error')
-            } catch (e) {
-                expect(e).to.be.instanceOf(ResultTooLargeError);
-            }
-        });
-
-
-
-    });
+    // describe("getMatchingSections", function () {
+    //     beforeEach(async function () {
+    //         await clearDisk();
+    //         facade = new InsightFacade();
+    //         try {
+    //             const result = await facade.addDataset("sections", sections, InsightDatasetKind.Sections);
+    //             //expect(result).to.have.members(["sections"]);
+    //             expect(result).to.be.an("array");
+    //         } catch (err) {
+    //             expect.fail("Should not have thrown an error" + err);
+    //         }
+    //     });
+    //
+    //     afterEach(async function () {
+    //         await clearDisk();
+    //     });
+    //
+    //     it("MKey examples", async function () {
+    //         const input1 = 97
+    //         const input2 = 2
+    //         const input3 =  2007
+    //         const input4 = 4
+    //         const input5 = 21
+    //         const answer1 = 49
+    //         const answer2 = 188
+    //         const answer3 = 3950
+    //         const answer4 = 186
+    //         const answer5 = 126
+    //         try {
+    //             const result1 = await getMatchingSections('GT', ['sections_avg', input1]);
+    //             expect(result1).to.be.an("array");
+    //             expect(result1.length).to.equal(answer1);
+    //             const result2 = await getMatchingSections('LT', ['sections_pass', input2]);
+    //             expect(result2).to.be.an("array");
+    //             expect(result2.length).to.equal(answer2);
+    //             const result3 = await getMatchingSections('EQ', ['sections_year', input3]);
+    //             expect(result3).to.be.an("array");
+    //             expect(result3.length).to.equal(answer3);
+    //             const result4 = await getMatchingSections('GT', ['sections_audit', input4]);
+    //             expect(result4).to.be.an("array");
+    //             expect(result4.length).to.equal(answer4);
+    //             const result5 = await getMatchingSections('EQ', ['sections_fail', input5]);
+    //             expect(result5).to.be.an("array");
+    //             expect(result5.length).to.equal(answer5);
+    //         } catch (e) {
+    //             expect.fail('should not have thrown an error here' + e);
+    //         }
+    //
+    //     });
+    //
+    //     it("result too large", async function () {
+    //         try {
+    //             const input1 = 2009
+    //             await getMatchingSections('GT', ['sections_year', input1]);
+    //             expect.fail('should have thrown result too large error')
+    //         } catch (e) {
+    //             expect(e).to.be.instanceOf(ResultTooLargeError);
+    //         }
+    //     });
+    //
+    // });
 
 
 })

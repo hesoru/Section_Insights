@@ -234,7 +234,11 @@ function handleLogicComparison(filter: Body, data: InsightResult[]): InsightResu
 		// return filter.AND.reduce((acc, subBody) => handleBody(subBody, acc), data);
 		for (const subFilter of filter.AND) {
 			const subResults = handleFilter(subFilter, data);
-			results = results.filter(section => subResults.includes(section)); // Intersection of results
+			if(results.length === 0) {
+				results = subResults;
+			} else {
+				results = results.filter(section => subResults.includes(section)); // Intersection of results
+			}
 		}
 	} else if (filter.OR) {
 		for (const subFilter of filter.OR) {
@@ -252,16 +256,25 @@ function handleLogicComparison(filter: Body, data: InsightResult[]): InsightResu
 
 function handleMComparison(filter: any, data: InsightResult[]): InsightResult[] {
 	if (filter.GT) {
-		const [mKey, value] = filter.GT;
-		return data.filter((section) => section[mKey] > value);
+		const mKey = Object.keys(filter.GT)[0];
+		const parts = mKey.split('_');
+		const field = parts[1];
+		const value = Object.values(filter.GT)[0];
+		return data.filter((section) => section[field] > (value as number));
 	}
 	if (filter.LT) {
-		const [mKey, value] = filter.LT;
-		return data.filter((section) => section[mKey] < value);
+		const mKey = Object.keys(filter.LT)[0];
+		const parts = mKey.split('_');
+		const field = parts[1];
+		const value = Object.values(filter.LT)[0];
+		return data.filter((section) => section[field] < (value as number));
 	}
 	if (filter.EQ) {
-		const [mKey, value] = filter.EQ;
-		return data.filter((section) => section[mKey] === value);
+		const mKey = Object.keys(filter.EQ)[0];
+		const parts = mKey.split('_');
+		const field = parts[1];
+		const value = Object.values(filter.EQ)[0];
+		return data.filter((section) => section[field] === (value as number));
 	}
 	throw new InsightError("Invalid MComparator operator.")
 }
@@ -283,20 +296,12 @@ export async function getAllSections(query: Query): Promise<InsightResult[]> {
 	const allSections = await loadDatasets(idString, 'sections');
 
 	const columns = Object.keys(allSections[0]);
-	const columnKeys: string[] = [];
-	for (const column of columns) {
-		if (!isMKey(column) && !isSKey(column)) {
-			throw new InsightError('invalid keys passed to OPTIONS.COLUMNS, NOTE THIS WAS NOT CAUGHT IN VALIDATE QUERY');
-		}
-		const parts = column.split('_');
-		columnKeys.push(parts[1]);
-	}
 
 	const allResults: InsightResult[] = [];
 	for (const section of allSections) {
 		const sectionResult: InsightResult = {};
-		for (let i = 0; i < columnKeys.length; i++) {  //iterate through indicies
-			sectionResult[columns[i]] = section[columnKeys[i] as keyof Section]; //WILL THIS LINE WORK? PROBABLY BUG HERE
+		for (const item of columns) {  //iterate through indicies
+			sectionResult[item] = section[item as keyof Section];
 		}
 		allResults.push(sectionResult);
 	}
@@ -325,10 +330,36 @@ function sortResults(options: Options, results: InsightResult[]): InsightResult[
 }
 
 export function extractDatasetId(query: Query): string {
-	const record = query.OPTIONS.COLUMNS[0]
-	const key = record[0];
+	const key = extractKey(query.WHERE);
 	const keyParts = key.split('_');
 	return keyParts[0];
+}
+
+export function extractKey(body: Body): string {
+	if(body.EQ) {
+		return Object.keys(body.EQ)[0];
+	} else if(body.GT) {
+		return Object.keys(body.GT)[0];
+	} else if(body.LT) {
+		return Object.keys(body.LT)[0];
+	}
+
+	if(body.AND) {
+		for (const b of body.AND) {
+			const key = extractKey(b);
+			if(key) {
+				return key;}
+		}
+	} else if(body.OR) {
+		for(const b of body.OR) {
+			const key = extractKey(b);
+			if(key) {
+				return key;}
+		}
+	} else if(body.NOT) {
+		return extractKey(body.NOT);
+	}
+	throw new InsightError("Invalid body");
 }
 
 //THIS IS THE HELPER TO CALL IN EACH BASE CASE FOR WHERE FUNCTION: MCOMPARATOR, SCOMPARATOR
