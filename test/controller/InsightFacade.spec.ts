@@ -151,7 +151,7 @@ describe("InsightFacade", function () {
 			try {
 				const result = await facade.addDataset("sections", sections, InsightDatasetKind.Sections);
 				expect(result).to.be.an("array");
-				expect(result).to.deep.equal(['sections']);
+				expect(result).to.deep.equal(["sections"]);
 				// read file from disk
 			} catch (err) {
 				expect.fail("Should not have thrown an error" + err);
@@ -402,16 +402,16 @@ describe("InsightFacade", function () {
 		it("[valid/Cwildcard.json] wildcard*", checkQuery);
 		it("[valid/wildcard2astrix.json] wildcard2astrix.json", checkQuery);
 		it("[invalid/wildCcard.json] wild*card", checkQuery);
-		it('[valid/complexValidQuery.json]', checkQuery);
-		it('[invalid/columnsMissing.json]', checkQuery);
-		it('[invalid/invalidSField.json]', checkQuery);
-		it('[invalid/invalidMField.json]', checkQuery);
-		it('[invalid/wrongSyntaxNOT.json]', checkQuery);
-		it('[invalid/noFilter.json]', checkQuery);
-		it('[invalid/invalid.json]', checkQuery);
-		it('[invalid/orderKeyMissing.json]', checkQuery);
-		it('[invalid/idDoesNotExist.json]', checkQuery);
-		it('[valid/negativeAverage(Valid).json]', checkQuery);
-		it('[valid/filterNOT.json]', checkQuery); //works but timesout at 2.47
+		it("[valid/complexValidQuery.json]", checkQuery);
+		it("[invalid/columnsMissing.json]", checkQuery);
+		it("[invalid/invalidSField.json]", checkQuery);
+		it("[invalid/invalidMField.json]", checkQuery);
+		it("[invalid/wrongSyntaxNOT.json]", checkQuery);
+		it("[invalid/noFilter.json]", checkQuery);
+		it("[invalid/invalid.json]", checkQuery);
+		it("[invalid/orderKeyMissing.json]", checkQuery);
+		it("[invalid/idDoesNotExist.json]", checkQuery);
+		it("[valid/negativeAverage(Valid).json]", checkQuery);
+		it("[valid/filterNOT.json]", checkQuery); //works but timesout at 2.47
 	});
 });

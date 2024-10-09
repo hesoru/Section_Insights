@@ -151,7 +151,6 @@ export function extractDatasetId(query: Query): string {
 	return keyParts[0];
 }
 
-
 /**
  * @returns - Promise<Section[]> an array of the sections contained in the data specified by param id.
  * If dataset with name data/fileName can not be found throws NotFoundError
@@ -175,4 +174,3 @@ export async function loadDatasets(id: string, fileName: string): Promise<Sectio
 	}
 	return parsedSections;
 }
-
