@@ -85,7 +85,7 @@
 //
 // 			//Have not checked wildcards yet
 // 			// try {
-// 			//     const test4 = await loadTestQuery('[invalid/wildcard(C_S).json]');
+// 			//     const test4 = await loadTestQuery('[invalid/wildCcard.json]');
 // 			//     validateQuery(test4.input);
 // 			//     expect.fail('passed invalidComplex1.json');
 // 			// } catch (ea) {

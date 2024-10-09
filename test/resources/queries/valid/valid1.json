@@ -1,23 +1,25 @@
 {
-  "title":"WHERE: OR, GT, LT",
-  "input":{
-    "WHERE":{
-      "OR":{
-        "GT":{
-          "sections_avg":93
+  "title": "WHERE: OR, GT, LT",
+  "input": {
+    "WHERE": {
+      "OR": [
+        {
+          "LT": {"sections_avg": 43}
+        },
+        {"GT": {"sections_avg": 99}
         }
-      }
+      ]
     },
-    "OPTIONS":{
-      "COLUMNS":[
+    "OPTIONS": {
+      "COLUMNS": [
         "sections_dept",
         "sections_avg"
       ],
-      "ORDER":"sections_avg"
+      "ORDER": "sections_avg"
     }
   },
-  "errorExpected":false,
-  "expected":[
+  "errorExpected": false,
+  "expected": [
     {
       "sections_dept":"lfs",
       "sections_avg":0
