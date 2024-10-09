@@ -188,25 +188,24 @@ export async function unzipContent(content: string): Promise<JSZip> {
 //     throw new InsightError("Failed to write file to disk");
 // })
 
-export async function getDatasetInfo(id: string): Promise<InsightDataset> {
+export async function getDatasetInfo(id: string, fileName: string): Promise<InsightDataset> {
 	// shouldn't have to validate id in listDataset()
 	// checkValidId(id, datasetIds, true); // 3rd parameter true
 
 	// get dataset file path
-	const datasetPath = path.resolve(__dirname, "../data", id); // txt file?
+	const datasetPath = path.resolve(__dirname, "../data", fileName); // txt file?
 	try {
 		// read dataset file from disk
 		const data = await fs.readFile(datasetPath, "utf8");
 		const dataset = JSON.parse(data);
 
 		// count the number of sections (rows) in the dataset
-		const numRows = dataset.sections.length;
-		const kind: InsightDatasetKind = InsightDatasetKind.Sections;
+		const numRows = dataset.length;
 
 		// Return dataset info
 		return {
 			id: id,
-			kind: kind,
+			kind: InsightDatasetKind.Sections,
 			numRows: numRows,
 		};
 	} catch (error: any) {

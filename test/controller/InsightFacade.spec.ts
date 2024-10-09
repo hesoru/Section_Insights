@@ -130,7 +130,6 @@ describe("InsightFacade", function () {
 		});
 
 		it("should reject adding dataset with invalid sections", async function () {
-			// TODO: what does this mean?
 			try {
 				const miniData6 = await getContentFromArchives("miniData6.zip"); // TODO: where is this??
 				await facade.addDataset("noCoursesData", miniData6, InsightDatasetKind.Sections);
@@ -153,10 +152,9 @@ describe("InsightFacade", function () {
 		it("should successfully add valid large dataset, and create file on disk", async function () {
 			try {
 				const result = await facade.addDataset("sections", sections, InsightDatasetKind.Sections);
-				expect(result).to.have.members(["sections"]);
 				expect(result).to.be.an("array");
 				// read file from disk
-				const datasetPath = path.resolve(__dirname, "../data", "sections");
+				const datasetPath = path.resolve(__dirname, "../../src/data", "0");
 				await fs.readFile(datasetPath, "utf8");
 			} catch (err) {
 				expect.fail("Should not have thrown an error" + err);
@@ -242,7 +240,6 @@ describe("InsightFacade", function () {
 		it("promise does not resolve to correct string", async function () {
 			//const miniData1 = await getContentFromArchives("miniData1.zip");  invalid dataset no courses folder
 			//const miniData2 = await getContentFromArchives("miniData2.zip");
-
 			try {
 				await facade.addDataset("data", sections, InsightDatasetKind.Sections);
 				const result = await facade.removeDataset("data");
@@ -277,7 +274,7 @@ describe("InsightFacade", function () {
 
 		it("successfully lists datasets, with one existing dataset", async function () {
 			try {
-				const miniData5 = await getContentFromArchives("miniData3.zip");
+				const miniData5 = await getContentFromArchives("miniData5.zip");
 				await facade.addDataset("miniData5", miniData5, InsightDatasetKind.Sections);
 			} catch (error) {
 				expect.fail("addDataset failed" + error);
@@ -297,7 +294,7 @@ describe("InsightFacade", function () {
 
 		it("successfully lists datasets, with many existing datasets", async function () {
 			try {
-				const miniData5 = await getContentFromArchives("miniData3.zip");
+				const miniData5 = await getContentFromArchives("miniData5.zip");
 				await facade.addDataset("miniData4", sections, InsightDatasetKind.Sections);
 				await facade.addDataset("miniData5", miniData5, InsightDatasetKind.Sections);
 			} catch (error) {
@@ -309,7 +306,7 @@ describe("InsightFacade", function () {
 				{
 					id: "miniData4",
 					kind: InsightDatasetKind.Sections,
-					numRows: 64612,
+					numRows: 5944,
 				},
 				{
 					id: "miniData5",

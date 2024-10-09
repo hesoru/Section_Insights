@@ -18,6 +18,7 @@ import fs from "fs-extra";
 import { extractDatasetId, getAllSections, handleFilter, sortResults } from "../utils/QueryHelper";
 import { Query } from "../models/Section";
 import { validateQuery } from "../utils/ValidateHelper";
+import path from "node:path";
 
 /**
  * This is the main programmatic entry point for the project.
@@ -79,7 +80,9 @@ export default class InsightFacade implements IInsightFacade {
 
 		try {
 			// remove from disk
-			await fs.promises.unlink(`data/${id}`); // txt file?
+			const fileName = this.datasetIds.get(id);
+			const datasetPath = path.resolve(__dirname, "../data", String(fileName));
+			await fs.promises.unlink(datasetPath); // txt file?
 			// remove from datasetId array
 			this.datasetIds.delete(id);
 			// return removed id
@@ -147,8 +150,9 @@ export default class InsightFacade implements IInsightFacade {
 		const datasetPromises: Promise<InsightDataset>[] = [];
 
 		// get datasets in datasetIds array
-		for (const [id] of this.datasetIds) {
-			datasetPromises.push(getDatasetInfo(id)); // need to write this
+		for (const id of this.datasetIds.keys()) {
+			const fileName = String(this.datasetIds.get(id));
+			datasetPromises.push(getDatasetInfo(String(id), fileName)); // need to write this
 		}
 		// list id, kind, and numRows
 		try {
