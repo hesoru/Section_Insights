@@ -340,7 +340,11 @@ describe("InsightFacade", function () {
 					expect.fail(`performQuery resolved when it should have rejected with ${expected}`);
 				}
 				const expectedLength = expected.length;
+				//console.log(expected)
+				//console.log(result)
 				expect(result.length).to.equal(expectedLength);
+				expect(result).to.have.deep.members(expected);
+
 				return;
 			} catch (err) {
 				if (!errorExpected) {

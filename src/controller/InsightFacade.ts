@@ -131,9 +131,7 @@ export default class InsightFacade implements IInsightFacade {
 			const result: any = {};
 			const columns = validatedQuery.OPTIONS.COLUMNS;
 			for (const column of columns) {
-				const parts = column.split("_");
-				const field = parts[1];
-				result[field] = section[field];
+				result[column] = section[column];
 			}
 			return result;
 		});
