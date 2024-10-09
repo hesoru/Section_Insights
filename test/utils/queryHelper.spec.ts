@@ -12,6 +12,7 @@ import {
 } from "../../src/utils/QueryHelper";
 import IInsightFacade from "../../src/controller/InsightFacade";
 import InsightFacade from "../../src/controller/InsightFacade";
+import {Query} from "../../src/models/Section";
 
 use(chaiAsPromised);
 
@@ -356,8 +357,13 @@ describe("InsightFacade", function () {
             await clearDisk();
         });
 
-        it("valid queries", function () {
-            const test1 = await loadTestQuery('[valid/simple.json]');
+        it("valid queries", async function () {
+            try {
+                const test1 = await loadTestQuery('[valid/simple.json]');
+                await getAllSections(test1.input as Query);
+            } catch (e) {
+                expect.fail('should not have thrown' + e);
+            }
         });
 
     });

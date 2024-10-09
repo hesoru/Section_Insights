@@ -6,7 +6,7 @@ import {
 import {
 	MKey, Query,
 	Section,
-	SKey, Body, Options, CompFunction
+	SKey, Body, Options
 } from "../models/Section";
 import fs from "fs-extra";
 import path from "node:path";
