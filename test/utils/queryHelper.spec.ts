@@ -349,9 +349,11 @@ describe("InsightFacade", function () {
 			const timeout = 10000;
 			const answer = 64612;
 			this.timeout(timeout);
+			const test = new Map<string, number>();
+			test.set("sections", 0);
 			try {
 				const test1 = await loadTestQuery("[valid/simple.json]");
-				const result1 = await getAllSections(test1.input as Query);
+				const result1 = await getAllSections(test1.input as Query, test);
 				expect(result1).to.be.an("array");
 				expect(result1.length).to.equal(answer);
 			} catch (e) {
