@@ -1,0 +1,19 @@
+{
+	"title": "IDString Empty (Invalid)",
+	"input": {
+		"WHERE": {
+			"IS": {
+				"_dept": ""
+			}
+		},
+		"OPTIONS": {
+			"COLUMNS": [
+				"_dept",
+				"_avg"
+			],
+			"ORDER": "_avg"
+		}
+	},
+	"errorExpected": true,
+	"expected": "InsightError"
+}

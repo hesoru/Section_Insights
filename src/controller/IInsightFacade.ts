@@ -15,6 +15,7 @@ export interface InsightDataset {
 	numRows: number;
 }
 
+// should this maybe be an object instead of an array of strings?
 export type InsightResult = Record<string, string | number>;
 
 export class InsightError extends Error {
