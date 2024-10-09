@@ -220,7 +220,6 @@ export function extractDatasetId(query: Query): string {
  * @param id
  */
 export async function loadDatasets(id: string, fileName: string): Promise<Section[]> {
-	// const MAX_SIZE = 5000;
 	const datasetPath = path.resolve(__dirname, "../data", fileName);
 	let dataset;
 	try {
@@ -233,10 +232,6 @@ export async function loadDatasets(id: string, fileName: string): Promise<Sectio
 		for (const section of file.result) {
 			const newSection = parseSectionObject(section);
 			parsedSections.push(newSection);
-			// WANT TO RETURN ALL SECTIONS
-			// if(parsedSections.length > MAX_SIZE) {
-			// 	throw new ResultTooLargeError('result exceeded 5000 sections');
-			// }
 		}
 	}
 	return parsedSections;
