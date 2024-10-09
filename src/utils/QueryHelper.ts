@@ -12,40 +12,6 @@ import fs from "fs-extra";
 import path from "node:path";
 import {parseSectionObject} from "./JsonHelper";
 
-// declare let query: Query;
-// declare const columns = [];
-
-export async function processQueryOnDataset(validatedQuery: Query): Promise<InsightResult[]> {
-	// 1) start with data for all sections
-	const allSections = await getAllSections(validatedQuery);
-
-	// 2) filter results if necessary (WHERE)
-	let filteredResults: InsightResult[];
-	if (validatedQuery.WHERE) {
-		filteredResults = handleFilter(validatedQuery.WHERE, allSections);
-	} else {
-		filteredResults = allSections;
-	}
-
-	// 3) select only specified columns (OPTIONS.COLUMNS)
-	filteredResults = filteredResults.map((section) => {
-		// can be string | number
-		const result: any = {};
-		validatedQuery.OPTIONS.COLUMNS.forEach((column) => {
-			result[column] = section[column];
-		});
-		return result;
-	});
-
-	// 4) sort results if necessary (OPTIONS.ORDER)
-	let sortedFilteredResults: InsightResult[] = [];
-	if (validatedQuery.OPTIONS.ORDER) {
-		sortedFilteredResults = sortResults(validatedQuery.OPTIONS, filteredResults);
-	}
-
-	return sortedFilteredResults;
-}
-
 /**
  * @returns - Query, validates that the query param conforms to Query structure, if not throws InsightError
  * @param query
@@ -82,41 +48,77 @@ export function validateQuery(query: unknown): Query {
 
 export function validateBody(filter: any): void {
 	const keys = checkKeys(filter);
-	const lengthLimit = 2
-	//checks type of each possible filter stopping at Mkey and Skey
-	switch(keys[0]) {
-		case 'OR': if(filter.OR === null || !Array.isArray(filter.OR) || filter.OR.length !== lengthLimit) {
-			throw new InsightError('invalid query, query.WHERE.OR is invalid') }
-			for(const body of filter.OR) {
-				validateBody(body); }
+	const lengthLimit = 2;
+	const validateArray = (key: string, value: any): void => {
+		if (!Array.isArray(value) || value.length !== lengthLimit) {
+			throw new InsightError(`invalid query, query.WHERE.${key} is invalid`);
+		}
+		value.forEach(validateBody);
+	};
+
+	const validateObject = (key: string, value: any, type: string): void => {
+		if (value === null || typeof value !== 'object') {
+			throw new InsightError(`invalid query, query.WHERE.${key} is invalid`);
+		}
+		validateComparator(value, type);
+	};
+
+	switch (keys[0]) {
+		case 'OR': validateArray('OR', filter.OR);
 			break;
-		case 'AND': if(filter.AND === null || !Array.isArray(filter.AND) || filter.AND.length !== lengthLimit) {
-			throw new InsightError('invalid query, query.WHERE.AND is invalid') }
-			for(const body of filter.AND) {
-				validateBody(body); }
+		case 'AND': validateArray('AND', filter.AND);
 			break;
-		case 'GT': if(filter.GT === null || typeof filter.GT !== 'object')  {
-			throw new InsightError('invalid query, query.WHERE.GT is invalid') }
-			validateComparator(filter.GT, "Mkey");
+		case 'GT': validateObject('GT', filter.GT, "Mkey");
 			break;
-		case 'LT': if(filter.LT === null || typeof filter.LT !== 'object') {
-			throw new InsightError('invalid query, query.WHERE.LT is invalid') }
-			validateComparator(filter.LT, "Mkey");
+		case 'LT': validateObject('LT', filter.LT, "Mkey");
 			break;
-		case 'EQ': if(filter.EQ === null || typeof filter.EQ !== 'object') {
-			throw new InsightError('invalid query, query.WHERE.EQ is invalid') }
-			validateComparator(filter.EQ, "Mkey");
+		case 'EQ': validateObject('EQ', filter.EQ, "Mkey");
 			break;
-		case 'IS': if(filter.IS === null || typeof filter.IS !== 'object'){
-			throw new InsightError('invalid query, query.WHERE.IS is invalid') }
-			validateComparator(filter.IS, "SKey");
+		case 'IS': validateObject('IS', filter.IS, "SKey");
 			break;
-		case 'NOT': if(filter.NOT === null || typeof filter.NOT !== 'object') {
-			throw new InsightError('invalid query, query.WHERE.NOT is invalid') }
-			validateBody(filter.NOT);
+		case 'NOT': validateBody(filter.NOT);
 			break;
-		default: throw new InsightError('invalid query, query.WHERE contains an invalid key'); }
+		default: throw new InsightError('invalid query, query.WHERE contains an invalid key');
+	}
 }
+
+// export function validateBody(filter: any): void {
+// 	const keys = checkKeys(filter);
+// 	const lengthLimit = 2
+// 	//checks type of each possible filter stopping at Mkey and Skey
+// 	switch(keys[0]) {
+// 		case 'OR': if(filter.OR === null || !Array.isArray(filter.OR) || filter.OR.length !== lengthLimit) {
+// 			throw new InsightError('invalid query, query.WHERE.OR is invalid') }
+// 			for(const body of filter.OR) {
+// 				validateBody(body); }
+// 			break;
+// 		case 'AND': if(filter.AND === null || !Array.isArray(filter.AND) || filter.AND.length !== lengthLimit) {
+// 			throw new InsightError('invalid query, query.WHERE.AND is invalid') }
+// 			for(const body of filter.AND) {
+// 				validateBody(body); }
+// 			break;
+// 		case 'GT': if(filter.GT === null || typeof filter.GT !== 'object')  {
+// 			throw new InsightError('invalid query, query.WHERE.GT is invalid') }
+// 			validateComparator(filter.GT, "Mkey");
+// 			break;
+// 		case 'LT': if(filter.LT === null || typeof filter.LT !== 'object') {
+// 			throw new InsightError('invalid query, query.WHERE.LT is invalid') }
+// 			validateComparator(filter.LT, "Mkey");
+// 			break;
+// 		case 'EQ': if(filter.EQ === null || typeof filter.EQ !== 'object') {
+// 			throw new InsightError('invalid query, query.WHERE.EQ is invalid') }
+// 			validateComparator(filter.EQ, "Mkey");
+// 			break;
+// 		case 'IS': if(filter.IS === null || typeof filter.IS !== 'object'){
+// 			throw new InsightError('invalid query, query.WHERE.IS is invalid') }
+// 			validateComparator(filter.IS, "SKey");
+// 			break;
+// 		case 'NOT': if(filter.NOT === null || typeof filter.NOT !== 'object') {
+// 			throw new InsightError('invalid query, query.WHERE.NOT is invalid') }
+// 			validateBody(filter.NOT);
+// 			break;
+// 		default: throw new InsightError('invalid query, query.WHERE contains an invalid key'); }
+// }
 
 export function checkKeys(filter: any): string[] {
 	const keys = Object.keys(filter);
@@ -175,7 +177,6 @@ function validateComparator(comparator: [MKey, number] | [SKey, number], field: 
 	}
 }
 
-
 function validateKey(key: any): void {
 	if(typeof key !== 'string') {
 		throw new InsightError('invalid query, key is not a string');
@@ -211,8 +212,10 @@ function isSKey(key: string): boolean {
 	return validSFields.includes(parts[1]);
 }
 
-//Helena:
 export function handleFilter(filter: Body, data: InsightResult[]): InsightResult[] {
+	if (!filter) {
+		return data;
+	}
 	if (filter.AND || filter.OR) {
 		return handleLogicComparison(filter, data);
 	} else if (filter.LT || filter.GT || filter.EQ) {
@@ -252,7 +255,6 @@ function handleLogicComparison(filter: Body, data: InsightResult[]): InsightResu
 	}
 	return results;
 }
-
 
 function handleMComparison(filter: any, data: InsightResult[]): InsightResult[] {
 	if (filter.GT) {
@@ -309,7 +311,7 @@ export async function getAllSections(query: Query): Promise<InsightResult[]> {
 	return allResults;
 }
 
-function sortResults(options: Options, results: InsightResult[]): InsightResult[] {
+export function sortResults(options: Options, results: InsightResult[]): InsightResult[] {
 	return results.sort((a, b) => {
 		const aValue = a[options.ORDER as string | number];
 		const bValue = b[options.ORDER as string | number];

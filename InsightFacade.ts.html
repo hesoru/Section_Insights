@@ -1,0 +1,244 @@
+<html>
+<head>
+<title>InsightFacade.ts</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cf8e6d;}
+.s1 { color: #bcbec4;}
+.s2 { color: #bcbec4;}
+.s3 { color: #6aab73;}
+.s4 { color: #5f826b; font-style: italic;}
+.s5 { color: #7a7e85;}
+.s6 { color: #2aacb8;}
+</style>
+</head>
+<body bgcolor="#1e1f22">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+InsightFacade.ts</font>
+</center></td></tr></table>
+<pre><span class="s0">import </span><span class="s2">{</span>
+	<span class="s1">IInsightFacade</span><span class="s2">,</span>
+	<span class="s1">InsightDataset</span><span class="s2">,</span>
+	<span class="s1">InsightDatasetKind</span><span class="s2">,</span>
+	<span class="s1">InsightError</span><span class="s2">,</span>
+	<span class="s1">InsightResult</span><span class="s2">,</span>
+	<span class="s1">NotFoundError</span>
+<span class="s2">} </span><span class="s1">from </span><span class="s3">&quot;./IInsightFacade&quot;</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s1">JSZip from </span><span class="s3">&quot;jszip&quot;</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s1">fs from </span><span class="s3">&quot;fs-extra&quot;</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s2">{</span><span class="s1">checkValidId</span><span class="s2">, </span><span class="s1">parseJSONtoSections</span><span class="s2">, </span><span class="s1">writeFilesToDisk</span><span class="s2">} </span><span class="s1">from </span><span class="s3">&quot;../utils/JsonHelper&quot;</span><span class="s2">;</span>
+<span class="s0">import </span><span class="s1">path from </span><span class="s3">&quot;node:path&quot;</span><span class="s2">;</span>
+
+
+<span class="s4">/**</span>
+ <span class="s4">* This is the main programmatic entry point for the project.</span>
+ <span class="s4">* Method documentation is in IInsightFacade</span>
+ <span class="s4">*</span>
+ <span class="s4">*/</span>
+<span class="s0">export default class </span><span class="s1">InsightFacade </span><span class="s0">implements </span><span class="s1">IInsightFacade </span><span class="s2">{</span>
+	<span class="s0">public </span><span class="s1">datasetIds</span><span class="s2">: </span><span class="s1">string</span><span class="s2">[];</span>
+
+	<span class="s5">//don't include any async code inside the constructor and make the constructor as simple as possible.</span>
+	<span class="s5">//A function itself could fail/succeed but a constructor should always pass.</span>
+	<span class="s1">constructor</span><span class="s2">() {</span>
+		<span class="s0">this</span><span class="s2">.</span><span class="s1">datasetIds </span><span class="s2">= [];</span>
+	<span class="s2">}</span>
+
+	<span class="s0">public </span><span class="s1">async addDataset</span><span class="s2">(</span><span class="s1">id</span><span class="s2">: </span><span class="s1">string</span><span class="s2">, </span><span class="s1">content</span><span class="s2">: </span><span class="s1">string</span><span class="s2">, </span><span class="s1">kind</span><span class="s2">: </span><span class="s1">InsightDatasetKind</span><span class="s2">): </span><span class="s1">Promise</span><span class="s2">&lt;</span><span class="s1">string</span><span class="s2">[]&gt; {</span>
+		<span class="s5">//1) check kind of dataset</span>
+		<span class="s0">if </span><span class="s2">(</span><span class="s1">kind </span><span class="s2">!== </span><span class="s1">InsightDatasetKind</span><span class="s2">.</span><span class="s1">Sections</span><span class="s2">) {</span>
+			<span class="s0">throw new </span><span class="s1">InsightError</span><span class="s2">(</span><span class="s3">&quot;Dataset not of kind InsightDatasetKind.Sections, could not add dataset&quot;</span><span class="s2">);</span>
+		<span class="s2">}</span>
+
+		<span class="s5">//2) Check validity of id: can not be only white space, can not have underscores, reject if id is already in database</span>
+		<span class="s0">try </span><span class="s2">{</span>
+			<span class="s1">checkValidId</span><span class="s2">(</span><span class="s1">id</span><span class="s2">, </span><span class="s0">this</span><span class="s2">.</span><span class="s1">datasetIds</span><span class="s2">);</span>
+		<span class="s2">} </span><span class="s0">catch </span><span class="s2">(</span><span class="s1">e</span><span class="s2">) {</span>
+			<span class="s0">throw new </span><span class="s1">InsightError</span><span class="s2">(</span><span class="s3">'id passed to addDataset invalid' </span><span class="s2">+ </span><span class="s1">e</span><span class="s2">); </span><span class="s5">//is this catch block necessary?</span>
+		<span class="s2">}</span>
+		<span class="s5">//3) Check validity of content: must be a valid base24 string. Must contain at least 1 valid section(not be empty)</span>
+		<span class="s5">//4) Check validity of courses folder: must be a JSON formatted file, must contain 1 or more valid sections within the result key</span>
+		<span class="s5">//must be located within a folder called courses/ in root zips directory.</span>
+		<span class="s5">//A valid section must contain all queryable fields: id, Course, Title, Professor, Subject, Year, Avg, Pass, Fail, Audit</span>
+
+		<span class="s5">//unzipping zip file: following JZip gitHub guide: https://stuk.github.io/jszip/documentation/examples.html</span>
+		<span class="s0">const </span><span class="s1">zip </span><span class="s2">= </span><span class="s0">new </span><span class="s1">JSZip</span><span class="s2">();</span>
+		<span class="s0">const </span><span class="s1">unzipped </span><span class="s2">= </span><span class="s0">await </span><span class="s1">zip</span><span class="s2">.</span><span class="s1">loadAsync</span><span class="s2">(</span><span class="s1">content</span><span class="s2">, {</span><span class="s1">base64</span><span class="s2">: </span><span class="s0">true</span><span class="s2">})</span>
+		<span class="s5">//forEach documentation: https://stuk.github.io/jszip/documentation/api_jszip/for_each.html</span>
+		<span class="s0">const </span><span class="s1">fileStringsPromises</span><span class="s2">: </span><span class="s1">Promise</span><span class="s2">&lt;</span><span class="s1">string</span><span class="s2">&gt;[] = [];</span>
+		<span class="s0">const </span><span class="s1">test </span><span class="s2">= </span><span class="s0">await </span><span class="s1">unzipped</span><span class="s2">.</span><span class="s1">files</span><span class="s2">[</span><span class="s3">'courses/CONS481'</span><span class="s2">].</span><span class="s1">async</span><span class="s2">(</span><span class="s3">'string'</span><span class="s2">);</span>
+		<span class="s1">parseJSONtoSections</span><span class="s2">(</span><span class="s1">test</span><span class="s2">);</span>
+		<span class="s1">unzipped</span><span class="s2">.</span><span class="s1">forEach</span><span class="s2">((</span><span class="s1">relativePath</span><span class="s2">, </span><span class="s1">file</span><span class="s2">) =&gt; {</span>
+			<span class="s0">if </span><span class="s2">(!</span><span class="s1">file</span><span class="s2">.</span><span class="s1">dir</span><span class="s2">) {</span>
+				<span class="s5">//add promise to array</span>
+				<span class="s1">fileStringsPromises</span><span class="s2">.</span><span class="s1">push</span><span class="s2">(</span><span class="s1">unzipped</span><span class="s2">.</span><span class="s1">files</span><span class="s2">[</span><span class="s1">relativePath</span><span class="s2">].</span><span class="s1">async</span><span class="s2">(</span><span class="s3">'string'</span><span class="s2">))</span>
+			<span class="s2">}</span>
+		<span class="s2">})</span>
+
+		<span class="s5">//Adapted from ChatGPT generated response</span>
+		<span class="s0">let </span><span class="s1">fileStrings</span><span class="s2">: </span><span class="s1">string</span><span class="s2">[]</span>
+		<span class="s0">try </span><span class="s2">{</span>
+			<span class="s1">fileStrings </span><span class="s2">= </span><span class="s0">await </span><span class="s1">Promise</span><span class="s2">.</span><span class="s1">all</span><span class="s2">(</span><span class="s1">fileStringsPromises</span><span class="s2">);</span>
+			<span class="s0">for </span><span class="s2">(</span><span class="s0">const </span><span class="s1">fileString of fileStrings</span><span class="s2">) {</span>
+				<span class="s1">parseJSONtoSections</span><span class="s2">(</span><span class="s1">fileString</span><span class="s2">);</span>
+			<span class="s2">}</span>
+			<span class="s0">await </span><span class="s1">writeFilesToDisk</span><span class="s2">(</span><span class="s1">fileStrings</span><span class="s2">, </span><span class="s1">id</span><span class="s2">);</span>
+		<span class="s2">} </span><span class="s0">catch </span><span class="s2">(</span><span class="s1">error</span><span class="s2">) {</span>
+			<span class="s0">throw new </span><span class="s1">InsightError</span><span class="s2">(</span><span class="s3">&quot;unable to convert all files to JSON formatted strings&quot; </span><span class="s2">+ </span><span class="s1">error</span><span class="s2">);</span>
+		<span class="s2">}</span>
+		<span class="s5">//append newly added datasetId to list of used ids</span>
+		<span class="s0">this</span><span class="s2">.</span><span class="s1">datasetIds</span><span class="s2">.</span><span class="s1">push</span><span class="s2">(</span><span class="s1">id</span><span class="s2">);</span>
+		<span class="s0">return </span><span class="s1">fileStrings</span><span class="s2">;</span>
+	<span class="s2">}</span>
+
+
+<span class="s5">//  let courses;</span>
+<span class="s5">//  try {</span>
+<span class="s5">//  courses = unzipped.folder('courses');</span>
+<span class="s5">// } catch (error) {</span>
+<span class="s5">//  throw new InsightError(&quot;Failed to load files, no courses folder found&quot; + error);</span>
+<span class="s5">// }</span>
+
+	<span class="s0">public </span><span class="s1">async removeDataset</span><span class="s2">(</span><span class="s1">id</span><span class="s2">: </span><span class="s1">string</span><span class="s2">): </span><span class="s1">Promise</span><span class="s2">&lt;</span><span class="s1">string</span><span class="s2">&gt; {</span>
+		<span class="s5">// TODO: Remove this once you implement the methods!</span>
+
+		<span class="s5">// validate id: if &quot;&quot;, contains _, or only whitespace</span>
+		<span class="s0">if </span><span class="s2">(!</span><span class="s1">id </span><span class="s2">|| </span><span class="s1">id</span><span class="s2">.</span><span class="s1">includes</span><span class="s2">(</span><span class="s3">&quot;_&quot;</span><span class="s2">) || </span><span class="s1">id</span><span class="s2">.</span><span class="s1">trim</span><span class="s2">() === </span><span class="s3">&quot;&quot;</span><span class="s2">) {</span>
+			<span class="s0">throw new </span><span class="s1">InsightError</span><span class="s2">(</span><span class="s3">&quot;Invalid dataset id.&quot;</span><span class="s2">);</span>
+		<span class="s2">}</span>
+
+		<span class="s5">// check if dataset exists</span>
+		<span class="s0">const </span><span class="s1">datasetIndex </span><span class="s2">= </span><span class="s0">this</span><span class="s2">.</span><span class="s1">datasetIds</span><span class="s2">.</span><span class="s1">indexOf</span><span class="s2">(</span><span class="s1">id</span><span class="s2">);</span>
+		<span class="s0">if </span><span class="s2">(</span><span class="s1">datasetIndex </span><span class="s2">=== -</span><span class="s6">1</span><span class="s2">) {</span>
+			<span class="s0">throw new </span><span class="s1">NotFoundError</span><span class="s2">(</span><span class="s3">`Dataset with id &quot;</span><span class="s1">$</span><span class="s2">{</span><span class="s1">id</span><span class="s2">}</span><span class="s3">&quot; not found.`</span><span class="s2">);</span>
+		<span class="s2">}</span>
+
+		<span class="s0">try </span><span class="s2">{</span>
+			<span class="s5">// remove from datasetId array</span>
+			<span class="s0">this</span><span class="s2">.</span><span class="s1">datasetIds</span><span class="s2">.</span><span class="s1">splice</span><span class="s2">(</span><span class="s1">datasetIndex</span><span class="s2">, </span><span class="s6">1</span><span class="s2">);</span>
+			<span class="s5">// remove from memory</span>
+			<span class="s5">// ..</span>
+			<span class="s5">// ..</span>
+
+			<span class="s5">// remove from disk</span>
+			<span class="s0">await </span><span class="s1">fs</span><span class="s2">.</span><span class="s1">promises</span><span class="s2">.</span><span class="s1">unlink</span><span class="s2">(</span><span class="s3">`data/</span><span class="s1">$</span><span class="s2">{</span><span class="s1">id</span><span class="s2">}</span><span class="s3">.json`</span><span class="s2">);</span>
+
+			<span class="s5">// return removed id</span>
+			<span class="s0">return </span><span class="s1">id</span><span class="s2">;</span>
+		<span class="s2">} </span><span class="s0">catch </span><span class="s2">(</span><span class="s1">error</span><span class="s2">) {</span>
+			<span class="s0">throw new </span><span class="s1">InsightError</span><span class="s2">(</span><span class="s3">`Error removing dataset with id &quot;</span><span class="s1">$</span><span class="s2">{</span><span class="s1">id</span><span class="s2">}</span><span class="s3">&quot;: </span><span class="s1">$</span><span class="s2">{</span><span class="s1">error</span><span class="s2">.</span><span class="s1">message</span><span class="s2">}</span><span class="s3">`</span><span class="s2">);</span>
+		<span class="s2">}</span>
+	<span class="s2">}</span>
+
+	<span class="s0">public </span><span class="s1">async performQuery</span><span class="s2">(</span><span class="s1">query</span><span class="s2">: </span><span class="s1">unknown</span><span class="s2">): </span><span class="s1">Promise</span><span class="s2">&lt;</span><span class="s1">InsightResult</span><span class="s2">[]&gt; {</span>
+		<span class="s5">// TODO: Remove this once you implement the methods!</span>
+
+		<span class="s5">// // 1. Validate query (this function should be implemented elsewhere)</span>
+		<span class="s5">// if (!validateQuery(query)) {</span>
+		<span class="s5">//  throw new InsightError(&quot;Invalid query format.&quot;);</span>
+		<span class="s5">// }</span>
+		<span class="s5">//</span>
+		<span class="s5">// // 2. Extract the dataset id(s) from the query</span>
+		<span class="s5">// const datasetId = extractDatasetId(query); // A function to parse the query and extract the dataset id</span>
+		<span class="s5">//</span>
+		<span class="s5">// // 3. Ensure dataset exists in memory or disk</span>
+		<span class="s5">// if (!this.datasetIds.includes(datasetId)) {</span>
+		<span class="s5">//  throw new InsightError(`Dataset '${datasetId}' has not been added.`);</span>
+		<span class="s5">// }</span>
+		<span class="s5">//</span>
+		<span class="s5">// // 4. Process the query on the dataset</span>
+		<span class="s5">// let results: InsightResult[];</span>
+		<span class="s5">// try {</span>
+		<span class="s5">//  results = await processQueryOnDataset(query, datasetId);</span>
+		<span class="s5">// } catch (error) {</span>
+		<span class="s5">//  throw new InsightError(`Error processing query: ${error.message}`);</span>
+		<span class="s5">// }</span>
+		<span class="s5">//</span>
+		<span class="s5">// // 5. Handle large result sets</span>
+		<span class="s5">// if (results.length &gt; MAX_RESULT_SIZE) {</span>
+		<span class="s5">//  throw new ResultTooLargeError(&quot;Query results exceed maximum size.&quot;);</span>
+		<span class="s5">// }</span>
+		<span class="s5">//</span>
+		<span class="s5">// // 6. Return the results</span>
+		<span class="s5">// return results;</span>
+		<span class="s5">//</span>
+		<span class="s5">// throw new Error(`InsightFacadeImpl::performQuery() is unimplemented! - query=${query};`);</span>
+	<span class="s2">}</span>
+
+	<span class="s0">public </span><span class="s1">async listDatasets</span><span class="s2">(): </span><span class="s1">Promise</span><span class="s2">&lt;</span><span class="s1">InsightDataset</span><span class="s2">[]&gt; {</span>
+		<span class="s5">// TODO: Remove this once you implement the methods!</span>
+
+		<span class="s0">const </span><span class="s1">datasets</span><span class="s2">: </span><span class="s1">InsightDataset</span><span class="s2">[] = [];</span>
+
+		<span class="s5">// get datasets in datasetIds array</span>
+		<span class="s0">for </span><span class="s2">(</span><span class="s0">const </span><span class="s1">id of </span><span class="s0">this</span><span class="s2">.</span><span class="s1">datasetIds</span><span class="s2">) {</span>
+			<span class="s0">const </span><span class="s1">datasetInfo </span><span class="s2">= </span><span class="s0">await </span><span class="s1">getDatasetInfo</span><span class="s2">(</span><span class="s1">id</span><span class="s2">); </span><span class="s5">// need to write this</span>
+			<span class="s5">// list id, kind, and numRows</span>
+			<span class="s1">datasets</span><span class="s2">.</span><span class="s1">push</span><span class="s2">({</span>
+				<span class="s1">id</span><span class="s2">: </span><span class="s1">id</span><span class="s2">,</span>
+				<span class="s1">kind</span><span class="s2">: </span><span class="s1">datasetInfo</span><span class="s2">.</span><span class="s1">kind</span><span class="s2">,</span>
+				<span class="s1">numRows</span><span class="s2">: </span><span class="s1">datasetInfo</span><span class="s2">.</span><span class="s1">numRows</span><span class="s2">,</span>
+			<span class="s2">});</span>
+		<span class="s2">}</span>
+
+		<span class="s0">return </span><span class="s1">datasets</span><span class="s2">;</span>
+	<span class="s2">}</span>
+
+	<span class="s0">public </span><span class="s1">async getDatasetInfo</span><span class="s2">(</span><span class="s1">id</span><span class="s2">: </span><span class="s1">string</span><span class="s2">): </span><span class="s1">Promise</span><span class="s2">&lt;</span><span class="s1">InsightDataset</span><span class="s2">&gt; {</span>
+		<span class="s5">// validate the id</span>
+		<span class="s0">if </span><span class="s2">(!</span><span class="s1">id </span><span class="s2">|| </span><span class="s1">id</span><span class="s2">.</span><span class="s1">trim</span><span class="s2">().</span><span class="s1">length </span><span class="s2">=== </span><span class="s6">0 </span><span class="s2">|| </span><span class="s1">id</span><span class="s2">.</span><span class="s1">includes</span><span class="s2">(</span><span class="s3">&quot;_&quot;</span><span class="s2">)) {</span>
+			<span class="s0">throw new </span><span class="s1">InsightError</span><span class="s2">(</span><span class="s3">`Invalid dataset id: </span><span class="s1">$</span><span class="s2">{</span><span class="s1">id</span><span class="s2">}</span><span class="s3">`</span><span class="s2">);</span>
+		<span class="s2">}</span>
+
+		<span class="s5">// check if dataset is already in memory</span>
+		<span class="s0">if </span><span class="s2">(!</span><span class="s0">this</span><span class="s2">.</span><span class="s1">datasetIds</span><span class="s2">.</span><span class="s1">includes</span><span class="s2">(</span><span class="s1">id</span><span class="s2">)) {</span>
+			<span class="s0">throw new </span><span class="s1">InsightError</span><span class="s2">(</span><span class="s3">`Dataset with id '</span><span class="s1">$</span><span class="s2">{</span><span class="s1">id</span><span class="s2">}</span><span class="s3">' not found in memory.`</span><span class="s2">);</span>
+		<span class="s2">}</span>
+
+		<span class="s5">// get dataset file path</span>
+		<span class="s0">const </span><span class="s1">datasetPath </span><span class="s2">= </span><span class="s1">path</span><span class="s2">.</span><span class="s1">resolve</span><span class="s2">(</span><span class="s1">__dirname</span><span class="s2">, </span><span class="s3">'../data'</span><span class="s2">, </span><span class="s1">id </span><span class="s2">+ </span><span class="s3">&quot;.json&quot;</span><span class="s2">);</span>
+		<span class="s0">try </span><span class="s2">{</span>
+			<span class="s5">// read dataset file from disk</span>
+			<span class="s0">const </span><span class="s1">data </span><span class="s2">= </span><span class="s0">await </span><span class="s1">fs</span><span class="s2">.</span><span class="s1">readFile</span><span class="s2">(</span><span class="s1">datasetPath</span><span class="s2">, </span><span class="s3">'utf8'</span><span class="s2">);</span>
+			<span class="s0">const </span><span class="s1">dataset </span><span class="s2">= </span><span class="s1">JSON</span><span class="s2">.</span><span class="s1">parse</span><span class="s2">(</span><span class="s1">data</span><span class="s2">);</span>
+
+			<span class="s5">// check for expected data structure</span>
+			<span class="s5">// if (!dataset? || !dataset.sections?) {</span>
+			<span class="s5">//  throw new InsightError(`Dataset format is invalid for id '${id}'`);</span>
+			<span class="s5">// }</span>
+
+			<span class="s5">// count the number of sections (rows) in the dataset</span>
+			<span class="s0">const </span><span class="s1">numRows </span><span class="s2">= </span><span class="s1">dataset</span><span class="s2">.</span><span class="s1">sections</span><span class="s2">.</span><span class="s1">length</span><span class="s2">;</span>
+			<span class="s0">const </span><span class="s1">kind</span><span class="s2">: </span><span class="s1">InsightDatasetKind </span><span class="s2">= </span><span class="s1">InsightDatasetKind</span><span class="s2">.</span><span class="s1">Sections</span><span class="s2">;</span>
+
+			<span class="s5">// Return dataset info</span>
+			<span class="s0">return </span><span class="s2">{</span>
+				<span class="s1">id</span><span class="s2">: </span><span class="s1">id</span><span class="s2">,</span>
+				<span class="s1">kind</span><span class="s2">: </span><span class="s1">kind</span><span class="s2">,</span>
+				<span class="s1">numRows</span><span class="s2">: </span><span class="s1">numRows</span>
+			<span class="s2">};</span>
+		<span class="s2">} </span><span class="s0">catch </span><span class="s2">(</span><span class="s1">error</span><span class="s2">) {</span>
+			<span class="s0">throw new </span><span class="s1">InsightError</span><span class="s2">(</span><span class="s3">`Failed to retrieve dataset info for id '</span><span class="s1">$</span><span class="s2">{</span><span class="s1">id</span><span class="s2">}</span><span class="s3">': </span><span class="s1">$</span><span class="s2">{</span><span class="s1">error</span><span class="s2">.</span><span class="s1">message</span><span class="s2">}</span><span class="s3">`</span><span class="s2">);</span>
+		<span class="s2">}</span>
+	<span class="s2">}</span>
+<span class="s2">}</span>
+
+<span class="s5">// const fse = require('fs-extra')</span>
+<span class="s5">// fs.readFileSync()</span>
+<span class="s5">// fs.writeFileSync('wheretowritethefile.json', variablecontainingfile)</span>
+<span class="s5">// // fs.readFile('filePath', characterEncoding, callbackFunction(error, data))</span>
+<span class="s5">// if(relativePath.endsWith('.json')) {</span>
+<span class="s5">//  const jsonContent = await file.async('text')</span>
+<span class="s5">//  const queryJson = JSON.parse(jsonContent); JSON parse only takes a valid json string</span>
+<span class="s5">// }</span>
+<span class="s5">//could wrap these in a try catch:</span>
+<span class="s5">// const jsonData = await fs.readJson(inputFilePath)</span>
+<span class="s5">// await fs.outputJson(outputFilePath, jsonData)</span>
+
+<span class="s5">// save entire dataset json file to disk.</span>
+<span class="s5">// helper function inside utils folder.</span>
+</pre>
+</body>
+</html>

@@ -1,0 +1,77 @@
+[33mcommit 0467cb6be50e5e89ccc144c7fb959834d2c07f2e[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mSophia[m[33m, [m[1;31morigin/Sophia[m[33m)[m
+Author: smeans <u8t6d@ugrad.cs.ubc.ca>
+Date:   Tue Oct 1 22:17:27 2024 -0700
+
+    adding miniDataset5 which contains a single course WOOD475, try running add dataset with this zip file.
+
+[33mcommit 223b8034af7685578d4e5101577344775344522e[m
+Author: smeans <u8t6d@ugrad.cs.ubc.ca>
+Date:   Mon Sep 30 17:17:28 2024 -0700
+
+    addDataset tests passing and writing to disk, added some more helpers
+
+[33mcommit bea0b853d2b8e01e8ffa099952aa067f058a59fa[m
+Author: smeans <u8t6d@ugrad.cs.ubc.ca>
+Date:   Sun Sep 29 22:34:03 2024 -0700
+
+    Got addDataset working, datasetIds now usable.
+
+[33mcommit 78c39347a0efe21e37e6ed94fc59305ad705f2ad[m
+Author: smeans <u8t6d@ugrad.cs.ubc.ca>
+Date:   Sun Sep 29 00:01:24 2024 -0700
+
+    Think I got WriteFilesToDisk to work
+
+[33mcommit 0e73f8d1122efd7ff4da3f8399ce6871f865c96d[m
+Author: smeans <u8t6d@ugrad.cs.ubc.ca>
+Date:   Sat Sep 28 23:17:25 2024 -0700
+
+    Started on unittests for addDataset
+
+[33mcommit f12610fa530ee16aab34a74b965b2ec162a7848f[m
+Author: smeans <u8t6d@ugrad.cs.ubc.ca>
+Date:   Thu Sep 26 12:46:57 2024 -0700
+
+    Implementation of addDataset helper functions.
+
+[33mcommit b997979ee8a4c123ecf06a17daa011b8ad686683[m
+Author: smeans <u8t6d@ugrad.cs.ubc.ca>
+Date:   Wed Sep 25 22:07:31 2024 -0700
+
+    Wrote parseSectionObject and parseJSONtoSections
+
+[33mcommit 1c32d9ba1a7f71f3996631d5ec439bcf7f4a3944[m
+Author: smeans <u8t6d@ugrad.cs.ubc.ca>
+Date:   Wed Sep 25 20:52:44 2024 -0700
+
+    Continued working on addDataset, used Promise.all() instead of await
+
+[33mcommit 82b648663557098e4a5690585d488fc6fae4c45e[m
+Author: smeans <u8t6d@ugrad.cs.ubc.ca>
+Date:   Tue Sep 24 21:51:41 2024 -0700
+
+    Updated tests and test files from C0
+
+[33mcommit 76ad1f59341a80fdbdb12a66727e569a36469421[m
+Author: smeans <u8t6d@ugrad.cs.ubc.ca>
+Date:   Mon Sep 23 21:54:17 2024 -0700
+
+    Worked on Dataset.ts, sorry for all the errors!
+
+[33mcommit 3fd90581ac9f89908e61d1ac99f8a10d65fbc9e9[m
+Author: smeans <u8t6d@ugrad.cs.ubc.ca>
+Date:   Mon Sep 23 21:52:45 2024 -0700
+
+    Started addDataset, sorry for all the errors!
+
+[33mcommit 8a45e7c8cb1b839c38143807c632607d742b8580[m
+Author: smeans <u8t6d@ugrad.cs.ubc.ca>
+Date:   Thu Sep 19 18:42:15 2024 -0700
+
+    Added dataset file and class declarations
+
+[33mcommit b861345fca13eb3f7ebb42a50fc4a1dd663ee0ad[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m
+Author: CPSC 310 autobot <310-bot@students.cs.ubc.ca>
+Date:   Wed Sep 18 18:59:26 2024 -0700
+
+    Initial commit
