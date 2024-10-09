@@ -40,7 +40,7 @@ export function validateBody(filter: any): void {
 		}
 		value.forEach(validateBody);
 	};
-	if (keys[0] === "GT" || keys[0] === "LT" || keys[0] === "IS") {
+	if (keys[0] === "GT" || keys[0] === "LT" || keys[0] === "IS" || keys[0] === "EQ") {
 		validateLogicComparator(keys[0], filter);
 	} else {
 		switch (keys[0]) {
