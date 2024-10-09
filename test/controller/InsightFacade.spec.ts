@@ -147,16 +147,16 @@ describe("InsightFacade", function () {
 			}
 		});
 
-		// it("should successfully add valid large dataset, and create file on disk", async function () {
-		// 	try {
-		// 		const result = await facade.addDataset("sections", sections, InsightDatasetKind.Sections);
-		// 		expect(result).to.be.an("array");
-		// 		expect(result).to.deep.equal(['sections']);
-		// 		// read file from disk
-		// 	} catch (err) {
-		// 		expect.fail("Should not have thrown an error" + err);
-		// 	}
-		// });
+		it("should successfully add valid large dataset, and create file on disk", async function () {
+			try {
+				const result = await facade.addDataset("sections", sections, InsightDatasetKind.Sections);
+				expect(result).to.be.an("array");
+				expect(result).to.deep.equal(["sections"]);
+				// read file from disk
+			} catch (err) {
+				expect.fail("Should not have thrown an error" + err);
+			}
+		});
 	});
 
 	describe("RemoveDataset", function () {
@@ -210,30 +210,26 @@ describe("InsightFacade", function () {
 			}
 		});
 
-		//NOT ALLOWED TO ACCESS FILE PATH OUTSIDE OF TEST FOLDER
-		// it("should successfully remove a dataset, and delete it from disk", async function () {
-		// 	try {
-		// 		await facade.addDataset("mcgill", sections, InsightDatasetKind.Sections);
-		// 		const removeResult = await facade.removeDataset("mcgill");
-		// 		expect(removeResult).to.equal("mcgill");
-		// 	} catch (err) {
-		// 		expect.fail("Should have successfully added and removed" + err);
-		// 	}
-		//
-		// 	try {
-		// 		// attempt to read deleted file from disk
-		// 		const datasetPath = path.resolve(__dirname, "../data", "mcgill");
-		// 		await fs.readFile(datasetPath, "utf8");
-		// 		expect.fail("Should not be able to read deleted file from disk.");
-		// 	} catch {
-		// 		// use listDataset() to check that dataset deleted
-		// 		const results = await facade.listDatasets();
-		// 		const contains: boolean = results.some((result) => result.id === "mcgill");
-		// 		if (contains) {
-		// 			expect.fail("Should have removed the id");
-		// 		}
-		// 	}
-		// });
+		it("removed dataset still in database", async function () {
+			//const miniData1 = await getContentFromArchives("miniData1.zip");  invalid dataset no courses folder
+			//const miniData2 = await getContentFromArchives("miniData2.zip");
+
+			try {
+				await facade.addDataset("data", sections, InsightDatasetKind.Sections);
+				await facade.removeDataset("data");
+			} catch (err) {
+				expect.fail("Should have sucessfully added and removed" + err);
+			}
+
+			const results = await facade.listDatasets();
+			const contains: boolean = results.some((result) => result.id === "data");
+
+			if (contains) {
+				expect.fail("Should have removed the id");
+			} else {
+				expect("correctly removed dataset");
+			}
+		});
 
 		it("promise does not resolve to correct string", async function () {
 			//const miniData1 = await getContentFromArchives("miniData1.zip");  invalid dataset no courses folder
@@ -270,53 +266,53 @@ describe("InsightFacade", function () {
 			expect(result.length).to.equal(arrayLength);
 		});
 
-		// it("successfully lists datasets, with one existing dataset", async function () {
-		// 	try {
-		// 		const miniData5 = await getContentFromArchives("miniData5.zip");
-		// 		await facade.addDataset("miniData5", miniData5, InsightDatasetKind.Sections);
-		// 	} catch (error) {
-		// 		expect.fail("addDataset failed" + error);
-		// 	}
-		//
-		// 	const result = await facade.listDatasets();
-		// 	expect(result).to.deep.equal([
-		// 		{
-		// 			id: "miniData5",
-		// 			kind: InsightDatasetKind.Sections,
-		// 			numRows: 6,
-		// 		},
-		// 	]);
-		// 	const arrayLength = 1;
-		// 	expect(result.length).to.equal(arrayLength);
-		// });
-		//
-		// it("successfully lists datasets, with many existing datasets", async function () {
-		// 	const timeout = 10000;
-		// 	this.timeout(timeout);
-		// 	try {
-		// 		const miniData5 = await getContentFromArchives("miniData5.zip");
-		// 		await facade.addDataset("miniData4", sections, InsightDatasetKind.Sections);
-		// 		await facade.addDataset("miniData5", miniData5, InsightDatasetKind.Sections);
-		// 	} catch (error) {
-		// 		expect.fail("addDataset failed" + error);
-		// 	}
-		//
-		// 	const result = await facade.listDatasets();
-		// 	expect(result).to.deep.equal([
-		// 		{
-		// 			id: "miniData4",
-		// 			kind: InsightDatasetKind.Sections,
-		// 			numRows: 64612,
-		// 		},
-		// 		{
-		// 			id: "miniData5",
-		// 			kind: InsightDatasetKind.Sections,
-		// 			numRows: 6,
-		// 		},
-		// 	]);
-		// 	const arrayLength = 2;
-		// 	expect(result.length).to.equal(arrayLength);
-		// });
+		it("successfully lists datasets, with one existing dataset", async function () {
+			try {
+				const miniData5 = await getContentFromArchives("miniData5.zip");
+				await facade.addDataset("miniData5", miniData5, InsightDatasetKind.Sections);
+			} catch (error) {
+				expect.fail("addDataset failed" + error);
+			}
+
+			const result = await facade.listDatasets();
+			expect(result).to.deep.equal([
+				{
+					id: "miniData5",
+					kind: InsightDatasetKind.Sections,
+					numRows: 6,
+				},
+			]);
+			const arrayLength = 1;
+			expect(result.length).to.equal(arrayLength);
+		});
+
+		it("successfully lists datasets, with many existing datasets", async function () {
+			const timeout = 10000;
+			this.timeout(timeout);
+			try {
+				const miniData5 = await getContentFromArchives("miniData5.zip");
+				await facade.addDataset("miniData4", sections, InsightDatasetKind.Sections);
+				await facade.addDataset("miniData5", miniData5, InsightDatasetKind.Sections);
+			} catch (error) {
+				expect.fail("addDataset failed" + error);
+			}
+
+			const result = await facade.listDatasets();
+			expect(result).to.deep.equal([
+				{
+					id: "miniData4",
+					kind: InsightDatasetKind.Sections,
+					numRows: 64612,
+				},
+				{
+					id: "miniData5",
+					kind: InsightDatasetKind.Sections,
+					numRows: 6,
+				},
+			]);
+			const arrayLength = 2;
+			expect(result.length).to.equal(arrayLength);
+		});
 	});
 
 	describe("PerformQuery", function () {
@@ -406,5 +402,16 @@ describe("InsightFacade", function () {
 		it("[valid/Cwildcard.json] wildcard*", checkQuery);
 		it("[valid/wildcard2astrix.json] wildcard2astrix.json", checkQuery);
 		it("[invalid/wildCcard.json] wild*card", checkQuery);
+		it("[valid/complexValidQuery.json]", checkQuery);
+		it("[invalid/columnsMissing.json]", checkQuery);
+		it("[invalid/invalidSField.json]", checkQuery);
+		it("[invalid/invalidMField.json]", checkQuery);
+		it("[invalid/wrongSyntaxNOT.json]", checkQuery);
+		it("[invalid/noFilter.json]", checkQuery);
+		it("[invalid/invalid.json]", checkQuery);
+		it("[invalid/orderKeyMissing.json]", checkQuery);
+		it("[invalid/idDoesNotExist.json]", checkQuery);
+		it("[valid/negativeAverage(Valid).json]", checkQuery);
+		it("[valid/filterNOT.json]", checkQuery); //works but timesout at 2.47
 	});
 });
