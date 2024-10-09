@@ -113,8 +113,14 @@ export async function getAllSections(query: Query, datasets: Map<string, number>
 
 export function sortResults(options: Options, results: InsightResult[]): InsightResult[] {
 	return results.sort((a, b) => {
-		const aValue = a[options.ORDER as string | number];
-		const bValue = b[options.ORDER as string | number];
+		if(!options.ORDER) {
+			throw new InsightError('invalid options passed to sortResults');
+		}
+		const parts = options.ORDER.split('_');
+		const field = parts[1];
+
+		const aValue = a[field];
+		const bValue = b[field];
 
 		if (typeof aValue === "string" && typeof bValue === "string") {
 			// string comparison (case-insensitive)
@@ -132,38 +138,9 @@ export function sortResults(options: Options, results: InsightResult[]): Insight
 }
 
 export function extractDatasetId(query: Query): string {
-	const key = extractKey(query.WHERE);
-	const keyParts = key.split("_");
+	const keys: string[] = query.OPTIONS.COLUMNS;
+	const keyParts = keys[0].split("_");
 	return keyParts[0];
-}
-
-export function extractKey(body: Body): string {
-	if (body.EQ) {
-		return Object.keys(body.EQ)[0];
-	} else if (body.GT) {
-		return Object.keys(body.GT)[0];
-	} else if (body.LT) {
-		return Object.keys(body.LT)[0];
-	}
-
-	if (body.AND) {
-		for (const b of body.AND) {
-			const key = extractKey(b);
-			if (key) {
-				return key;
-			}
-		}
-	} else if (body.OR) {
-		for (const b of body.OR) {
-			const key = extractKey(b);
-			if (key) {
-				return key;
-			}
-		}
-	} else if (body.NOT) {
-		return extractKey(body.NOT);
-	}
-	throw new InsightError("Invalid body");
 }
 
 //THIS IS THE HELPER TO CALL IN EACH BASE CASE FOR WHERE FUNCTION: MCOMPARATOR, SCOMPARATOR
