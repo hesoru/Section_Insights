@@ -6,7 +6,8 @@ import { parseSectionObject } from "./JsonHelper";
 
 /**
  * @returns - Query, validates that the query param conforms to Query structure, if not throws InsightError
- * @param query
+ * @param filter
+ * @param data
  */
 
 export function handleFilter(filter: Body, data: InsightResult[]): InsightResult[] {
@@ -90,9 +91,10 @@ function handleNegation(filter: any, data: InsightResult[]): InsightResult[] {
 	return data.filter((section) => !notData.includes(section));
 }
 
-export async function getAllSections(query: Query): Promise<InsightResult[]> {
+export async function getAllSections(query: Query, datasets: Map<string, number>): Promise<InsightResult[]> {
 	const idString = extractDatasetId(query);
-	const allSections = await loadDatasets(idString, "sections");
+	const fileName = String(datasets.get(idString));
+	const allSections = await loadDatasets(idString, fileName);
 
 	const columns = Object.keys(allSections[0]);
 

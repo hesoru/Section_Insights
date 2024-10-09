@@ -1,5 +1,5 @@
 {
-	"title": "SELECT dept, avg WHERE avg > 97",
+	"title": "what dept, avg WHERE avg > 97",
 	"input": {
 		"WHERE": {
 			"GT": {

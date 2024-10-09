@@ -1,0 +1,12 @@
+{
+  "title":"valid with GT",
+  "input":{
+    "COLUMNS":[
+      "sections_dept",
+      "sections_avg"
+    ],
+    "ORDER":"sections_avg"
+  },
+  "errorExpected":false,
+  "expected":""
+}

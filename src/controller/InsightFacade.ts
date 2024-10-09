@@ -109,7 +109,7 @@ export default class InsightFacade implements IInsightFacade {
 		// process query on the dataset
 
 		// 3) start with data for all sections
-		const allSections = await getAllSections(validatedQuery);
+		const allSections = await getAllSections(validatedQuery, this.datasetIds);
 
 		// 4) filter results if necessary (WHERE)
 		let filteredResults: InsightResult[];
