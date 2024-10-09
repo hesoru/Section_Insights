@@ -49,7 +49,7 @@ export interface JSONFile {
  */
 export interface Query {
 	WHERE: Body;
-	OPTIONS?: Options;
+	OPTIONS: Options;
 }
 
 /**

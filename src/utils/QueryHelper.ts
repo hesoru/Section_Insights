@@ -1,7 +1,7 @@
 import {
 	InsightError,
 	InsightResult,
-	NotFoundError, ResultTooLargeError
+	NotFoundError
 } from "../controller/IInsightFacade";
 import {
 	MKey, Query,
@@ -15,50 +15,35 @@ import {parseSectionObject} from "./JsonHelper";
 // declare let query: Query;
 // declare const columns = [];
 
-export async function processQueryOnDataset(query: unknown): Promise<InsightResult[]> {
-	// 1) validate query
-	let validatedQuery: Query;
-	try {
-		validatedQuery = validateQuery(query);
+export async function processQueryOnDataset(validatedQuery: Query): Promise<InsightResult[]> {
+	// 1) start with data for all sections
+	const allSections = await getAllSections(validatedQuery);
 
-	} catch (error) {
-		throw new Error(`Query not a valid format: ` + error);
-	}
-
-	// 2) obtain data for all sections
-	const allSections = getAllSections(validatedQuery);
-
-	// 3) filter results if necessary (WHERE)
+	// 2) filter results if necessary (WHERE)
 	let filteredResults: InsightResult[];
 	if (validatedQuery.WHERE) {
 		filteredResults = handleFilter(validatedQuery.WHERE, allSections);
 	} else {
-		//
+		filteredResults = allSections;
 	}
 
-	// 4) select only specified columns (OPTIONS.COLUMNS)
-	if (validatedQuery.OPTIONS.COLUMNS) {
-		filteredResults = filteredResults.map((section) => {
-			// can be string | number
-			const result: any = {};
-			validatedQuery.OPTIONS.COLUMNS.forEach((column) => {
-				result[column] = section[column];
-			});
-			return result;
+	// 3) select only specified columns (OPTIONS.COLUMNS)
+	filteredResults = filteredResults.map((section) => {
+		// can be string | number
+		const result: any = {};
+		validatedQuery.OPTIONS.COLUMNS.forEach((column) => {
+			result[column] = section[column];
 		});
-	}
+		return result;
+	});
 
-	// 5) sort results if necessary (OPTIONS.ORDER)
-	let sortedFilteredResults: InsightResult[];
+	// 4) sort results if necessary (OPTIONS.ORDER)
+	let sortedFilteredResults: InsightResult[] = [];
 	if (validatedQuery.OPTIONS.ORDER) {
 		sortedFilteredResults = sortResults(validatedQuery.OPTIONS, filteredResults);
 	}
 
 	return sortedFilteredResults;
-
-	// //const allMatchingSections: Section[] = handleBody(validatedQuery.WHERE);  //should return InsightResult[] that matches Body specifications
-	// //const orderedMatchingSections = handleOptions(validatedQuery.OPTIONS, allMatchingSections); //should return same InsightResult[] but sorted to Option specifications
-	// return [];
 }
 
 /**
@@ -142,7 +127,8 @@ export function checkKeys(filter: any): string[] {
 
 export function validateOptions(options: any): void {
 	const keys = Object.keys(options);
-	if(keys.length === 0 || keys.length > 2) {
+	const KEY_LENGTH = 2;
+	if(keys.length === 0 || keys.length > KEY_LENGTH) {
 		throw new InsightError('invalid query, query.OPTIONS incorrect number of keys');
 	}
 	//validate columns
@@ -277,12 +263,13 @@ function handleMComparison(filter: any, data: InsightResult[]): InsightResult[] 
 		const [mKey, value] = filter.EQ;
 		return data.filter((section) => section[mKey] === value);
 	}
+	throw new InsightError("Invalid MComparator operator.")
 }
 
 function handleSComparison(filter: any, data: InsightResult[]): InsightResult[] {
 	const [sKey, value] = filter.IS;
 	const regex = new RegExp(`^${value.replace(/\*/g, ".*")}$`); // Handle wildcards
-	return data.filter((section) => regex.test(section[sKey]));
+	return data.filter((section) => regex.test(section[sKey] as string));
 }
 
 function handleNegation(filter: any, data: InsightResult[]): InsightResult[] {
@@ -292,7 +279,10 @@ function handleNegation(filter: any, data: InsightResult[]): InsightResult[] {
 }
 
 export async function getAllSections(query: Query): Promise<InsightResult[]> {
-	const columns = query.OPTIONS?.COLUMNS;
+	const idString = extractDatasetId(query);
+	const allSections = await loadDatasets(idString, 'sections');
+
+	const columns = Object.keys(allSections[0]);
 	const columnKeys: string[] = [];
 	for (const column of columns) {
 		if (!isMKey(column) && !isSKey(column)) {
@@ -302,12 +292,6 @@ export async function getAllSections(query: Query): Promise<InsightResult[]> {
 		columnKeys.push(parts[1]);
 	}
 
-	const record = query.OPTIONS.COLUMNS[0]
-	const key = record[0];
-	const parts = key.split('_');
-	const idString = parts[0];
-
-	const allSections = await loadDatasets(idString, 'sections');
 	const allResults: InsightResult[] = [];
 	for (const section of allSections) {
 		const sectionResult: InsightResult = {};
@@ -321,26 +305,30 @@ export async function getAllSections(query: Query): Promise<InsightResult[]> {
 }
 
 function sortResults(options: Options, results: InsightResult[]): InsightResult[] {
-	if (options.ORDER) {
-		return results.sort((a, b) => {
-			const aValue = a[options.ORDER];
-			const bValue = b[options.ORDER];
+	return results.sort((a, b) => {
+		const aValue = a[options.ORDER as string | number];
+		const bValue = b[options.ORDER as string | number];
 
-			if (typeof aValue === 'string' && typeof bValue === 'string') {
-				// string comparison (case-insensitive)
-				return aValue.localeCompare(bValue, undefined, { sensitivity: 'base' });
-			}
+		if (typeof aValue === 'string' && typeof bValue === 'string') {
+			// string comparison (case-insensitive)
+			return aValue.localeCompare(bValue, undefined, { sensitivity: 'base' });
+		}
 
-			if (typeof aValue === 'number' && typeof bValue === 'number') {
-				// numeric comparison
-				return aValue - bValue;
-			}
+		if (typeof aValue === 'number' && typeof bValue === 'number') {
+			// numeric comparison
+			return aValue - bValue;
+		}
 
-			// types differ
-			throw new InsightError("Comparison column contains strings and numbers together!")
-		});
-	}
-	return results;
+		// types differ
+		throw new InsightError("Comparison column contains strings and numbers together!")
+	});
+}
+
+export function extractDatasetId(query: Query): string {
+	const record = query.OPTIONS.COLUMNS[0]
+	const key = record[0];
+	const keyParts = key.split('_');
+	return keyParts[0];
 }
 
 //THIS IS THE HELPER TO CALL IN EACH BASE CASE FOR WHERE FUNCTION: MCOMPARATOR, SCOMPARATOR
@@ -420,7 +408,7 @@ function sortResults(options: Options, results: InsightResult[]): InsightResult[
  * @param id
  */
 export async function loadDatasets(id: string, fileName: string): Promise<Section[]> {
-	const MAX_SIZE = 5000;
+	// const MAX_SIZE = 5000;
 	const datasetPath = path.resolve(__dirname, "../data", fileName);
 	let dataset;
 	try {
@@ -433,9 +421,10 @@ export async function loadDatasets(id: string, fileName: string): Promise<Sectio
 		for (const section of file.result) {
 			const newSection = parseSectionObject(section);
 			parsedSections.push(newSection);
-			if(parsedSections.length > MAX_SIZE) {
-				throw new ResultTooLargeError('result exceeded 5000 sections');
-			}
+			// WANT TO RETURN ALL SECTIONS
+			// if(parsedSections.length > MAX_SIZE) {
+			// 	throw new ResultTooLargeError('result exceeded 5000 sections');
+			// }
 		}
 	}
 	return parsedSections;
@@ -464,7 +453,7 @@ export async function loadDatasets(id: string, fileName: string): Promise<Sectio
 // 	const insight_results: InsightResult[] = [];
 // 	for (const section of sections) {
 // 		const section_result: InsightResult = {};
-// 		for (let i = 0; i < column_keys.length; i++) {  //iterate through indicies
+// 		for (let i = 0; i < column_keys.length; i++) {  //iterate through indices
 // 			section_result[columns[i]] = section[column_keys[i] as keyof Section]; //WILL THIS LINE WORK? PROBABLY BUG HERE
 // 		}
 // 		insight_results.push(section_result);

@@ -15,7 +15,8 @@ import {
 	getDatasetInfo,
 } from "../utils/JsonHelper";
 import fs from "fs-extra";
-import { extractDatasetId, processQueryOnDataset, validateQuery } from "../utils/QueryHelper";
+import {extractDatasetId, processQueryOnDataset, validateQuery} from "../utils/QueryHelper";
+import {Query} from "../models/Section";
 
 /**
  * This is the main programmatic entry point for the project.
@@ -91,23 +92,23 @@ export default class InsightFacade implements IInsightFacade {
 		const MAX_SIZE = 5000;
 
 		// 1) validate query
-		if (!validateQuery(query)) {
-			// TODO: write helper function in QueryHelper.ts
-			throw new InsightError("Invalid query format.");
+		let validatedQuery: Query;
+		try {
+			validatedQuery = validateQuery(query);
+		} catch (error) {
+			throw new Error(`Query not a valid format: ` + error);
 		}
 
-		// 2) extract dataset id from query
-		const id = extractDatasetId(query); // TODO: write helper function in QueryHelper.ts
-
-		// 3) ensure dataset exists
+		// 2) extract dataset id from validated query, ensure dataset exists
+		const id = extractDatasetId(validatedQuery); // TODO: write helper function in QueryHelper.ts
 		if (!this.datasetIds.has(id)) {
 			throw new InsightError(`Dataset '${id}' does not exist.`);
 		}
 
-		// 4) process query on the dataset
+		// 3) process query on the dataset
 		let results: InsightResult[];
 		try {
-			results = await processQueryOnDataset(query); // TODO: write helper function in QueryHelper.ts
+			results = await processQueryOnDataset(validatedQuery); // TODO: write helper function in QueryHelper.ts
 		} catch (error: any) {
 			throw new InsightError(`Error processing query: ${error.message}`);
 		}
