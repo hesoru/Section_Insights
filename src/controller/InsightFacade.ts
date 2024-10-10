@@ -54,7 +54,6 @@ export default class InsightFacade implements IInsightFacade {
 		} catch (error) {
 			throw new InsightError("id passed to addDataset invalid" + error); //is this catch block necessary?
 		}
-
 		//3) Unzips content: checks for valid content, must be a base64 encoded string, all valid courses must be contained within courses folder
 		const unzipped = await unzipContent(content);
 		const fileStringsPromises = extractFileStrings(unzipped);
@@ -76,7 +75,6 @@ export default class InsightFacade implements IInsightFacade {
 		this.datasetIds.set(id, this.nextAvailableName);
 		this.nextAvailableName++;
 		//Check to make sure name corresponds to position in datasetIds array
-
 		return Array.from(this.datasetIds.keys());
 	}
 

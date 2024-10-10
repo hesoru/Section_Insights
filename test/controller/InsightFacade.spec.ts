@@ -96,7 +96,7 @@ describe("InsightFacade", function () {
 		});
 
 		it("should reject adding same id twice", async function () {
-			const miniData5 = await getContentFromArchives("miniData5.zip"); // TODO: where is this??
+			const miniData5 = await getContentFromArchives("miniData5.zip");
 			try {
 				await facade.addDataset("mini", miniData5, InsightDatasetKind.Sections);
 				expect("should have added correctly");
@@ -160,7 +160,6 @@ describe("InsightFacade", function () {
 						numRows: 64612,
 					},
 				]);
-
 				const newFacade = new InsightFacade();
 				const miniData5 = await getContentFromArchives("miniData5.zip");
 				const result1 = await newFacade.addDataset("mini5", miniData5, InsightDatasetKind.Sections);
