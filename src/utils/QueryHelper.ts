@@ -30,19 +30,22 @@ export function handleFilter(filter: Body, data: InsightResult[]): InsightResult
 function handleLogicComparison(filter: Body, data: InsightResult[]): InsightResult[] {
 	//return array of insight result.
 	let results: InsightResult[] = [];
+	let alreadyAnd = false;
 
 	if (filter.AND) {
 		// intersection of all results: all filters must be true
 		// return filter.AND.reduce((acc, subBody) => handleBody(subBody, acc), data);
 		for (const subFilter of filter.AND) {
 			const subResults = handleFilter(subFilter, data);
-			if (results.length === 0) {
+			if (!alreadyAnd) {
 				results = subResults;
+				alreadyAnd = true;
 			} else {
 				results = results.filter((section) => subResults.includes(section)); // Intersection of results
 			}
 		}
 	} else if (filter.OR) {
+		results = [];
 		for (const subFilter of filter.OR) {
 			const subResults = handleFilter(subFilter, data);
 			results = results.concat(subResults); // Union of results
@@ -148,7 +151,7 @@ export function extractDatasetId(query: Query): string {
  * @param id
  */
 export async function loadDatasets(id: string, fileName: string): Promise<Section[]> {
-	const datasetPath = path.resolve(__dirname, "../data", fileName);
+	const datasetPath = path.resolve("./data", fileName);
 	let dataset;
 	try {
 		dataset = await fs.readJson(datasetPath);
@@ -156,7 +159,7 @@ export async function loadDatasets(id: string, fileName: string): Promise<Sectio
 		throw new NotFoundError(`Could not find dataset with - id=${id};` + error);
 	}
 	const parsedSections: Section[] = [];
-	for (const file of dataset) {
+	for (const file of dataset.files) {
 		for (const section of file.result) {
 			const newSection = parseSectionObject(section);
 			parsedSections.push(newSection);

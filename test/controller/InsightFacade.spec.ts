@@ -11,6 +11,7 @@ import { clearDisk, getContentFromArchives, loadTestQuery } from "../TestUtil";
 
 import { expect, use } from "chai";
 import chaiAsPromised from "chai-as-promised";
+import { Query } from "../../src/models/Section";
 
 use(chaiAsPromised);
 
@@ -46,7 +47,7 @@ describe("InsightFacade", function () {
 		afterEach(async function () {
 			// This section resets the data directory (removing any cached data)
 			// This runs after each test, which should make each test independent of the previous one
-			await clearDisk();
+			//await clearDisk();
 		});
 
 		it("should reject adding an empty dataset id", async function () {
@@ -129,7 +130,7 @@ describe("InsightFacade", function () {
 
 		it("should reject adding dataset with invalid sections", async function () {
 			try {
-				const miniData6 = await getContentFromArchives("miniData6.zip"); // TODO: where is this??
+				const miniData6 = await getContentFromArchives("miniData6.zip");
 				await facade.addDataset("noCoursesData", miniData6, InsightDatasetKind.Sections);
 				expect.fail("Should have thrown above.");
 			} catch (err) {
@@ -144,6 +145,44 @@ describe("InsightFacade", function () {
 				expect.fail("Should have thrown above.");
 			} catch (err) {
 				expect(err).to.be.instanceOf(InsightError);
+			}
+		});
+
+		it("checking persistence", async function () {
+			try {
+				const result = await facade.addDataset("sections", sections, InsightDatasetKind.Sections);
+				expect(result).to.be.an("array");
+				expect(result).to.deep.equal(["sections"]);
+				const dataset = await facade.listDatasets();
+				expect(dataset).to.deep.equal([
+					{
+						id: "sections",
+						kind: InsightDatasetKind.Sections,
+						numRows: 64612,
+					},
+				]);
+
+				const newFacade = new InsightFacade();
+				const miniData5 = await getContentFromArchives("miniData5.zip");
+				const result1 = await newFacade.addDataset("mini5", miniData5, InsightDatasetKind.Sections);
+				expect(result1).to.deep.equal(["sections", "mini5"]);
+
+				const datasets = await newFacade.listDatasets();
+				expect(datasets).to.deep.equal([
+					{
+						id: "sections",
+						kind: InsightDatasetKind.Sections,
+						numRows: 64612,
+					},
+					{
+						id: "mini5",
+						kind: InsightDatasetKind.Sections,
+						numRows: 6,
+					},
+				]);
+				// read file from disk
+			} catch (err) {
+				expect.fail("Should not have thrown an error" + err);
 			}
 		});
 
@@ -344,6 +383,15 @@ describe("InsightFacade", function () {
 				//console.log(result)
 				expect(result.length).to.equal(expectedLength);
 				expect(result).to.have.deep.members(expected);
+				const validInput: Query = input as Query;
+				if (validInput.OPTIONS.ORDER) {
+					const field = validInput.OPTIONS.ORDER;
+					for (let i = 1; i < result.length; i++) {
+						if (result[i][field] < result[i - 1][field]) {
+							expect.fail("not in correct order");
+						}
+					}
+				}
 
 				return;
 			} catch (err) {
@@ -430,6 +478,7 @@ describe("InsightFacade", function () {
 		it("[valid/nestedLogicals.json]", checkQuery);
 		it("[valid/wildcardNOT.json]", checkQuery);
 		it("[valid/2Wildcards.json]", checkQuery);
-		//it("[valid/allFilters.json]", checkQuery);
+		it("[valid/allFilters.json]", checkQuery);
+		it("[valid/year1900(Valid).json]", checkQuery);
 	});
 });
