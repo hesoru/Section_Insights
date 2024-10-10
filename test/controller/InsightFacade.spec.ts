@@ -11,7 +11,6 @@ import { clearDisk, getContentFromArchives, loadTestQuery } from "../TestUtil";
 
 import { expect, use } from "chai";
 import chaiAsPromised from "chai-as-promised";
-import { Query } from "../../src/models/Section";
 
 use(chaiAsPromised);
 
@@ -383,7 +382,7 @@ describe("InsightFacade", function () {
 				//console.log(result)
 				expect(result.length).to.equal(expectedLength);
 				expect(result).to.have.deep.members(expected);
-				const validInput: Query = input as Query;
+				const validInput = input as { OPTIONS: { ORDER?: string } };
 				if (validInput.OPTIONS.ORDER) {
 					const field = validInput.OPTIONS.ORDER;
 					for (let i = 1; i < result.length; i++) {
