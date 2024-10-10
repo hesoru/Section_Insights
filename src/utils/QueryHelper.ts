@@ -6,7 +6,7 @@ import { parseSectionObject } from "./JsonHelper";
 
 /**
  * @returns - Query, validates that the query param conforms to Query structure, if not throws InsightError
- * @param query
+ *
  */
 
 export function handleFilter(filter: Body, data: InsightResult[]): InsightResult[] {
@@ -26,7 +26,7 @@ export function handleFilter(filter: Body, data: InsightResult[]): InsightResult
 	}
 }
 
-function handleLogicComparison(filter: Body, data: InsightResult[]): InsightResult[] {
+export function handleLogicComparison(filter: Body, data: InsightResult[]): InsightResult[] {
 	//return array of insight result.
 	let results: InsightResult[] = [];
 
@@ -53,7 +53,7 @@ function handleLogicComparison(filter: Body, data: InsightResult[]): InsightResu
 	return results;
 }
 
-function handleMComparison(filter: any, data: InsightResult[]): InsightResult[] {
+export function handleMComparison(filter: any, data: InsightResult[]): InsightResult[] {
 	if (filter.GT) {
 		const mKey = Object.keys(filter.GT)[0];
 		const parts = mKey.split("_");
@@ -78,13 +78,13 @@ function handleMComparison(filter: any, data: InsightResult[]): InsightResult[] 
 	throw new InsightError("Invalid MComparator operator.");
 }
 
-function handleSComparison(filter: any, data: InsightResult[]): InsightResult[] {
+export function handleSComparison(filter: any, data: InsightResult[]): InsightResult[] {
 	const [sKey, value] = filter.IS;
 	const regex = new RegExp(`^${value.replace(/\*/g, ".*")}$`); // Handle wildcards
 	return data.filter((section) => regex.test(section[sKey] as string));
 }
 
-function handleNegation(filter: any, data: InsightResult[]): InsightResult[] {
+export function handleNegation(filter: any, data: InsightResult[]): InsightResult[] {
 	// Exclude matching sections
 	const notData = handleFilter(filter.NOT, data);
 	return data.filter((section) => !notData.includes(section));
@@ -100,7 +100,7 @@ export async function getAllSections(query: Query): Promise<InsightResult[]> {
 	for (const section of allSections) {
 		const sectionResult: InsightResult = {};
 		for (const item of columns) {
-			//iterate through indicies
+			//iterate through indices
 			sectionResult[item] = section[item as keyof Section];
 		}
 		allResults.push(sectionResult);

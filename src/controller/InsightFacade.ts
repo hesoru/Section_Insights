@@ -97,7 +97,7 @@ export default class InsightFacade implements IInsightFacade {
 		try {
 			validatedQuery = validateQuery(query);
 		} catch (error) {
-			throw new Error(`Query not a valid format: ` + error);
+			throw new InsightError(`Query not a valid format: ` + error);
 		}
 
 		// 2) extract dataset id from validated query, ensure dataset exists

@@ -1,28 +1,45 @@
-import { InsightDatasetKind, InsightError } from "../../src/controller/IInsightFacade";
+import {
+	InsightDatasetKind,
+	InsightError,
+	InsightResult,
+	ResultTooLargeError
+} from "../../src/controller/IInsightFacade";
 import { clearDisk, getContentFromArchives, loadTestQuery } from "../TestUtil";
 
 import { expect, use } from "chai";
 import chaiAsPromised from "chai-as-promised";
-import { getAllSections } from "../../src/utils/QueryHelper";
+import {extractDatasetId, getAllSections, handleFilter, handleNegation} from "../../src/utils/QueryHelper";
 import IInsightFacade from "../../src/controller/InsightFacade";
 import InsightFacade from "../../src/controller/InsightFacade";
-import { Query } from "../../src/models/Section";
+import {MKey, Query, SKey} from "../../src/models/Section";
 import { validateBody, validateOptions, validateQuery } from "../../src/utils/ValidateHelper";
 
 use(chaiAsPromised);
 
-describe("InsightFacade", function () {
+describe("QueryHelper", function () {
 	let facade: IInsightFacade;
 
 	// Declare datasets used in tests. You should add more datasets like this!
 	let sections: string;
+	let allSections: InsightResult[];
 
 	before(async function () {
-		// This block runs once and loads the datasets.
-		sections = await getContentFromArchives("pair.zip");
-
 		// Just in case there is anything hanging around from a previous run of the test suite
 		await clearDisk();
+
+		// This block runs once and loads the datasets.
+		sections = await getContentFromArchives("pair.zip");
+		facade = new InsightFacade();
+		await facade.addDataset("sections", sections, InsightDatasetKind.Sections);
+		const query0: Query = {
+			WHERE: {},
+			OPTIONS: {
+				COLUMNS: [
+					"sections_dept"
+				]
+			}
+		};
+		allSections = await getAllSections(query0);
 	});
 
 	describe("validateQuery", function () {
@@ -421,4 +438,239 @@ describe("InsightFacade", function () {
 	//     });
 	//
 	// });
+
+	// describe("extractDatasetId", function () {
+	// 	const miniData5 = await getContentFromArchives("miniData5.zip");
+	// 	const empty = await getContentFromArchives("emptyTest.zip");
+	//
+	// 	beforeEach(async function () {
+	// 		await clearDisk();
+	// 		const loadDatasetPromises: Promise<string[]>[] = [
+	// 			facade.addDataset("sections", sections, InsightDatasetKind.Sections),
+	// 			facade.addDataset("miniData5", miniData5, InsightDatasetKind.Sections),
+	// 			facade.addDataset("empty", empty, InsightDatasetKind.Sections)
+	// 		];
+	//
+	// 		try {
+	// 			await Promise.all(loadDatasetPromises);
+	// 		} catch (err) {
+	// 			throw new Error(`In extractDatasetId Before hook, dataset(s) failed to be added. \n${err}`);
+	// 		}
+	// 		// const { input, expected, errorExpected } = await loadTestQuery(this.test.title);
+	// 	});
+	//
+	// 	afterEach(async function () {
+	// 		await clearDisk();
+	// 	});
+	//
+	// 	it("valid query", function () {
+	// 		try {
+	// 			const miniData5 = await getContentFromArchives("miniData3.zip");
+	// 			await facade.addDataset("miniData5", miniData5, InsightDatasetKind.Sections);
+	// 		} catch (error) {
+	// 			expect.fail("addDataset failed" + error);
+	// 		}
+	// 	});
+	// });
+
+	describe("handleNegation", function () {
+
+		beforeEach(async function () {
+			await clearDisk();
+		});
+
+		afterEach(async function () {
+			await clearDisk();
+		});
+
+		it("should successfully filter results given NOT", async function () {
+			try {
+				const { input, expected, errorExpected } =
+					await loadTestQuery("[invalid/orderKeyMissing.json] ORDER's key not found in COLUMN's KEY_LIST array");
+				const num1 = 65;
+				const num2 = 63;
+				const query1: Query = {
+					WHERE: {
+						NOT: {
+							OR: [
+								{ GT: ["sections_avg", num1] },
+								{ LT: ["sections_avg", num2] }
+							]
+						}
+					},
+					OPTIONS: {
+						COLUMNS: [
+							"sections_dept",
+							"sections_avg"
+						]
+					}
+				};
+				const result = handleNegation(query1, allSections);
+				expect(result).to.deep.equal(expected);
+			} catch (error) {
+				expect.fail("extractDatasetId failed: " + error);
+			}
+		});
+	});
+
+	describe("extractDatasetId", function () {
+
+		beforeEach(async function () {
+			await clearDisk();
+			// const { input, expected, errorExpected } = await loadTestQuery(this.test.title);
+		});
+
+		afterEach(async function () {
+			await clearDisk();
+		});
+
+		it("should successfully extract dataset id", function () {
+			try {
+				const num1 = 90;
+				const num2 = 63;
+				const query1: Query = {
+					WHERE: {
+						AND: [
+							{
+								OR: [
+									{ GT: ["sections_avg", num1] },
+									{ LT: ["sections_avg", num2] }
+								]
+							},
+							{
+								EQ: ["sections_avg", num2]
+							},
+							{
+								IS: ["sections_dept", "*bio*"]
+							},
+							{
+								NOT: {
+									IS: ["sections_instructor", "johnson"]
+								}
+							}
+						]
+					},
+					OPTIONS: {
+						COLUMNS: [
+							"sections_dept",
+							"sections_avg",
+							"sections_instructor",
+							"sections_title"
+						],
+						ORDER: "sections_avg"
+					}
+				};
+				const result = extractDatasetId(query1);
+				expect(result).to.deep.equal("sections");
+			} catch (error) {
+				expect.fail("extractDatasetId failed: " + error);
+			}
+		});
+	});
+
+	describe("handleFilter", function () {
+
+
+		async function checkFilter(this: Mocha.Context): Promise<void> {
+			if (!this.test) {
+				throw new Error(
+					"Invalid call to checkFilter." +
+					"Usage: 'checkQuery' must be passed as the second parameter of Mocha's it(..) function." +
+					"Do not invoke the function directly."
+				);
+			}
+			// Destructuring assignment to reduce property accesses
+			const { input, expected, errorExpected } = await loadTestQuery(this.test.title);
+			let result: InsightResult[];
+
+			await facade.addDataset("sections", sections, InsightDatasetKind.Sections);
+			const query0: Query = {
+				WHERE: {},
+				OPTIONS: {
+					COLUMNS: [
+						"sections_dept"
+					]
+				}
+			};
+			await getAllSections(query0);
+
+			try {
+				result = handleFilter(input as , sections);
+				expect(input).to.be.an("object");
+
+				if (errorExpected) {
+					expect.fail(`performQuery resolved when it should have rejected with ${expected}`);
+				}
+				expect(result).to.deep.equal(expected);
+				return;
+			} catch (err) {
+				if (!errorExpected) {
+					expect.fail(`performQuery threw unexpected error: ${err}`);
+				}
+				//Specify types of errors...
+				if (expected === "ResultTooLargeError") {
+					expect(err).to.be.instanceOf(ResultTooLargeError);
+				}
+				if (expected === "InsightError") {
+					expect(err).to.be.instanceOf(InsightError);
+				}
+				expect("performQuery passed threw error when expected"); // TODO: replace with your assertions
+				return;
+			}
+		}
+
+		beforeEach(async function () {
+			await clearDisk();
+			// const { input, expected, errorExpected } = await loadTestQuery(this.test.title);
+		});
+
+		afterEach(async function () {
+			await clearDisk();
+		});
+
+		it("should successfully extract dataset id", function () {
+			try {
+				const num1 = 90;
+				const num2 = 63;
+				const query1: Query = {
+					WHERE: {
+						AND: [
+							{
+								OR: [
+									{ GT: ["sections_avg", num1] },
+									{ LT: ["sections_avg", num2] }
+								]
+							},
+							{
+								EQ: ["sections_avg", num2]
+							},
+							{
+								IS: ["sections_dept", "*bio*"]
+							},
+							{
+								NOT: {
+									IS: ["sections_instructor", "johnson"]
+								}
+							}
+						]
+					},
+					OPTIONS: {
+						COLUMNS: [
+							"sections_dept",
+							"sections_avg",
+							"sections_instructor",
+							"sections_title"
+						],
+						ORDER: "sections_avg"
+					}
+				};
+				const result = extractDatasetId(query1);
+				expect(result).to.deep.equal("sections");
+			} catch (error) {
+				expect.fail("extractDatasetId failed: " + error);
+			}
+		});
+	});
+
+
 });
