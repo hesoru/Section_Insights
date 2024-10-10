@@ -137,9 +137,11 @@ export default class InsightFacade implements IInsightFacade {
 		});
 
 		// 7) sort results if necessary (OPTIONS.ORDER)
-		let sortedFilteredResults: InsightResult[] = [];
+		let sortedFilteredResults: InsightResult[];
 		if (validatedQuery.OPTIONS.ORDER) {
 			sortedFilteredResults = sortResults(validatedQuery.OPTIONS, filteredResults);
+		} else {
+			sortedFilteredResults = filteredResults;
 		}
 
 		return sortedFilteredResults;

@@ -399,7 +399,7 @@ describe("InsightFacade", function () {
 		// The relative path to the query file must be given in square brackets.
 		it("[valid/simple.json] SELECT dept, avg WHERE avg > 97", checkQuery);
 		it("[invalid/invalid.json] Query missing WHERE", checkQuery);
-		//it("[invalid/ReferencingMoreThanOneDatabase.json]", checkQuery);
+		it("[invalid/queryingMultipleDatasets.json]", checkQuery);
 		it("[invalid/ResultTooLarge.json]", checkQuery);
 		it("[valid/valid1.json] WHERE: OR, GT, LT", checkQuery);
 		it("[valid/Cwildcard.json] *wildcard", checkQuery);
@@ -422,5 +422,14 @@ describe("InsightFacade", function () {
 		it("[invalid/badOptions.json]", checkQuery);
 		it("[invalid/badOR.json]", checkQuery);
 		it("[invalid/emptyOptions.json]", checkQuery);
+		it("[valid/futureYear(Valid).json]", checkQuery);
+		it("[invalid/invalidFilterKeyXOR.json]", checkQuery);
+		it("[valid/sortOnString.json]", checkQuery);
+		it("[invalid/badID.json]", checkQuery);
+		it("[valid/AND.GT.IS.json]", checkQuery);
+		it("[valid/nestedLogicals.json]", checkQuery);
+		it("[valid/wildcardNOT.json]", checkQuery);
+		it("[valid/2Wildcards.json]", checkQuery);
+		//it("[valid/allFilters.json]", checkQuery);
 	});
 });

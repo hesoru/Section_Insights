@@ -36,13 +36,13 @@
 // 		it("valid query", async function () {
 // 			try {
 // 				const test1 = await loadTestQuery("[valid/complexValidQuery.json]");
-// 				const test2 = await loadTestQuery("[valid/futureYear(Valid).json]");
-// 				const test3 = await loadTestQuery("[valid/inputStringEmpty(Valid).json]");
-// 				const test4 = await loadTestQuery("[valid/negativeAverage(Valid).json]");
+// 				const test2 = await loadTestQuery("[valid/futureYear(Valid)nestedLogicals.json]");
+// 				const test3 = await loadTestQuery("[valid/inputStringEmpty(Valid)nestedLogicals.json]");
+// 				const test4 = await loadTestQuery("[valid/negativeAverage(Valid)nestedLogicals.json]");
 // 				const test5 = await loadTestQuery("[valid/notFound.json]");
-// 				const test6 = await loadTestQuery("[valid/orderMissing(Valid).json]");
-// 				const test7 = await loadTestQuery("[valid/rightSyntaxNOT(Valid).json]");
-// 				const test8 = await loadTestQuery("[valid/year1900(Valid).json]");
+// 				const test6 = await loadTestQuery("[valid/orderMissing(Valid)nestedLogicals.json]");
+// 				const test7 = await loadTestQuery("[valid/rightSyntaxNOT(Valid)nestedLogicals.json]");
+// 				const test8 = await loadTestQuery("[valid/year1900(Valid)nestedLogicals.json]");
 //
 // 				validateQuery(test1.input);
 // 				validateQuery(test2.input);
