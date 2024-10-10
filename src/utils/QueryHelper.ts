@@ -167,3 +167,15 @@ export async function loadDatasets(id: string, fileName: string): Promise<Sectio
 	}
 	return parsedSections;
 }
+
+export function selectColumns(filteredResults: InsightResult[], validatedQuery: Query): InsightResult[] {
+	return filteredResults.map((section) => {
+		// can be string | number
+		const result: any = {};
+		const columns = validatedQuery.OPTIONS.COLUMNS;
+		for (const column of columns) {
+			result[column] = section[column];
+		}
+		return result;
+	});
+}
