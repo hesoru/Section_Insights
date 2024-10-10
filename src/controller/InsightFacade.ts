@@ -18,6 +18,7 @@ import fs from "fs-extra";
 import { extractDatasetId, getAllSections, handleFilter, sortResults } from "../utils/QueryHelper";
 import { Query } from "../models/Section";
 import { validateQuery } from "../utils/ValidateHelper";
+import path from "node:path";
 
 /**
  * This is the main programmatic entry point for the project.
@@ -67,7 +68,8 @@ export default class InsightFacade implements IInsightFacade {
 		this.datasetIds.set(id, this.nextAvailableName);
 		this.nextAvailableName++;
 		//Check to make sure name corresponds to position in datasetIds array
-		return fileStrings;
+
+		return Array.from(this.datasetIds.keys());
 	}
 
 	public async removeDataset(id: string): Promise<string> {
@@ -79,7 +81,9 @@ export default class InsightFacade implements IInsightFacade {
 
 		try {
 			// remove from disk
-			await fs.promises.unlink(`data/${id}`); // txt file?
+			const fileName = this.datasetIds.get(id);
+			const datasetPath = path.resolve(__dirname, "../data", String(fileName));
+			await fs.promises.unlink(datasetPath); // txt file?
 			// remove from datasetId array
 			this.datasetIds.delete(id);
 			// return removed id
@@ -109,7 +113,7 @@ export default class InsightFacade implements IInsightFacade {
 		// process query on the dataset
 
 		// 3) start with data for all sections
-		const allSections = await getAllSections(validatedQuery);
+		const allSections = await getAllSections(validatedQuery, this.datasetIds);
 
 		// 4) filter results if necessary (WHERE)
 		let filteredResults: InsightResult[];
@@ -127,17 +131,17 @@ export default class InsightFacade implements IInsightFacade {
 			const result: any = {};
 			const columns = validatedQuery.OPTIONS.COLUMNS;
 			for (const column of columns) {
-				const parts = column.split("_");
-				const field = parts[1];
-				result[field] = section[field];
+				result[column] = section[column];
 			}
 			return result;
 		});
 
 		// 7) sort results if necessary (OPTIONS.ORDER)
-		let sortedFilteredResults: InsightResult[] = [];
+		let sortedFilteredResults: InsightResult[];
 		if (validatedQuery.OPTIONS.ORDER) {
 			sortedFilteredResults = sortResults(validatedQuery.OPTIONS, filteredResults);
+		} else {
+			sortedFilteredResults = filteredResults;
 		}
 
 		return sortedFilteredResults;
@@ -147,8 +151,9 @@ export default class InsightFacade implements IInsightFacade {
 		const datasetPromises: Promise<InsightDataset>[] = [];
 
 		// get datasets in datasetIds array
-		for (const [id] of this.datasetIds) {
-			datasetPromises.push(getDatasetInfo(id)); // need to write this
+		for (const id of this.datasetIds.keys()) {
+			const fileName = String(this.datasetIds.get(id));
+			datasetPromises.push(getDatasetInfo(String(id), fileName)); // need to write this
 		}
 		// list id, kind, and numRows
 		try {

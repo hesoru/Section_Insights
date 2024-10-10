@@ -6,11 +6,12 @@ import { parseSectionObject } from "./JsonHelper";
 
 /**
  * @returns - Query, validates that the query param conforms to Query structure, if not throws InsightError
- *
+ * @param filter
+ * @param data
  */
 
 export function handleFilter(filter: Body, data: InsightResult[]): InsightResult[] {
-	if (!filter) {
+	if (Object.keys(filter).length === 0) {
 		return data;
 	}
 	if (filter.AND || filter.OR) {
@@ -26,7 +27,7 @@ export function handleFilter(filter: Body, data: InsightResult[]): InsightResult
 	}
 }
 
-export function handleLogicComparison(filter: Body, data: InsightResult[]): InsightResult[] {
+function handleLogicComparison(filter: Body, data: InsightResult[]): InsightResult[] {
 	//return array of insight result.
 	let results: InsightResult[] = [];
 
@@ -53,46 +54,47 @@ export function handleLogicComparison(filter: Body, data: InsightResult[]): Insi
 	return results;
 }
 
-export function handleMComparison(filter: any, data: InsightResult[]): InsightResult[] {
+function handleMComparison(filter: any, data: InsightResult[]): InsightResult[] {
 	if (filter.GT) {
 		const mKey = Object.keys(filter.GT)[0];
-		const parts = mKey.split("_");
-		const field = parts[1];
 		const value = Object.values(filter.GT)[0];
-		return data.filter((section) => section[field] > (value as number));
+		return data.filter((section) => section[mKey] > (value as number));
 	}
 	if (filter.LT) {
 		const mKey = Object.keys(filter.LT)[0];
-		const parts = mKey.split("_");
-		const field = parts[1];
 		const value = Object.values(filter.LT)[0];
-		return data.filter((section) => section[field] < (value as number));
+		return data.filter((section) => section[mKey] < (value as number));
 	}
 	if (filter.EQ) {
 		const mKey = Object.keys(filter.EQ)[0];
-		const parts = mKey.split("_");
-		const field = parts[1];
 		const value = Object.values(filter.EQ)[0];
-		return data.filter((section) => section[field] === (value as number));
+		return data.filter((section) => section[mKey] === (value as number));
 	}
 	throw new InsightError("Invalid MComparator operator.");
 }
 
-export function handleSComparison(filter: any, data: InsightResult[]): InsightResult[] {
-	const [sKey, value] = filter.IS;
-	const regex = new RegExp(`^${value.replace(/\*/g, ".*")}$`); // Handle wildcards
-	return data.filter((section) => regex.test(section[sKey] as string));
+function handleSComparison(filter: any, data: InsightResult[]): InsightResult[] {
+	const sKey = Object.keys(filter.IS)[0];
+	const value = Object.values(filter.IS)[0] as string;
+
+	const regex = new RegExp(/^\*?[^*]*\*?$/); // Handle wildcards
+	if (!regex.test(value)) {
+		throw new InsightError("invalid SComparator operator, bad wildcard.");
+	}
+	const validValue = new RegExp(`^${value.replace(/\*/g, ".*")}$`); // Handle wildcards
+	return data.filter((section) => validValue.test(section[sKey] as string));
 }
 
-export function handleNegation(filter: any, data: InsightResult[]): InsightResult[] {
+function handleNegation(filter: any, data: InsightResult[]): InsightResult[] {
 	// Exclude matching sections
 	const notData = handleFilter(filter.NOT, data);
 	return data.filter((section) => !notData.includes(section));
 }
 
-export async function getAllSections(query: Query): Promise<InsightResult[]> {
+export async function getAllSections(query: Query, datasets: Map<string, number>): Promise<InsightResult[]> {
 	const idString = extractDatasetId(query);
-	const allSections = await loadDatasets(idString, "sections");
+	const fileName = String(datasets.get(idString));
+	const allSections = await loadDatasets(idString, fileName);
 
 	const columns = Object.keys(allSections[0]);
 
@@ -100,8 +102,8 @@ export async function getAllSections(query: Query): Promise<InsightResult[]> {
 	for (const section of allSections) {
 		const sectionResult: InsightResult = {};
 		for (const item of columns) {
-			//iterate through indices
-			sectionResult[item] = section[item as keyof Section];
+			//iterate through indicies
+			sectionResult[`${idString}_${item}`] = section[item as keyof Section];
 		}
 		allResults.push(sectionResult);
 	}
@@ -111,8 +113,12 @@ export async function getAllSections(query: Query): Promise<InsightResult[]> {
 
 export function sortResults(options: Options, results: InsightResult[]): InsightResult[] {
 	return results.sort((a, b) => {
-		const aValue = a[options.ORDER as string | number];
-		const bValue = b[options.ORDER as string | number];
+		if (!options.ORDER) {
+			throw new InsightError("invalid options passed to sortResults");
+		}
+
+		const aValue = a[options.ORDER];
+		const bValue = b[options.ORDER];
 
 		if (typeof aValue === "string" && typeof bValue === "string") {
 			// string comparison (case-insensitive)
@@ -130,109 +136,10 @@ export function sortResults(options: Options, results: InsightResult[]): Insight
 }
 
 export function extractDatasetId(query: Query): string {
-	const key = extractKey(query.WHERE);
-	const keyParts = key.split("_");
+	const keys: string[] = query.OPTIONS.COLUMNS;
+	const keyParts = keys[0].split("_");
 	return keyParts[0];
 }
-
-export function extractKey(body: Body): string {
-	if (body.EQ) {
-		return Object.keys(body.EQ)[0];
-	} else if (body.GT) {
-		return Object.keys(body.GT)[0];
-	} else if (body.LT) {
-		return Object.keys(body.LT)[0];
-	}
-
-	if (body.AND) {
-		for (const b of body.AND) {
-			const key = extractKey(b);
-			if (key) {
-				return key;
-			}
-		}
-	} else if (body.OR) {
-		for (const b of body.OR) {
-			const key = extractKey(b);
-			if (key) {
-				return key;
-			}
-		}
-	} else if (body.NOT) {
-		return extractKey(body.NOT);
-	}
-	throw new InsightError("Invalid body");
-}
-
-//THIS IS THE HELPER TO CALL IN EACH BASE CASE FOR WHERE FUNCTION: MCOMPARATOR, SCOMPARATOR
-// /**
-//  * @returns - Section[] of sections returned by loadDatasets contained in the data set specified in the id string of
-//  * param field. Sections have been filtered according to op and Mfield|Sfield.
-//  * @param op
-//  * @param record
-//  */
-// export async function getMatchingSections(op: string, record: [MKey, number] | [SKey, string]): Promise<Section[]> {
-//
-// 	const key = record[0];
-// 	const value = record[1];
-// 	const parts = key.split('_');
-// 	const idString = parts[0];
-// 	const field = parts[1];
-//
-// 	//Adapted form ChatGPT generated response
-// 	const comp = generateCompFunction(op);
-//
-// 	const sections = await loadDatasets(idString, 'sections');
-// 	const results: Section[] = [];
-// 	for (const section of sections) {
-// 		if (filterSection(section, comp, value, field)) {
-// 			results.push(section);
-// 		}
-// 	}
-// 	return results;
-// }
-//
-// export function generateCompFunction(op: string): CompFunction {
-// 	switch(op) {
-// 		case 'GT':
-// 			return ((a: number, b: number) => a > b) as CompFunction;
-// 		case 'LT':
-// 			return ((a: number, b: number) => a < b) as CompFunction;
-// 		case 'EQ':
-// 			return ((a: number, b: number) => a === b) as CompFunction;
-// 		case 'IS':
-// 			return ((a: string, b: string) => a === b) as CompFunction;
-// 		default:
-// 			throw new InsightError('not good very bad, no teneís un Quixote')
-// 	}
-// }
-//
-// export function filterSection(section: Section, comp: CompFunction, value: string | number, field: string): boolean {
-// 	switch(field) {
-// 		case 'avg':
-// 			return comp(section.avg, value);
-// 		case 'pass':
-// 			return comp(section.pass, value);
-// 		case 'fail':
-// 			return comp(section.fail, value);
-// 		case 'audit':
-// 			return comp(section.audit, value);
-// 		case 'year':
-// 			return comp(section.year, value);
-// 		case 'dept':
-// 			return comp(section.dept, value);
-// 		case 'id':
-// 			return comp(section.id, value);
-// 		case 'instructor':
-// 			return comp(section.instructor, value);
-// 		case 'title':
-// 			return comp(section.title, value);
-// 		case 'uuid':
-// 			return comp(section.uuid, value);
-// 		default:
-// 			throw new InsightError('invalid key passed to getMatchingSections');
-// 	}
-// }
 
 /**
  * @returns - Promise<Section[]> an array of the sections contained in the data specified by param id.
@@ -241,7 +148,6 @@ export function extractKey(body: Body): string {
  * @param id
  */
 export async function loadDatasets(id: string, fileName: string): Promise<Section[]> {
-	// const MAX_SIZE = 5000;
 	const datasetPath = path.resolve(__dirname, "../data", fileName);
 	let dataset;
 	try {
@@ -254,65 +160,7 @@ export async function loadDatasets(id: string, fileName: string): Promise<Sectio
 		for (const section of file.result) {
 			const newSection = parseSectionObject(section);
 			parsedSections.push(newSection);
-			// WANT TO RETURN ALL SECTIONS
-			// if(parsedSections.length > MAX_SIZE) {
-			// 	throw new ResultTooLargeError('result exceeded 5000 sections');
-			// }
 		}
 	}
 	return parsedSections;
 }
-
-/**
- * @returns - InsightResult[], selects columns from array of sections as specified by options.COLUMNS and parses them
- * into InsightResult. Creates one Insight Result per section. Final InsightResult[] ordered according to column specified
- * by options.ORDER if applicable.
- * @param options
- * @param sections
- */
-// export function handleOptions(options: Options, sections: Section[]): InsightResult[] {
-// 	const columns = options.COLUMNS;
-//
-// 	const column_keys: string[] = [];
-// 	for (const column of columns) {
-// 		if (!isMKey(column) && !isSKey(column)) {
-// 			throw new InsightError('invalid keys passed to OPTIONS.COLUMNS, NOTE THIS WAS NOT CAUGHT IN VALIDATE QUERY');
-// 		}
-// 		const parts = column.split('_');
-// 		column_keys.push(parts[1]);
-// 	}
-//
-// 	const insight_results: InsightResult[] = [];
-// 	for (const section of sections) {
-// 		const section_result: InsightResult = {};
-// 		for (let i = 0; i < column_keys.length; i++) {  //iterate through indices
-// 			section_result[columns[i]] = section[column_keys[i] as keyof Section]; //WILL THIS LINE WORK? PROBABLY BUG HERE
-// 		}
-// 		insight_results.push(section_result);
-// 	}
-//
-// 	if (options.ORDER) {
-// 		const order = options.ORDER;
-// 		if (!isMKey(order) && !isSKey(order)) {
-// 			throw new InsightError('invalid keys passed to OPTIONS.COLUMNS, NOTE THIS WAS NOT CAUGHT IN VALIDATE QUERY');
-// 		}
-// 		const parts = order.split('_');
-// 		const field = parts[1];
-//
-// 		//Adapted from ChatGPT generated response:
-// 		insight_results.sort((a, b) => {
-// 			const valueA = a[field];
-// 			const valueB = b[field];
-//
-// 			if (typeof valueA === 'number' && typeof valueB === 'number') {
-// 				return valueA - valueB;
-// 			} else if (typeof valueA === 'string' && typeof valueB === 'string') {
-// 				return valueA.localeCompare(valueB, undefined, {sensitivity: 'base'});
-// 			} else {
-// 				throw new InsightError('fields in handleOptions.ORDER not of same type.')
-// 			}
-// 		})
-//
-// 	}
-// 	return insight_results;
-// }

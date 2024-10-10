@@ -3,6 +3,7 @@ import { JSONFile, Section } from "../models/Section";
 import fs from "fs-extra";
 import path from "node:path";
 import JSZip from "jszip";
+import { loadDatasets } from "./QueryHelper";
 
 /**
  * @returns - true if id is a valid dataset id and has not already been used in the database
@@ -28,26 +29,6 @@ export function checkValidId(id: string, datasetIds: string[], includes: boolean
 	}
 	return true;
 }
-
-// TODO: make this function return void?
-// export function checkValidId(id: string, datasetIds: Map<string, number>, includes: boolean): boolean {
-// 	const validId = /^[^_]+$/; //Adapted from chatGPT generated response.
-// 	if (!validId.test(id) || id.trim().length === 0) {
-// 		//Adapted from chatGPT generated response.
-// 		throw new InsightError(`id provided to addDataset not valid - id=${id};`);
-// 	}
-//
-// 	const idExists = datasetIds.has(id);
-//
-// 	if (includes && !idExists) {
-// 		throw new NotFoundError(`Dataset with id "${id}" not found.`);
-// 	} else if (!includes && idExists) {
-// 		throw new InsightError(`id provided to addDataset already in database - id=${id}`);
-// 	}
-// 	return true;
-// }
-
-//checkValidId(id, this.datasetIds, false) <- will say it's a valid id if the id provided is already in the list of datasetIds
 
 /**
  * @param section - A section found within file passed to parseJSONtoSections. ASSUME param passed in the form of a
@@ -188,25 +169,19 @@ export async function unzipContent(content: string): Promise<JSZip> {
 //     throw new InsightError("Failed to write file to disk");
 // })
 
-export async function getDatasetInfo(id: string): Promise<InsightDataset> {
+export async function getDatasetInfo(id: string, fileName: string): Promise<InsightDataset> {
 	// shouldn't have to validate id in listDataset()
 	// checkValidId(id, datasetIds, true); // 3rd parameter true
 
 	// get dataset file path
-	const datasetPath = path.resolve(__dirname, "../data", id); // txt file?
 	try {
-		// read dataset file from disk
-		const data = await fs.readFile(datasetPath, "utf8");
-		const dataset = JSON.parse(data);
-
-		// count the number of sections (rows) in the dataset
-		const numRows = dataset.sections.length;
-		const kind: InsightDatasetKind = InsightDatasetKind.Sections;
+		const sections = await loadDatasets(id, fileName);
+		const numRows = sections.length;
 
 		// Return dataset info
 		return {
 			id: id,
-			kind: kind,
+			kind: InsightDatasetKind.Sections,
 			numRows: numRows,
 		};
 	} catch (error: any) {

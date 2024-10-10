@@ -1,0 +1,11 @@
+{
+   "title":"valid with GT",
+   "input":{
+      "GT":{
+         "sections_avg":97
+      }
+   },
+   "errorExpected":false,
+   "expected":""
+}
+

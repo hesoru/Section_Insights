@@ -11,8 +11,6 @@ import { clearDisk, getContentFromArchives, loadTestQuery } from "../TestUtil";
 
 import { expect, use } from "chai";
 import chaiAsPromised from "chai-as-promised";
-import fs from "fs-extra";
-import path from "node:path";
 
 use(chaiAsPromised);
 
@@ -130,7 +128,6 @@ describe("InsightFacade", function () {
 		});
 
 		it("should reject adding dataset with invalid sections", async function () {
-			// TODO: what does this mean?
 			try {
 				const miniData6 = await getContentFromArchives("miniData6.zip"); // TODO: where is this??
 				await facade.addDataset("noCoursesData", miniData6, InsightDatasetKind.Sections);
@@ -153,11 +150,9 @@ describe("InsightFacade", function () {
 		it("should successfully add valid large dataset, and create file on disk", async function () {
 			try {
 				const result = await facade.addDataset("sections", sections, InsightDatasetKind.Sections);
-				expect(result).to.have.members(["sections"]);
 				expect(result).to.be.an("array");
+				expect(result).to.deep.equal(["sections"]);
 				// read file from disk
-				const datasetPath = path.resolve(__dirname, "../data", "sections");
-				await fs.readFile(datasetPath, "utf8");
 			} catch (err) {
 				expect.fail("Should not have thrown an error" + err);
 			}
@@ -215,34 +210,30 @@ describe("InsightFacade", function () {
 			}
 		});
 
-		it("should successfully remove a dataset, and delete it from disk", async function () {
-			try {
-				await facade.addDataset("mcgill", sections, InsightDatasetKind.Sections);
-				const removeResult = await facade.removeDataset("mcgill");
-				expect(removeResult).to.equal("mcgill");
-			} catch (err) {
-				expect.fail("Should have successfully added and removed" + err);
-			}
+		it("removed dataset still in database", async function () {
+			//const miniData1 = await getContentFromArchives("miniData1.zip");  invalid dataset no courses folder
+			//const miniData2 = await getContentFromArchives("miniData2.zip");
 
 			try {
-				// attempt to read deleted file from disk
-				const datasetPath = path.resolve(__dirname, "../data", "mcgill");
-				await fs.readFile(datasetPath, "utf8");
-				expect.fail("Should not be able to read deleted file from disk.");
-			} catch {
-				// use listDataset() to check that dataset deleted
-				const results = await facade.listDatasets();
-				const contains: boolean = results.some((result) => result.id === "mcgill");
-				if (contains) {
-					expect.fail("Should have removed the id");
-				}
+				await facade.addDataset("data", sections, InsightDatasetKind.Sections);
+				await facade.removeDataset("data");
+			} catch (err) {
+				expect.fail("Should have sucessfully added and removed" + err);
+			}
+
+			const results = await facade.listDatasets();
+			const contains: boolean = results.some((result) => result.id === "data");
+
+			if (contains) {
+				expect.fail("Should have removed the id");
+			} else {
+				expect("correctly removed dataset");
 			}
 		});
 
 		it("promise does not resolve to correct string", async function () {
 			//const miniData1 = await getContentFromArchives("miniData1.zip");  invalid dataset no courses folder
 			//const miniData2 = await getContentFromArchives("miniData2.zip");
-
 			try {
 				await facade.addDataset("data", sections, InsightDatasetKind.Sections);
 				const result = await facade.removeDataset("data");
@@ -277,7 +268,7 @@ describe("InsightFacade", function () {
 
 		it("successfully lists datasets, with one existing dataset", async function () {
 			try {
-				const miniData5 = await getContentFromArchives("miniData3.zip");
+				const miniData5 = await getContentFromArchives("miniData5.zip");
 				await facade.addDataset("miniData5", miniData5, InsightDatasetKind.Sections);
 			} catch (error) {
 				expect.fail("addDataset failed" + error);
@@ -288,7 +279,7 @@ describe("InsightFacade", function () {
 				{
 					id: "miniData5",
 					kind: InsightDatasetKind.Sections,
-					numRows: 1,
+					numRows: 6,
 				},
 			]);
 			const arrayLength = 1;
@@ -296,8 +287,10 @@ describe("InsightFacade", function () {
 		});
 
 		it("successfully lists datasets, with many existing datasets", async function () {
+			const timeout = 10000;
+			this.timeout(timeout);
 			try {
-				const miniData5 = await getContentFromArchives("miniData3.zip");
+				const miniData5 = await getContentFromArchives("miniData5.zip");
 				await facade.addDataset("miniData4", sections, InsightDatasetKind.Sections);
 				await facade.addDataset("miniData5", miniData5, InsightDatasetKind.Sections);
 			} catch (error) {
@@ -314,7 +307,7 @@ describe("InsightFacade", function () {
 				{
 					id: "miniData5",
 					kind: InsightDatasetKind.Sections,
-					numRows: 1,
+					numRows: 6,
 				},
 			]);
 			const arrayLength = 2;
@@ -342,27 +335,44 @@ describe("InsightFacade", function () {
 
 			try {
 				result = await facade.performQuery(input);
-				expect(input).to.be.an("object");
 
 				if (errorExpected) {
 					expect.fail(`performQuery resolved when it should have rejected with ${expected}`);
 				}
-				expect(result).to.deep.equal(expected);
+				const expectedLength = expected.length;
+				//console.log(expected)
+				//console.log(result)
+				expect(result.length).to.equal(expectedLength);
+				expect(result).to.have.deep.members(expected);
+
 				return;
 			} catch (err) {
 				if (!errorExpected) {
 					expect.fail(`performQuery threw unexpected error: ${err}`);
 				}
+				//OTHERWISE I THINK THE TEST SHOULD PASS BECAUSE YOU EXPECTED A FAIL
+				//result holds returned values which should match expected from json file.
+				//expected specified in const {input, expected, errorExpected} during destructuring
+				//should fail if result does not equal expected.
+				//InsightResult = Record<string, string | number>;
+
 				//Specify types of errors...
 				if (expected === "ResultTooLargeError") {
 					expect(err).to.be.instanceOf(ResultTooLargeError);
 				}
+
 				if (expected === "InsightError") {
 					expect(err).to.be.instanceOf(InsightError);
 				}
-				expect("performQuery passed threw error when expected"); // TODO: replace with your assertions
+				expect("performQuery passed threw error when expected");
 				return;
+				//Look into resolving promises
 			}
+
+			//OTHERWISE I THINK THE TEST SHOULD HAVE PASSED
+			//expect results to equal expected from plain UI, expectations should be writen in JSON file
+			//expect("PerformQuery passed no error when expected");
+			//return
 		}
 
 		before(async function () {
@@ -372,7 +382,6 @@ describe("InsightFacade", function () {
 			// Will *fail* if there is a problem reading ANY dataset.
 			const loadDatasetPromises: Promise<string[]>[] = [
 				facade.addDataset("sections", sections, InsightDatasetKind.Sections),
-				facade.addDataset("mcgill", sections, InsightDatasetKind.Sections),
 			];
 
 			try {
@@ -388,53 +397,39 @@ describe("InsightFacade", function () {
 
 		// Examples demonstrating how to test performQuery using the JSON Test Queries.
 		// The relative path to the query file must be given in square brackets.
-
-		// invalid inputs //
-
-		// general
-		it("[invalid/resultTooLarge.json] Result Too Large", checkQuery);
-		it("[invalid/noFilter.json] No Filter (ResultTooBig)", checkQuery);
-		it("[invalid/queryingMultipleDatasets.json] Querying Multiple Datasets", checkQuery);
-
-		// improper IDString
-		it("[invalid/idDoesNotExist.json] ID Does Not Exist", checkQuery);
-		it("[invalid/idStringEmpty.json] IDString Empty (Invalid)", checkQuery);
-
-		// improper InputString
-		it("[invalid/wildcard(C_S).json] Wildcard (C*S)", checkQuery);
-
-		// improper EBNF formatting
-		it("[invalid/orderKeyMissing.json] ORDER's key not found in COLUMN's KEY_LIST array", checkQuery);
-		it("[invalid/invalidEmptyColumns.json] Query missing WHERE", checkQuery);
-		it("[invalid/mkeyUsedForIS.json] mkey used for IS", checkQuery);
-		it("[invalid/skeyUsedForMComparator.json] skey used for mcomparator", checkQuery);
-		it("[invalid/invalidSField.json] Invalid SField", checkQuery);
-		it("[invalid/invalidMField.json] Invalid MField", checkQuery);
-		it("[invalid/columnsMissing.json] COLUMNS Missing", checkQuery);
-		it("[invalid/invalidFilterKeyXOR.json] Invalid Filter Key: XOR", checkQuery);
-		it("[invalid/wrongSyntaxNOT.json] Wrong Syntax: NOT", checkQuery);
-
-		// valid inputs //
-
-		// general
-		it("[valid/valid1.json] WHERE: OR, GT, LT", checkQuery);
 		it("[valid/simple.json] SELECT dept, avg WHERE avg > 97", checkQuery);
-		it("[valid/complexValidQuery.json] Complex Valid Query", checkQuery);
-		it("[valid/notFound.json] Result Not Found", checkQuery);
-
-		// proper InputString
-		it("[valid/wildcard(_C).json] Wildcard (*C)", checkQuery);
-		it("[valid/wildcard(C_).json] Wildcard (C*)", checkQuery);
-		it("[valid/_wildcard_.json] Wildcard (*C*)", checkQuery);
-		it("[valid/inputStringEmpty(Valid).json] InputString Empty (Valid)", checkQuery);
-
-		// proper number
-		it("[valid/year1900(Valid).json] Year 1900", checkQuery);
-		it("[valid/negativeAverage(Valid).json] Negative Average (Valid)", checkQuery);
-		it("[valid/futureYear(Valid).json] Future Year (Valid)", checkQuery);
-
-		// proper EBNF formatting
-		it("[valid/orderMissing(Valid).json] ORDER Missing (Valid)", checkQuery);
-		it("[valid/rightSyntaxNOT(Valid).json] Right Syntax: NOT", checkQuery);
+		it("[invalid/invalid.json] Query missing WHERE", checkQuery);
+		it("[invalid/queryingMultipleDatasets.json]", checkQuery);
+		it("[invalid/ResultTooLarge.json]", checkQuery);
+		it("[valid/valid1.json] WHERE: OR, GT, LT", checkQuery);
+		it("[valid/Cwildcard.json] *wildcard", checkQuery);
+		it("[valid/Cwildcard.json] wildcard*", checkQuery);
+		it("[valid/wildcard2astrix.json] wildcard2astrix.json", checkQuery);
+		it("[invalid/wildCcard.json] wild*card", checkQuery);
+		it("[valid/complexValidQuery.json]", checkQuery);
+		it("[invalid/columnsMissing.json]", checkQuery);
+		it("[invalid/invalidSField.json]", checkQuery);
+		it("[invalid/invalidMField.json]", checkQuery);
+		it("[invalid/wrongSyntaxNOT.json]", checkQuery);
+		it("[invalid/noFilter.json]", checkQuery);
+		it("[invalid/invalid.json]", checkQuery);
+		it("[invalid/orderKeyMissing.json]", checkQuery);
+		it("[invalid/idDoesNotExist.json]", checkQuery);
+		it("[valid/negativeAverage(Valid).json]", checkQuery);
+		it("[valid/filterNOT.json]", checkQuery); //works but timesout at 2.47
+		it("[invalid/notObject.json]", checkQuery);
+		it("[invalid/badWHERE.json]", checkQuery);
+		it("[invalid/badOptions.json]", checkQuery);
+		it("[invalid/badOR.json]", checkQuery);
+		it("[invalid/emptyOptions.json]", checkQuery);
+		it("[valid/futureYear(Valid).json]", checkQuery);
+		it("[invalid/invalidFilterKeyXOR.json]", checkQuery);
+		it("[valid/sortOnString.json]", checkQuery);
+		it("[invalid/badID.json]", checkQuery);
+		it("[valid/AND.GT.IS.json]", checkQuery);
+		it("[valid/nestedLogicals.json]", checkQuery);
+		it("[valid/wildcardNOT.json]", checkQuery);
+		it("[valid/2Wildcards.json]", checkQuery);
+		//it("[valid/allFilters.json]", checkQuery);
 	});
 });

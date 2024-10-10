@@ -1,0 +1,136 @@
+{
+  "title": "SELECT dept, avg WHERE avg > 97",
+  "input": {
+    "WHERE": {
+      "AND": [
+        {
+          "GT": {
+            "sections_audit": 1
+          }
+        },
+        {
+          "IS": {
+            "sections_dept": "math"
+          }
+        }
+      ]
+    },
+    "OPTIONS": {
+      "COLUMNS": [
+        "sections_id",
+        "sections_fail"
+      ]
+    }
+  },
+  "errorExpected": false,
+  "expected": [
+      {
+        "sections_id":"221",
+        "sections_fail":3
+      },
+      {
+        "sections_id":"221",
+        "sections_fail":4
+      },
+      {
+        "sections_id":"221",
+        "sections_fail":26
+      },
+      {
+        "sections_id":"316",
+        "sections_fail":5
+      },
+      {
+        "sections_id":"316",
+        "sections_fail":5
+      },
+      {
+        "sections_id":"345",
+        "sections_fail":3
+      },
+      {
+        "sections_id":"345",
+        "sections_fail":3
+      },
+      {
+        "sections_id":"419",
+        "sections_fail":0
+      },
+      {
+        "sections_id":"419",
+        "sections_fail":0
+      },
+      {
+        "sections_id":"442",
+        "sections_fail":3
+      },
+      {
+        "sections_id":"442",
+        "sections_fail":3
+      },
+      {
+        "sections_id":"507",
+        "sections_fail":0
+      },
+      {
+        "sections_id":"507",
+        "sections_fail":0
+      },
+      {
+        "sections_id":"507",
+        "sections_fail":0
+      },
+      {
+        "sections_id":"507",
+        "sections_fail":0
+      },
+      {
+        "sections_id":"507",
+        "sections_fail":0
+      },
+      {
+        "sections_id":"507",
+        "sections_fail":0
+      },
+      {
+        "sections_id":"521",
+        "sections_fail":0
+      },
+      {
+        "sections_id":"521",
+        "sections_fail":0
+      },
+      {
+        "sections_id":"544",
+        "sections_fail":0
+      },
+      {
+        "sections_id":"544",
+        "sections_fail":0
+      },
+      {
+        "sections_id":"550",
+        "sections_fail":0
+      },
+      {
+        "sections_id":"550",
+        "sections_fail":0
+      },
+      {
+        "sections_id":"551",
+        "sections_fail":0
+      },
+      {
+        "sections_id":"551",
+        "sections_fail":0
+      },
+      {
+        "sections_id":"552",
+        "sections_fail":0
+      },
+      {
+        "sections_id":"552",
+        "sections_fail":0
+      }
+    ]
+  }

@@ -1,6 +1,5 @@
 import { MKey, Query, SKey } from "../models/Section";
 import { InsightError } from "../controller/IInsightFacade";
-
 export function validateQuery(query: unknown): Query {
 	//1) check that query is an object
 	if (typeof query !== "object" || query === null) {
@@ -33,14 +32,13 @@ export function validateQuery(query: unknown): Query {
 
 export function validateBody(filter: any): void {
 	const keys = checkKeys(filter);
-	const lengthLimit = 2;
 	const validateArray = (key: string, value: any): void => {
-		if (!Array.isArray(value) || value.length !== lengthLimit) {
+		if (!Array.isArray(value) || value.length === 0) {
 			throw new InsightError(`invalid query, query.WHERE.${key} is invalid`);
 		}
 		value.forEach(validateBody);
 	};
-	if (keys[0] === "GT" || keys[0] === "LT" || keys[0] === "IS") {
+	if (keys[0] === "GT" || keys[0] === "LT" || keys[0] === "IS" || keys[0] === "EQ") {
 		validateLogicComparator(keys[0], filter);
 	} else {
 		switch (keys[0]) {
@@ -54,7 +52,10 @@ export function validateBody(filter: any): void {
 				validateBody(filter.NOT);
 				break;
 			default:
-				throw new InsightError("invalid query, query.WHERE contains an invalid key");
+				if (keys.length !== 0) {
+					throw new InsightError("invalid query, query.WHERE contains an invalid key");
+				}
+			//I think this is fine because WHERE can be empty
 		}
 	}
 }
@@ -84,7 +85,7 @@ export function validateLogicComparator(key: string, filter: any): void {
 
 export function checkKeys(filter: any): string[] {
 	const keys = Object.keys(filter);
-	if (keys.length !== 1) {
+	if (keys.length > 1) {
 		throw new InsightError("invalid query, query.WHERE contains more than one key");
 	}
 	return keys;
