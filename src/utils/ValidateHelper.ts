@@ -1,6 +1,5 @@
 import { MKey, Query, SKey } from "../models/Section";
 import { InsightError } from "../controller/IInsightFacade";
-
 export function validateQuery(query: unknown): Query {
 	//1) check that query is an object
 	if (typeof query !== "object" || query === null) {

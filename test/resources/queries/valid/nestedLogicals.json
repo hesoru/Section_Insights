@@ -1,0 +1,961 @@
+{
+  "title": "SELECT dept, avg WHERE avg > 97",
+  "input": {
+    "WHERE": {
+      "OR": [
+        {
+          "GT": {
+            "sections_year": 2023
+          }
+        },
+        {
+          "AND": [
+            {
+              "EQ": {
+                "sections_avg": 85
+              }
+            },
+            {
+              "LT": {
+                "sections_fail": 5
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "OPTIONS": {
+      "COLUMNS": [
+        "sections_id",
+        "sections_title"
+      ]
+    }
+  },
+  "errorExpected": false,
+  "expected": [
+      {
+        "sections_id":"330",
+        "sections_title":"com adult educ"
+      },
+      {
+        "sections_id":"516",
+        "sections_title":"qualitative meth"
+      },
+      {
+        "sections_id":"516",
+        "sections_title":"qualitative meth"
+      },
+      {
+        "sections_id":"520",
+        "sections_title":"arch design iii"
+      },
+      {
+        "sections_id":"598",
+        "sections_title":"masa thesis"
+      },
+      {
+        "sections_id":"598",
+        "sections_title":"masa thesis"
+      },
+      {
+        "sections_id":"513",
+        "sections_title":"acous & art phon"
+      },
+      {
+        "sections_id":"513",
+        "sections_title":"acous & art phon"
+      },
+      {
+        "sections_id":"556",
+        "sections_title":"amplification i"
+      },
+      {
+        "sections_id":"556",
+        "sections_title":"amplification i"
+      },
+      {
+        "sections_id":"563",
+        "sections_title":"cochl implants"
+      },
+      {
+        "sections_id":"563",
+        "sections_title":"cochl implants"
+      },
+      {
+        "sections_id":"511",
+        "sections_title":"invest theory"
+      },
+      {
+        "sections_id":"516",
+        "sections_title":"fin engineering"
+      },
+      {
+        "sections_id":"516",
+        "sections_title":"fin engineering"
+      },
+      {
+        "sections_id":"532",
+        "sections_title":"intl finl mngmnt"
+      },
+      {
+        "sections_id":"532",
+        "sections_title":"intl finl mngmnt"
+      },
+      {
+        "sections_id":"522",
+        "sections_title":"consult prac ii"
+      },
+      {
+        "sections_id":"522",
+        "sections_title":"consult prac ii"
+      },
+      {
+        "sections_id":"530",
+        "sections_title":"intrntl trdg env"
+      },
+      {
+        "sections_id":"420",
+        "sections_title":"adv bioc technqs"
+      },
+      {
+        "sections_id":"420",
+        "sections_title":"adv bioc technqs"
+      },
+      {
+        "sections_id":"427",
+        "sections_title":"ornith&herpetlgy"
+      },
+      {
+        "sections_id":"427",
+        "sections_title":"ornith&herpetlgy"
+      },
+      {
+        "sections_id":"441",
+        "sections_title":"anim cell biol"
+      },
+      {
+        "sections_id":"441",
+        "sections_title":"anim cell biol"
+      },
+      {
+        "sections_id":"599",
+        "sections_title":"m.a. sc. thesis"
+      },
+      {
+        "sections_id":"424",
+        "sections_title":"mam endocrinolgy"
+      },
+      {
+        "sections_id":"424",
+        "sections_title":"mam endocrinolgy"
+      },
+      {
+        "sections_id":"500",
+        "sections_title":"sem idys museum"
+      },
+      {
+        "sections_id":"500",
+        "sections_title":"sem idys museum"
+      },
+      {
+        "sections_id":"500",
+        "sections_title":"sem idys museum"
+      },
+      {
+        "sections_id":"500",
+        "sections_title":"sem idys museum"
+      },
+      {
+        "sections_id":"503",
+        "sections_title":"grad prac"
+      },
+      {
+        "sections_id":"503",
+        "sections_title":"grad prac"
+      },
+      {
+        "sections_id":"577",
+        "sections_title":"elec scie eng tc"
+      },
+      {
+        "sections_id":"577",
+        "sections_title":"elec scie eng tc"
+      },
+      {
+        "sections_id":"402",
+        "sections_title":"difraction mthds"
+      },
+      {
+        "sections_id":"402",
+        "sections_title":"difraction mthds"
+      },
+      {
+        "sections_id":"435",
+        "sections_title":"bio-inorganic"
+      },
+      {
+        "sections_id":"435",
+        "sections_title":"bio-inorganic"
+      },
+      {
+        "sections_id":"524",
+        "sections_title":"orgnometlc cmpds"
+      },
+      {
+        "sections_id":"524",
+        "sections_title":"orgnometlc cmpds"
+      },
+      {
+        "sections_id":"599",
+        "sections_title":"child's lit"
+      },
+      {
+        "sections_id":"516",
+        "sections_title":"behv timber stru"
+      },
+      {
+        "sections_id":"516",
+        "sections_title":"behv timber stru"
+      },
+      {
+        "sections_id":"518",
+        "sections_title":"rel & str safety"
+      },
+      {
+        "sections_id":"518",
+        "sections_title":"rel & str safety"
+      },
+      {
+        "sections_id":"526",
+        "sections_title":"3d mdl cost est"
+      },
+      {
+        "sections_id":"526",
+        "sections_title":"3d mdl cost est"
+      },
+      {
+        "sections_id":"562",
+        "sections_title":"env contamnt anl"
+      },
+      {
+        "sections_id":"562",
+        "sections_title":"env contamnt anl"
+      },
+      {
+        "sections_id":"565",
+        "sections_title":"phys-chml trt pr"
+      },
+      {
+        "sections_id":"565",
+        "sections_title":"phys-chml trt pr"
+      },
+      {
+        "sections_id":"362",
+        "sections_title":"basic intvw skls"
+      },
+      {
+        "sections_id":"433",
+        "sections_title":"psnl soc dv adlt"
+      },
+      {
+        "sections_id":"433",
+        "sections_title":"psnl soc dv adlt"
+      },
+      {
+        "sections_id":"449",
+        "sections_title":"honours essay"
+      },
+      {
+        "sections_id":"449",
+        "sections_title":"honours essay"
+      },
+      {
+        "sections_id":"525",
+        "sections_title":"int org res mthd"
+      },
+      {
+        "sections_id":"525",
+        "sections_title":"int org res mthd"
+      },
+      {
+        "sections_id":"660",
+        "sections_title":"sem in marketing"
+      },
+      {
+        "sections_id":"660",
+        "sections_title":"sem in marketing"
+      },
+      {
+        "sections_id":"671",
+        "sections_title":"theory of financ"
+      },
+      {
+        "sections_id":"671",
+        "sections_title":"theory of financ"
+      },
+      {
+        "sections_id":"411",
+        "sections_title":"compiler constrc"
+      },
+      {
+        "sections_id":"411",
+        "sections_title":"compiler constrc"
+      },
+      {
+        "sections_id":"521",
+        "sections_title":"para algs & arch"
+      },
+      {
+        "sections_id":"521",
+        "sections_title":"para algs & arch"
+      },
+      {
+        "sections_id":"589",
+        "sections_title":"m.sc major essay"
+      },
+      {
+        "sections_id":"589",
+        "sections_title":"m.sc major essay"
+      },
+      {
+        "sections_id":"410",
+        "sections_title":"dentistry i"
+      },
+      {
+        "sections_id":"410",
+        "sections_title":"dentistry i"
+      },
+      {
+        "sections_id":"516",
+        "sections_title":"ped case rev i"
+      },
+      {
+        "sections_id":"516",
+        "sections_title":"ped case rev i"
+      },
+      {
+        "sections_id":"543",
+        "sections_title":"adv occl&articul"
+      },
+      {
+        "sections_id":"543",
+        "sections_title":"adv occl&articul"
+      },
+      {
+        "sections_id":"575",
+        "sections_title":"implant therapy"
+      },
+      {
+        "sections_id":"575",
+        "sections_title":"implant therapy"
+      },
+      {
+        "sections_id":"599",
+        "sections_title":"m.sc. thesis"
+      },
+      {
+        "sections_id":"410",
+        "sections_title":"dt hg th & pr iv"
+      },
+      {
+        "sections_id":"410",
+        "sections_title":"dt hg th & pr iv"
+      },
+      {
+        "sections_id":"439",
+        "sections_title":"asmnt spec needs"
+      },
+      {
+        "sections_id":"406",
+        "sections_title":"topcs microecon"
+      },
+      {
+        "sections_id":"406",
+        "sections_title":"topcs microecon"
+      },
+      {
+        "sections_id":"544",
+        "sections_title":"med imaging"
+      },
+      {
+        "sections_id":"544",
+        "sections_title":"med imaging"
+      },
+      {
+        "sections_id":"574",
+        "sections_title":"self-tuning ctrl"
+      },
+      {
+        "sections_id":"574",
+        "sections_title":"self-tuning ctrl"
+      },
+      {
+        "sections_id":"597",
+        "sections_title":"eng report"
+      },
+      {
+        "sections_id":"597",
+        "sections_title":"eng report"
+      },
+      {
+        "sections_id":"597",
+        "sections_title":"eng report"
+      },
+      {
+        "sections_id":"454",
+        "sections_title":"appl geophysics"
+      },
+      {
+        "sections_id":"454",
+        "sections_title":"appl geophysics"
+      },
+      {
+        "sections_id":"454",
+        "sections_title":"appl geophysics"
+      },
+      {
+        "sections_id":"454",
+        "sections_title":"appl geophysics"
+      },
+      {
+        "sections_id":"547",
+        "sections_title":"tnl&undergrd eng"
+      },
+      {
+        "sections_id":"547",
+        "sections_title":"tnl&undergrd eng"
+      },
+      {
+        "sections_id":"598",
+        "sections_title":"m.eng. grad papr"
+      },
+      {
+        "sections_id":"481",
+        "sections_title":"intro rsrch educ"
+      },
+      {
+        "sections_id":"481",
+        "sections_title":"intro rsrch educ"
+      },
+      {
+        "sections_id":"568",
+        "sections_title":"dev neuropsych"
+      },
+      {
+        "sections_id":"568",
+        "sections_title":"dev neuropsych"
+      },
+      {
+        "sections_id":"522",
+        "sections_title":"ventr learn tech"
+      },
+      {
+        "sections_id":"425",
+        "sections_title":"food sci lab iii"
+      },
+      {
+        "sections_id":"425",
+        "sections_title":"food sci lab iii"
+      },
+      {
+        "sections_id":"460",
+        "sections_title":"int nut fld stdy"
+      },
+      {
+        "sections_id":"475",
+        "sections_title":"clin dietetc ii"
+      },
+      {
+        "sections_id":"475",
+        "sections_title":"clin dietetc ii"
+      },
+      {
+        "sections_id":"520",
+        "sections_title":"adv food analysis"
+      },
+      {
+        "sections_id":"520",
+        "sections_title":"adv food analysis"
+      },
+      {
+        "sections_id":"498",
+        "sections_title":"bsc thesis"
+      },
+      {
+        "sections_id":"576",
+        "sections_title":"adv wood mech"
+      },
+      {
+        "sections_id":"576",
+        "sections_title":"adv wood mech"
+      },
+      {
+        "sections_id":"588",
+        "sections_title":"fluvil ecohydrol"
+      },
+      {
+        "sections_id":"588",
+        "sections_title":"fluvil ecohydrol"
+      },
+      {
+        "sections_id":"501",
+        "sections_title":"biomass fraction"
+      },
+      {
+        "sections_id":"501",
+        "sections_title":"biomass fraction"
+      },
+      {
+        "sections_id":"495",
+        "sections_title":"socl movmnt amer"
+      },
+      {
+        "sections_id":"495",
+        "sections_title":"socl movmnt amer"
+      },
+      {
+        "sections_id":"535",
+        "sections_title":"intl migr&settlm"
+      },
+      {
+        "sections_id":"535",
+        "sections_title":"intl migr&settlm"
+      },
+      {
+        "sections_id":"599",
+        "sections_title":"masters thesis"
+      },
+      {
+        "sections_id":"599",
+        "sections_title":"masters thesis"
+      },
+      {
+        "sections_id":"599",
+        "sections_title":"masters thesis"
+      },
+      {
+        "sections_id":"599",
+        "sections_title":"masters thesis"
+      },
+      {
+        "sections_id":"599",
+        "sections_title":"masters thesis"
+      },
+      {
+        "sections_id":"599",
+        "sections_title":"masters thesis"
+      },
+      {
+        "sections_id":"200",
+        "sections_title":"inter germ i"
+      },
+      {
+        "sections_id":"549",
+        "sections_title":"masters thesis"
+      },
+      {
+        "sections_id":"549",
+        "sections_title":"masters thesis"
+      },
+      {
+        "sections_id":"549",
+        "sections_title":"masters thesis"
+      },
+      {
+        "sections_id":"500",
+        "sections_title":"res mthds hunu"
+      },
+      {
+        "sections_id":"500",
+        "sections_title":"res mthds hunu"
+      },
+      {
+        "sections_id":"100",
+        "sections_title":"begin japn i"
+      },
+      {
+        "sections_id":"595",
+        "sections_title":"graduating paper"
+      },
+      {
+        "sections_id":"549",
+        "sections_title":"thesis"
+      },
+      {
+        "sections_id":"535",
+        "sections_title":"instructnl role"
+      },
+      {
+        "sections_id":"535",
+        "sections_title":"instructnl role"
+      },
+      {
+        "sections_id":"587",
+        "sections_title":"preservation"
+      },
+      {
+        "sections_id":"587",
+        "sections_title":"preservation"
+      },
+      {
+        "sections_id":"594",
+        "sections_title":"directed study"
+      },
+      {
+        "sections_id":"532",
+        "sections_title":"fld mthd ling ii"
+      },
+      {
+        "sections_id":"532",
+        "sections_title":"fld mthd ling ii"
+      },
+      {
+        "sections_id":"200",
+        "sections_title":"intro acad writ"
+      },
+      {
+        "sections_id":"507",
+        "sections_title":"meas thry&integr"
+      },
+      {
+        "sections_id":"507",
+        "sections_title":"meas thry&integr"
+      },
+      {
+        "sections_id":"510",
+        "sections_title":"functional analy"
+      },
+      {
+        "sections_id":"510",
+        "sections_title":"functional analy"
+      },
+      {
+        "sections_id":"589",
+        "sections_title":"msc major essay"
+      },
+      {
+        "sections_id":"589",
+        "sections_title":"msc major essay"
+      },
+      {
+        "sections_id":"505",
+        "sections_title":"inds acoustc&vib"
+      },
+      {
+        "sections_id":"505",
+        "sections_title":"inds acoustc&vib"
+      },
+      {
+        "sections_id":"535",
+        "sections_title":"ortho biomech"
+      },
+      {
+        "sections_id":"535",
+        "sections_title":"ortho biomech"
+      },
+      {
+        "sections_id":"584",
+        "sections_title":"adv eng acoustcs"
+      },
+      {
+        "sections_id":"584",
+        "sections_title":"adv eng acoustcs"
+      },
+      {
+        "sections_id":"698",
+        "sections_title":"seminar"
+      },
+      {
+        "sections_id":"575",
+        "sections_title":"adv clin rotatn"
+      },
+      {
+        "sections_id":"575",
+        "sections_title":"adv clin rotatn"
+      },
+      {
+        "sections_id":"501",
+        "sections_title":"mole & cell biol"
+      },
+      {
+        "sections_id":"501",
+        "sections_title":"mole & cell biol"
+      },
+      {
+        "sections_id":"549",
+        "sections_title":"m.sc. thesis"
+      },
+      {
+        "sections_id":"549",
+        "sections_title":"m.sc. thesis"
+      },
+      {
+        "sections_id":"507",
+        "sections_title":"tp mol pth & imm"
+      },
+      {
+        "sections_id":"507",
+        "sections_title":"tp mol pth & imm"
+      },
+      {
+        "sections_id":"597",
+        "sections_title":"eng proj"
+      },
+      {
+        "sections_id":"597",
+        "sections_title":"eng proj"
+      },
+      {
+        "sections_id":"480",
+        "sections_title":"sem&pprs mrne sc"
+      },
+      {
+        "sections_id":"480",
+        "sections_title":"sem&pprs mrne sc"
+      },
+      {
+        "sections_id":"557",
+        "sections_title":"sep sc aq met pr"
+      },
+      {
+        "sections_id":"557",
+        "sections_title":"sep sc aq met pr"
+      },
+      {
+        "sections_id":"599",
+        "sections_title":"masters thesis"
+      },
+      {
+        "sections_id":"599",
+        "sections_title":"masters thesis"
+      },
+      {
+        "sections_id":"599",
+        "sections_title":"masters thesis"
+      },
+      {
+        "sections_id":"599",
+        "sections_title":"masters thesis"
+      },
+      {
+        "sections_id":"599",
+        "sections_title":"masters thesis"
+      },
+      {
+        "sections_id":"599",
+        "sections_title":"masters thesis"
+      },
+      {
+        "sections_id":"599",
+        "sections_title":"masters thesis"
+      },
+      {
+        "sections_id":"599",
+        "sections_title":"masters thesis"
+      },
+      {
+        "sections_id":"599",
+        "sections_title":"masters thesis"
+      },
+      {
+        "sections_id":"599",
+        "sections_title":"masters thesis"
+      },
+      {
+        "sections_id":"149",
+        "sections_title":"clbrtv piano i"
+      },
+      {
+        "sections_id":"149",
+        "sections_title":"clbrtv piano i"
+      },
+      {
+        "sections_id":"549",
+        "sections_title":"master's thesis"
+      },
+      {
+        "sections_id":"423",
+        "sections_title":"chldren&families"
+      },
+      {
+        "sections_id":"423",
+        "sections_title":"chldren&families"
+      },
+      {
+        "sections_id":"596",
+        "sections_title":"primry care proj"
+      },
+      {
+        "sections_id":"549",
+        "sections_title":"m.sc. thesis"
+      },
+      {
+        "sections_id":"467",
+        "sections_title":"micr infectn ctl"
+      },
+      {
+        "sections_id":"467",
+        "sections_title":"micr infectn ctl"
+      },
+      {
+        "sections_id":"549",
+        "sections_title":"msc thesis"
+      },
+      {
+        "sections_id":"549",
+        "sections_title":"msc thesis"
+      },
+      {
+        "sections_id":"549",
+        "sections_title":"msc thesis"
+      },
+      {
+        "sections_id":"549",
+        "sections_title":"msc thesis"
+      },
+      {
+        "sections_id":"303",
+        "sections_title":"pharmacy ii"
+      },
+      {
+        "sections_id":"501",
+        "sections_title":"adv pharmacother"
+      },
+      {
+        "sections_id":"501",
+        "sections_title":"adv pharmacother"
+      },
+      {
+        "sections_id":"501",
+        "sections_title":"adv pharmacother"
+      },
+      {
+        "sections_id":"501",
+        "sections_title":"adv pharmacother"
+      },
+      {
+        "sections_id":"531",
+        "sections_title":"path for pt 3"
+      },
+      {
+        "sections_id":"531",
+        "sections_title":"path for pt 3"
+      },
+      {
+        "sections_id":"349",
+        "sections_title":"directed studies"
+      },
+      {
+        "sections_id":"390",
+        "sections_title":"honours seminar"
+      },
+      {
+        "sections_id":"390",
+        "sections_title":"honours seminar"
+      },
+      {
+        "sections_id":"492",
+        "sections_title":"honours thesis"
+      },
+      {
+        "sections_id":"492",
+        "sections_title":"honours thesis"
+      },
+      {
+        "sections_id":"501",
+        "sections_title":"evidnc for pract"
+      },
+      {
+        "sections_id":"505",
+        "sections_title":"meas in practice"
+      },
+      {
+        "sections_id":"507",
+        "sections_title":"dev rehab prog"
+      },
+      {
+        "sections_id":"587",
+        "sections_title":"major proj prt 1"
+      },
+      {
+        "sections_id":"520",
+        "sections_title":"climate chnge"
+      },
+      {
+        "sections_id":"520",
+        "sections_title":"climate chnge"
+      },
+      {
+        "sections_id":"547",
+        "sections_title":"pract project"
+      },
+      {
+        "sections_id":"551",
+        "sections_title":"soci environ"
+      },
+      {
+        "sections_id":"551",
+        "sections_title":"soci environ"
+      },
+      {
+        "sections_id":"450",
+        "sections_title":"com mtl hlth prc"
+      },
+      {
+        "sections_id":"450",
+        "sections_title":"com mtl hlth prc"
+      },
+      {
+        "sections_id":"559",
+        "sections_title":"adv int seminar"
+      },
+      {
+        "sections_id":"510",
+        "sections_title":"meas health care"
+      },
+      {
+        "sections_id":"510",
+        "sections_title":"meas health care"
+      },
+      {
+        "sections_id":"405",
+        "sections_title":"scenery dsgn ii"
+      },
+      {
+        "sections_id":"405",
+        "sections_title":"scenery dsgn ii"
+      },
+      {
+        "sections_id":"471",
+        "sections_title":"adv bfa acting i"
+      },
+      {
+        "sections_id":"471",
+        "sections_title":"adv bfa acting i"
+      },
+      {
+        "sections_id":"473",
+        "sections_title":"adv spch&move i"
+      },
+      {
+        "sections_id":"473",
+        "sections_title":"adv spch&move i"
+      },
+      {
+        "sections_id":"501",
+        "sections_title":"studio eco reg"
+      },
+      {
+        "sections_id":"501",
+        "sections_title":"studio eco reg"
+      },
+      {
+        "sections_id":"549",
+        "sections_title":"masters thesis"
+      },
+      {
+        "sections_id":"549",
+        "sections_title":"masters thesis"
+      }
+    ]
+  }

@@ -1,0 +1,45 @@
+
+
+{
+  "title": "SELECT dept, avg WHERE avg > 97",
+  "input":{
+    "WHERE": {
+      "AND": [
+        {
+          "IS": {
+            "sections_instructor": "*johnson"
+          }
+        },
+        {
+          "NOT": {
+            "IS": {
+              "sections_dept": "chem"
+            }
+          }
+        }
+      ]
+    },
+    "OPTIONS": {
+      "COLUMNS": [
+        "sections_uuid",
+        "sections_pass"
+      ],
+      "ORDER": "sections_pass"
+    }
+  },
+  "errorExpected": false,
+  "expected": [
+      {
+        "sections_uuid":"61299",
+        "sections_pass":33
+      },
+      {
+        "sections_uuid":"3821",
+        "sections_pass":85
+      },
+      {
+        "sections_uuid":"73000",
+        "sections_pass":93
+      }
+    ]
+  }

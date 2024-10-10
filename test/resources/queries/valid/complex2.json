@@ -1,0 +1,3879 @@
+{
+  "title":"WHERE: OR, GT, LT",
+  "input":{
+    "WHERE": {
+      "EQ": {
+        "sections_year": 2016
+      }
+    },
+    "OPTIONS": {
+      "COLUMNS": [
+        "sections_title",
+        "sections_year"
+      ]
+    }
+  },
+  "errorExpected":false,
+  "expected": [
+    {
+      "sections_title":"teach adult",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"teach adult",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"inst adul educ",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"dev wkshp/sem",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"dev wkshp/sem",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"com adult educ",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"com adult educ",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"com adult educ",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"adul educ",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"adul educ",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"gross anat limbs",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"first nations bc",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intro medcl anth",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"anthro statistcs",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intro biometeoro",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"animal phys i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"animals&society",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"plnt phys",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"soil process",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"animls globl iss",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"plnt-micr inter",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"sustn & ldrshp",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"eng analysis i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"matter&enrgy i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"weap & arms cntl",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"mtrl&mthd constr",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"arch design",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"structures i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"design media i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"arch design iii",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"arch design iii",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"arch design iii",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"arch design iii",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"arch technol ii",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"arch design v",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"arch design v",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"arch design v",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"arch design v",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"grad project  i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"grad project ii",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"semnr hist&thry",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"research methods",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"archival dplmtcs",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"arr/desc arch",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"mgmt curr recrds",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"presrv dig recds",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"foip&priv rcrds",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"arch sys & prof",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"preservation",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"vis env mod&post",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"hist of photogry",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"jpn sex&gend flm",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"premodern japan",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"japn religions",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"int rl prmd e as",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"chin poli th&ins",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"int astronomy i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"astro frontiers",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"int global citiz",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"acous & art phon",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"fundamental audi",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"hearng and noise",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"cochl implants",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"lang dev life",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"creativity",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"creativity",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"creativity",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"ldrshp develpmnt",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"ldrshp develpmnt",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"ldrshp develpmnt",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"financial rept'g",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"financial rept'g",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"fin stmt anly i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"fin stmt anly i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"fndmntl accnting",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"fndmntl accnting",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"fndtns  accnting",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"data anly&utiliz",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"data anly&utiliz",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"app stat mgmt",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"grw&exit venture",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intrapreneurship",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"innov&entrepren",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"innov&entrepren",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intro finance",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intro finance",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intro finance",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intro finance",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intro finance",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"tpc corp finance",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"invest theory",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"int rate risk mg",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"fin engineering",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intntl finan env",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intntl finan env",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intl finl mngmnt",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"principl finance",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"principl finance",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"2 party negotns",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"2 party negotns",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"2 party negotns",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"mng'g change",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"mng employ rel",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"org behav",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"org behav",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"org behav",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"org behav",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"prj mgt bsn sol",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"mng info tech",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"new product dev",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"new product dev",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"mrkt research",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"mrkt research",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"services mgnt",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"prod serv manage",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"prod serv manage",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"marketing",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"marketing",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"marketing",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"marketing",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"prob mgmt models",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"stoch processes",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"optml dcsnmkg i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"optml dcsnmkg ii",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"consult prac i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"managerl decisns",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"managerl decisns",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"fnd mgr econ",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"fnd mgr econ",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"fnd mgr econ",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"fnd mgr econ",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"supply chain mng",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"supply ch anyl",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"oper & log",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"oper & log",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"oper & log",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"consult&decision",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intrntl trdg env",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"real estate inv",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"proteins",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"adv bioc technqs",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"adv tpcs prot ch",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"biology of cell",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"biology of cell",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"biology of cell",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"biology of cell",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"bio alg,fung&bry",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"fund genetics",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"fund genetics",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"fund of biostats",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"struc&repr fungi",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intgrt'd bio lab",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"human hrdty evol",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"plnt phyl 1:nutr",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"ecol methodology",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"evolutionary eco",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"plnt-micr inter",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"ornith&herpetlgy",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"evl mor mar invr",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"evo cell biology",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"anim cell molec",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"cell biol intrfk",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"comp neurobiolgy",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"comp env physiol",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"devlpmt neurbiol",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"biol of the cell",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"clin&ind bio eng",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"cl&ind biomd eng",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"m.a. sc. thesis",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"sem in botany",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intr fncl acct",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intr fncl acct",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intr mgmt acct",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intr mgmt acct",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"organiztl bhvr",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"found re apprai",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"info systems",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intm fnc acct i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intm fnc acct i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intm fnc acct i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"cost accounting",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"business finc",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intm fnc acct ii",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intm fnc acct ii",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"adv accounting",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"adv accounting",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"prin audit",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"prin audit",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"prin audit",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"strg mngmnt bus",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"adv cel&mol phys",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"gender & nation",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"mass&enrgy balnc",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"math operations",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"moment heat mass",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"str bnd equ chem",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"strctr bond chem",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"strctr bond chem",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"strctr bond chem",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"strctr bond chem",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"strctr bond chem",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"strctr bond chem",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"strctr bond chem",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"strctr bond chem",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"strctr bond chem",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"strctr bond chem",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intr orgnc chem",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"coord chem",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intro chem anlys",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"org chem lab",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"org chem lab",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"org chem lab",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"org chem lab",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"org chem lab",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"org chem lab",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"org chem lab",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"org chem engneer",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"communcting chem",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"communcting chem",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"aqueous envirmnt",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intr quantm mech",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"chem integ lab i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"chem integ lab i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"chem integ lab i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"chem integ lab i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"chem integ lab i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"chem integ lab i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"chem integ lab i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"chem integ lab i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"integ chem lab i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"integ chem lab i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"integ chem lab i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"adv org chem",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"chem integ lab 2",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"chem integ lab 2",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"chem integ lab 2",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intg chem lab 2",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"biophysical chem",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"polymer chem",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"bioorgan chem",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"bio-inorganic",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"bioinorganc chem",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"adv bioorg chem",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"clas poet tang",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"clas poet tang",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"clas poet tang",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"mod chin lit 1",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"mod chin lit 1",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"mod chin lit 1",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"mod chin lit 1",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"int md ch lit h",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"civl engineer i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"civl eng matl",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"urbn trans systm",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"clascl ch 1 (nh)",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"arch greece&rome",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"ancient greece",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"greek roman game",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"wmn bronz",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"basic intvw skls",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"basic intvw skls",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"basic intvw skls",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"basic intvw skls",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"basic intvw skls",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"fmly ed & consul",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"int thry counsel",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"psnl soc dv adlt",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"counslng adults",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"adlt psychpathlg",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"group counsling",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"career planning",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"invest theory",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"invest theory",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"int cog sys",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"seminar cog sys",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"stratgc staffing",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intr org consult",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"organztnl change",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"leadership",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"log&ops managmnt",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"log&ops managmnt",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"log&ops managmnt",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"log&ops managmnt",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"log&ops managmnt",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"entrepreneurship",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"entrepreneurship",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"entrepreneurship",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"int quan dec mak",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"int quan dec mak",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"int quan dec mak",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"int quan dec mak",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intro marketing",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"organiztl bhvr",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"organiztl bhvr",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"cost accting",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"cost accting",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"cost accting",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"cost accting",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"income tax",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"income tax",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"income tax",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"market research",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"market research",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"invest theory",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"invest theory",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"invest theory",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"invest theory",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"invest theory",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"invest theory",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"econ entre&innov",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"dsn mtd bus invt",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"dsn mtd bus invt",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"creativity busns",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"business writing",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"business writing",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"business writing",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"business writing",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"business writing",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"business writing",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"business writing",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"business writing",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"business writing",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"business writing",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"business writing",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"business writing",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"business writing",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"business writing",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"business writing",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"business writing",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"govt & business",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"govt & business",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"govt & business",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"busn communicati",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"busn communicati",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"busn communicati",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"busn communicati",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"busn communicati",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"busn communicati",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"busn communicati",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"busn communicati",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"busn communicati",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"busn communicati",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"negotiation",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"negotiation",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"mar&intn'l trans",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"finan acct adv",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"acc mgt ctrl&inc",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"acc mgt ctrl&inc",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"fndtls fin acct",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"fndtls fin acct",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"fndtls fin acct",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"integ mrktg comm",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"mkt applications",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"mkt applications",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intl mrkt",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"mgrs & acquisitn",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"mgrs & acquisitn",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"business finance",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"business finance",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"invest policy",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"risk mgt&fnc eng",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"risk mgt&fnc eng",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"strategic mangmt",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"strategic mangmt",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"strategic mangmt",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"new enter devel",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"int'l bus mngt",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"int'l bus mngt",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"int'l bus mngt",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"stats methlgy i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"rsrch meth 1",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"fndt conservat'n",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"econ anlys proj",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intr sftwr eng",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"func & logic prg",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"machine lrn mine",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"adv opertng sysm",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intr cr writing",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intr cr writing",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intr cr writing",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intr writ poetry",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"child & yng adlt",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intr crtv nonfic",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intr wrt screen",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intr graph forms",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intr writ fictin",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intr writ nw med",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intr writ nw med",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intr writ nw med",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intr writ comdic",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"thesis",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"elem danish 1",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"int danish 1",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"kinder curriclm",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"asmnt spec needs",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"supp comm sp nds",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"prncpls micrecon",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"prncpls micrecon",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"prncpls micrecon",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"prncpls micrecon",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"prncpls micrecon",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"prncpls micrecon",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"prncpls micrecon",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"prncpls micrecon",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"prncpls micrecon",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"prncpls micrecon",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"prncpls micrecon",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"prncpls micrecon",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"princpl macrecon",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"microecon policy",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intrm macro anly",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"poverty&ineqalty",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"empirical econ",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intr empir mthds",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"money & banking",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"b-c anly&proj ev",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"b-c anly&proj ev",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"int econ resrch",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"topcs microecon",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"process econ dev",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"internatl trade",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"applied econ",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"applied econ",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"applied econ",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"honours seminar",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"macro economics",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"spc tpcs macroec",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"math for econmic",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"econometric meth",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"music education",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"thry&rs soc cont",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"res tch & lrn sc",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"curric iss&thry",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"rsc trd edu admn",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"rsc trd edu admn",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"fnds ad lrng ed",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"org&admin hi edu",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"adu edu pro",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"ldrshp educ org",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"tcher union educ",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"educ theories",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"int global citiz",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"res mthd in educ",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"res mthd in educ",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"grn nanoelec dev",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"wireless com sys",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"mic&nano fab tec",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"masc thesis",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"appl el & elmech",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"econ anlys proj",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"envr des stdio i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"dsg, med&rep",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"env desn std iii",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"read, write lit",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"read, write lit",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"read, write lit",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"read, write lit",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intro literature",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intro literature",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intro literature",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intro literature",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intro literature",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intro nonfiction",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"univrsty writing",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"univrsty writing",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"univrsty writing",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"univrsty writing",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"univrsty writing",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"univrsty writing",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"univrsty writing",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"univrsty writing",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"univrsty writing",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"univrsty writing",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"univrsty writing",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"univrsty writing",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"univrsty writing",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"univrsty writing",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"univrsty writing",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"univrsty writing",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"univrsty writing",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"univrsty writing",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"univrsty writing",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"univrsty writing",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"univrsty writing",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"univrsty writing",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"univrsty writing",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"univrsty writing",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"univrsty writing",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"univrsty writing",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"univrsty writing",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"univrsty writing",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"univrsty writing",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"univrsty writing",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"univrsty writing",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"univrsty writing",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"univrsty writing",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"univrsty writing",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"univrsty writing",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"univrsty writing",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"univrsty writing",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"univrsty writing",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"univrsty writing",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"univrsty writing",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"univrsty writing",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"univrsty writing",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"univrsty writing",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"brit lit 18c-21c",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"lit in canada",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"lit in u.s.a.",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"poetry",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"indigenous lits",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"grammar & usage",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"engl structure 2",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"18c genre",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"19c genre",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"major seminr lit",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"major seminr lit",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"major seminr lit",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"major seminr lit",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intr envrmnt sci",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"lab expl earth",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"lab expl earth",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"lab expl earth",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"lab expl earth",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"lab expl earth",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"catastroph earth",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"earth&planet sci",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intro mineralogy",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"igneous petrolgy",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"grdwater hydrlgy",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intr minrl depst",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"glbl climat chng",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"env,geotech i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"anl time series",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"phys earth&plnts",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"adv grdwtr hydgy",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intro excp child",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"lrn'g disablties",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"incl bl vis-imp",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"ed st dvl ds inc",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"ed st dvl ds inc",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"typ atyp inf/ch",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"assess lrn diffi",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"prg child sp lrn",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"surv bhvr dis ch",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"educ stds autism",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"educ stds autism",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intr stat rs edu",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"hn dev, lrn, cul",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"crit spec ed",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"prin behav anlys",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"exp des anl ed",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"exp des anl ed",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"qlt rsrch mthd",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"appl lear theor",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"appl lear theor",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"indig, tech&ed",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"ventr learn tech",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intr hst flm prd",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"prodcing film&tv",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"adv doc dev&prod",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intro film stdy",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"early cinema",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"hollywood cinema",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"stdy genre/perio",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"maj & hon semin",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"fmly human dvlpm",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"fmly human dvlpm",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"fmly human dvlpm",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"fmly human dvlpm",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"parent-child rel",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"human sexuality",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intmed salish i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"nutr conc & cont",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"food analysis",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"fnh busns concep",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"fdn ntrn care i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"advances fd sci",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"fnd agr-food bsn",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"adv food anlysis",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"adv food chemist",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intl fd law&regs",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"anl mthd frst hy",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"econ, cont, fina",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"forstry machines",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"sm bus man agri",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"appld econometrc",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"beginner fren i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"beginner fren i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"beginner fren i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"beginner fren i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"beginner fren i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"beginner fren i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"beginner fren i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"beginner fren i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"beginner fren i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"beginner fren i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intermed fren 1",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"fren lang&lit i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"fren lang&lit i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"fren lang&lit i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"fren lang&lit i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"fren lang&lit i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"fren lang&lit i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"fren lang&lit i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"fren lang&lit i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"fren lang&lit i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"fr lang&style i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"fr lang&style i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"fr lang&style i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intrd app fren i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"fr prc nnspec i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"fr prc nnspec i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"fr prc nnspec i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"fr lit in trn ii",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"french grammar",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"advanced comp",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intr fren ling",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"sustain forests",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"forest ecology",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intr biometrics",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intr biometrics",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"wtrshed hydro",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"for wildlif ecol",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"sust frst policy",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"adv biometrics",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"remote sensing",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"graduating essay",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"frsts & society",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"for & env policy",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"tech comm skills",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"tech comm skills",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"forestry in b.c.",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"lnd info acq&anl",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"int biometeorlgy",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intr biogeogrphy",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"geog inform sci",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"micro wthr&clim",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"quatrny&app geo",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"geopolitics",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"envir & sust",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intr poli geog",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"urban geog",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"glbl, city, regn",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"water mgmt",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"begin germ i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"begin germ i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"begin germ i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"begin germ i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"begin germ i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"begin germ i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"begin germ i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"begin germ i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"begin germ i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"begin germ i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"begin germ i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"begin germ i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"begin germ 2",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"inter germ i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"inter germ i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"inter germ i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"inter germ iii",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"inter germ iii",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"grm lit 1900-45",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"grm lit 1900-45",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"grm lit pst 1945",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"germ translation",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"adv germ",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"measr data anlys",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"public managemnt",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"2yr anc greek i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"int anc grek prs",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"thinking gender",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"thinking gender",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"gndr&indg can",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"grs&pop cultr",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"issus gndr&hlth",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"adv res sem wmst",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intmd bib hebr 1",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"coast terr esyst",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"bio dyn mar-ter",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"islnd wild mgmt",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"sys resrc mgmt",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"eco-based mgmt",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"globl  envr hist",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"hist of india",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"brit emp to 1850",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"early 20c brit",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"inventing canada",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"canada 1896-1945",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"us 1945 - presnt",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"eur ear mid-ages",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"renssance europe",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"us forn reltions",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"cdn crim&punish",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"laso mid ages",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"ma research sem",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"tech entreprenr",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"pipeline eng",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"ethical iss scie",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"1st yr italian i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"1st yr italian i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"1st yr italian i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"1st yr italian i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"1st yr italian i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"1st yr italian i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"1st yr italian i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"2nd-year ital i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"2nd-year ital i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"3rd year ital i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"advanced ital i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intr ital cult i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"italian fascism",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"cinema: neoreal",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"begin japn ib",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"begin japn ib",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"begin japn ib",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"active health",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"active health",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"active health",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"high perf cond",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"high perf cond",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"spt, peace, cnfl",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"fndtns coaching",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"nrmscl intg hm m",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"nrmscl intg hm m",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"nrmscl intg hm m",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"nrmscl intg hm m",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intclt hlth&phys",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"spec tpcs kin",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"bioenrgtc ph act",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"prfrmnc planning",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"read:korn tpcs 1",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"doc proseminar",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"site analys 2",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"la dsgn std i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"la dsn std iv",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"la dsn std iv",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"la dsn std iv",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"la dsn std iv",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"la dsn std v",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"la dsn std v",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"la dsn std v",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"larc history",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"research methods",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"landscp tech ii",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"site analys&plan",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"1yr latin i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"1yr latin i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"1yr latin i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"2yr latin i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"2yr latin i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"in land food com",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"in land food com",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"schol writ&argue",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"lnd,fod&comm i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"land food comm 2",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"select libr res",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"select libr res",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"info org mgmt",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"human-infrmation",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"meths of resrch",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"info practices",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"resdesc knoworg",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"catlg & class",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"serv for chld",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"instructnl role",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"database design",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"dgtl libraries",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"preservation",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"directed study",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intr lang&ling",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intr lang&ling",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"lang acquisition",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"stdy phonology",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"acq syntax",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"phon thry&anl",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intro acad writ",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intro acad writ",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intro acad writ",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intro acad writ",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intro acad writ",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intro acad writ",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intro acad writ",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intro acad writ",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intro acad writ",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intro acad writ",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intro acad writ",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intro acad writ",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intro acad writ",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intro acad writ",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intro acad writ",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intro acad writ",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intro acad writ",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intro acad writ",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intro acad writ",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intro acad writ",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"images in texts",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"soc proc incl/ex",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"lang communites",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"lang communites",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"trans globe soc",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"world englishes",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"world englishes",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intr tch ch lit",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"disc lit int-sec",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"sch lrc prog",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"2nd lang assess: c&e app",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"thr lng&lit rsrc",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"df calc ap ph sc",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"df calc ap ph sc",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"df calc ap ph sc",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"df calc ap ph sc",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"df calc ap ph sc",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"df calc ap ph sc",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"df calc ap ph sc",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"df calc app lf s",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"df calc app lf s",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"df calc app lf s",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"df calc app lf s",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"df calc app lf s",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"df calc app lf s",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"dff calc ap c&ss",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"dff calc ap c&ss",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"dff calc ap c&ss",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"dff calc ap c&ss",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"dff calc ap c&ss",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"dff calc ap c&ss",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"differ calculus",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"dif calc phys ap",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"dif calc phys ap",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"dif calc phys ap",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"calc socsci comm",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"calc socsci comm",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"calculus survey",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"calculus 3",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"calculus 3",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"calculus 3",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"calculus 3",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"calculus 3",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"calculus 3",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"calculus 3",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"elem diff eq i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"elem diff eq i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"elem diff eq i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"mltvar&vctr calc",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"multivrbl calc",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"multivrbl calc",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"multivrbl calc",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"multivrbl calc",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"ord diff equtns",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"ord diff equtns",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"ord diff equtns",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"diff equations",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"partl diff equat",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"partl diff equat",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intr number thry",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"diff equations 2",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"diff equations 2",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"real variabls i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"real variabls i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"num mthds dff eq",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"var & aprx mtds",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"probability",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"real analysis i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"flds&galois thry",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intr mod diff ge",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"number theory",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"complex analysis",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"asymp&prtb mthds",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"discrete math",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"meas thry&integr",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"complex analy",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"diff geometry i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"probability i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"mthds asymp anal",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"humn genom&genet",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"adv hum mole gen",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"food microbi lab",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"birth meaning",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"appl hlth serv",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"ethics mtrnycare",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"clinical skills",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"eng econ",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"rock mech",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"ind auto rob",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"coal prep tech",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"env tech iss",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"mdl indstrl syst",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"eng proj",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"seminar",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"coat&surf modfcn",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"monitor & optimz",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"weld & join mtrl",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"prnc muscl form",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"cmp&anl ap p ton",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"instrumentation",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"conducting",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"hist poplr music",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"int ethnmuscolgy",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"neast&egypt arch",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"fndtn nurs pract",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"adults & famlies",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"childbring women",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"childbring women",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"infnt chld youth",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"infnt chld youth",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"adlt mntl illnss",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"adlt mntl illnss",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"commnty & popltn",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"commnty & popltn",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"adlts & families",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"practice praxis",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"ldrshp ethcs pol",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"rsrch evidence",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"pthophysiol proc",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"adv hlth assess",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"fndtns nurs prac",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"quant mtds&anyl",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"eth&profl issues",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"drugs & society",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"rnl bs drug ther",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"admn of injectns",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"drug safety",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"envirn&cell toxi",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"phar care aborig",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"nat hlth prodcts",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"cs phar sci iv",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"adv conc pharmac",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intro philosophy",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intro philosophy",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"directed reading",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"path for pt 1",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"exercise move i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"path for pt 3",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"clin prac iva",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"enrich physics 1",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"dynamics & waves",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"dynamics & waves",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intr phys eng i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intr phys eng i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intr phys eng i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"elec & magnetism",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"energy & climate",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"comp phys",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"cond matter i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"sp rlvty & elcmg",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"stat mechanics",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"rdiothrpy phy i",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"radioiso sci&med",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"env & sus concep",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"urb dsgn thr&met",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"quantat skills",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"plan pract mthds",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"sem r prpty dv&p",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intro to politic",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intro to politic",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"cur poli thought",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"intro global pol",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"federalsm canada",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"european integrt",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"",
+      "sections_year":2016
+    },
+    {
+      "sections_title":"nuc weapns cntrl",
+      "sections_year":2016
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "title":"WHERE: OR, GT, LT",
+  "input":{
+    "WHERE": {
+      "OR": [
+        {
+          "GT": {
+            "sections_avg": 97
+          }
+        }
+      ]
+    },
+    "OPTIONS": {
+      "COLUMNS": [
+        "dont_dept",
+        "dont_avg"
+      ],
+      "ORDER": "dont_avg"
+    }
+  },
+  "errorExpected":true,
+  "expected": "InsightError"
+}
