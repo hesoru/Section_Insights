@@ -280,6 +280,31 @@ describe("InsightFacade", function () {
 				expect.fail("Should have successfully added and removed" + err);
 			}
 		});
+
+		it("checking persistence", async function () {
+			try {
+				const result = await facade.addDataset("sections", sections, InsightDatasetKind.Sections);
+				expect(result).to.be.an("array");
+				expect(result).to.deep.equal(["sections"]);
+				const dataset = await facade.listDatasets();
+				expect(dataset).to.deep.equal([
+					{
+						id: "sections",
+						kind: InsightDatasetKind.Sections,
+						numRows: 64612,
+					},
+				]);
+
+				const newFacade = new InsightFacade();
+				const result1 = await newFacade.removeDataset("sections");
+				expect(result1).to.equal("sections");
+
+				const datasets = await newFacade.listDatasets();
+				expect(datasets).to.deep.equal([]);
+			} catch (err) {
+				expect.fail("should not have thrown err" + err);
+			}
+		});
 	});
 
 	describe("ListDatasets", function () {
@@ -350,6 +375,34 @@ describe("InsightFacade", function () {
 			]);
 			const arrayLength = 2;
 			expect(result.length).to.equal(arrayLength);
+		});
+
+		it("checking persistence", async function () {
+			try {
+				const result = await facade.addDataset("sections", sections, InsightDatasetKind.Sections);
+				expect(result).to.be.an("array");
+				expect(result).to.deep.equal(["sections"]);
+				const dataset = await facade.listDatasets();
+				expect(dataset).to.deep.equal([
+					{
+						id: "sections",
+						kind: InsightDatasetKind.Sections,
+						numRows: 64612,
+					},
+				]);
+
+				const newFacade = new InsightFacade();
+				const result1 = await newFacade.listDatasets();
+				expect(result1).to.deep.equal([
+					{
+						id: "sections",
+						kind: InsightDatasetKind.Sections,
+						numRows: 64612,
+					},
+				]);
+			} catch (err) {
+				expect.fail("should not have thrown err" + err);
+			}
 		});
 	});
 
@@ -440,6 +493,32 @@ describe("InsightFacade", function () {
 
 		after(async function () {
 			await clearDisk();
+		});
+
+		it("checking persistence", async function () {
+			try {
+				const newFacade = new InsightFacade();
+				const query = {
+					WHERE: {
+						GT: {
+							sections_avg: 99,
+						},
+					},
+					OPTIONS: {
+						COLUMNS: ["sections_dept", "sections_avg"],
+						ORDER: "sections_avg",
+					},
+				};
+				const queryResult = [
+					{ sections_dept: "cnps", sections_avg: 99.19 },
+					{ sections_dept: "math", sections_avg: 99.78 },
+					{ sections_dept: "math", sections_avg: 99.78 },
+				];
+				const result1 = await newFacade.performQuery(query);
+				expect(result1).to.have.deep.members(queryResult);
+			} catch (err) {
+				expect.fail("should not have thrown err" + err);
+			}
 		});
 
 		// Examples demonstrating how to test performQuery using the JSON Test Queries.
