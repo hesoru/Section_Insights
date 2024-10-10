@@ -402,8 +402,8 @@ describe("InsightFacade", function () {
 		it("[invalid/queryingMultipleDatasets.json]", checkQuery);
 		it("[invalid/ResultTooLarge.json]", checkQuery);
 		it("[valid/valid1.json] WHERE: OR, GT, LT", checkQuery);
-		it("[valid/Cwildcard.json] *wildcard", checkQuery);
-		it("[valid/Cwildcard.json] wildcard*", checkQuery);
+		it("[valid/wildcardC.json] *wildcard", checkQuery);
+		it("[valid/wildcardC.json] wildcard*", checkQuery);
 		it("[valid/wildcard2astrix.json] wildcard2astrix.json", checkQuery);
 		it("[invalid/wildCcard.json] wild*card", checkQuery);
 		it("[valid/complexValidQuery.json]", checkQuery);

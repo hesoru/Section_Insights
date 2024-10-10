@@ -27,7 +27,7 @@ export function handleFilter(filter: Body, data: InsightResult[]): InsightResult
 	}
 }
 
-function handleLogicComparison(filter: Body, data: InsightResult[]): InsightResult[] {
+export function handleLogicComparison(filter: Body, data: InsightResult[]): InsightResult[] {
 	//return array of insight result.
 	let results: InsightResult[] = [];
 
@@ -54,7 +54,7 @@ function handleLogicComparison(filter: Body, data: InsightResult[]): InsightResu
 	return results;
 }
 
-function handleMComparison(filter: any, data: InsightResult[]): InsightResult[] {
+export function handleMComparison(filter: any, data: InsightResult[]): InsightResult[] {
 	if (filter.GT) {
 		const mKey = Object.keys(filter.GT)[0];
 		const value = Object.values(filter.GT)[0];
@@ -73,7 +73,7 @@ function handleMComparison(filter: any, data: InsightResult[]): InsightResult[] 
 	throw new InsightError("Invalid MComparator operator.");
 }
 
-function handleSComparison(filter: any, data: InsightResult[]): InsightResult[] {
+export function handleSComparison(filter: any, data: InsightResult[]): InsightResult[] {
 	const sKey = Object.keys(filter.IS)[0];
 	const value = Object.values(filter.IS)[0] as string;
 
@@ -85,7 +85,7 @@ function handleSComparison(filter: any, data: InsightResult[]): InsightResult[] 
 	return data.filter((section) => validValue.test(section[sKey] as string));
 }
 
-function handleNegation(filter: any, data: InsightResult[]): InsightResult[] {
+export function handleNegation(filter: any, data: InsightResult[]): InsightResult[] {
 	// Exclude matching sections
 	const notData = handleFilter(filter.NOT, data);
 	return data.filter((section) => !notData.includes(section));
@@ -102,7 +102,7 @@ export async function getAllSections(query: Query, datasets: Map<string, number>
 	for (const section of allSections) {
 		const sectionResult: InsightResult = {};
 		for (const item of columns) {
-			//iterate through indicies
+			//iterate through indices
 			sectionResult[`${idString}_${item}`] = section[item as keyof Section];
 		}
 		allResults.push(sectionResult);
@@ -153,7 +153,7 @@ export async function loadDatasets(id: string, fileName: string): Promise<Sectio
 	try {
 		dataset = await fs.readJson(datasetPath);
 	} catch (error) {
-		throw new NotFoundError(`Could not find dataset with - id=${id};` + error);
+		throw new InsightError(`Could not find fileName for dataset with - id=${id};` + error);
 	}
 	const parsedSections: Section[] = [];
 	for (const file of dataset) {

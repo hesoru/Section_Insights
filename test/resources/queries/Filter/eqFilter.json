@@ -1,0 +1,148 @@
+{
+	"title": "eq Filter",
+	"input": {
+		"WHERE": {
+			"EQ": {
+				"sections_avg": 69
+			}
+		},
+		"OPTIONS": {
+			"COLUMNS": [
+				"sections_dept",
+				"sections_id"
+			],
+			"ORDER": "sections_id"
+		}
+	},
+	"errorExpected": false,
+	"expected": [
+		{
+			"sections_dept": "japn",
+			"sections_id": "100"
+		},
+		{
+			"sections_dept": "span",
+			"sections_id": "101"
+		},
+		{
+			"sections_dept": "span",
+			"sections_id": "102"
+		},
+		{
+			"sections_dept": "math",
+			"sections_id": "102"
+		},
+		{
+			"sections_dept": "japn",
+			"sections_id": "103"
+		},
+		{
+			"sections_dept": "phys",
+			"sections_id": "109"
+		},
+		{
+			"sections_dept": "chem",
+			"sections_id": "121"
+		},
+		{
+			"sections_dept": "wrds",
+			"sections_id": "150"
+		},
+		{
+			"sections_dept": "educ",
+			"sections_id": "172"
+		},
+		{
+			"sections_dept": "educ",
+			"sections_id": "172"
+		},
+		{
+			"sections_dept": "span",
+			"sections_id": "202"
+		},
+		{
+			"sections_dept": "visa",
+			"sections_id": "210"
+		},
+		{
+			"sections_dept": "wood",
+			"sections_id": "225"
+		},
+		{
+			"sections_dept": "stat",
+			"sections_id": "241"
+		},
+		{
+			"sections_dept": "psyc",
+			"sections_id": "304"
+		},
+		{
+			"sections_dept": "chem",
+			"sections_id": "313"
+		},
+		{
+			"sections_dept": "chem",
+			"sections_id": "313"
+		},
+		{
+			"sections_dept": "psyc",
+			"sections_id": "320"
+		},
+		{
+			"sections_dept": "psyc",
+			"sections_id": "320"
+		},
+		{
+			"sections_dept": "cpsc",
+			"sections_id": "322"
+		},
+		{
+			"sections_dept": "soci",
+			"sections_id": "328"
+		},
+		{
+			"sections_dept": "psyc",
+			"sections_id": "331"
+		},
+		{
+			"sections_dept": "econ",
+			"sections_id": "350"
+		},
+		{
+			"sections_dept": "econ",
+			"sections_id": "350"
+		},
+		{
+			"sections_dept": "musc",
+			"sections_id": "354"
+		},
+		{
+			"sections_dept": "musc",
+			"sections_id": "354"
+		},
+		{
+			"sections_dept": "busi",
+			"sections_id": "393"
+		},
+		{
+			"sections_dept": "ital",
+			"sections_id": "405"
+		},
+		{
+			"sections_dept": "ital",
+			"sections_id": "405"
+		},
+		{
+			"sections_dept": "geog",
+			"sections_id": "429"
+		},
+		{
+			"sections_dept": "geog",
+			"sections_id": "429"
+		},
+		{
+			"sections_dept": "comm",
+			"sections_id": "453"
+		}
+	]
+}
