@@ -9,10 +9,11 @@ import {
 import {
 	checkValidId,
 	extractFileStrings,
+	getDatasetInfo,
+	getExistingDatasets,
 	parseJSONtoSections,
 	unzipContent,
 	writeFilesToDisk,
-	getDatasetInfo,
 } from "../utils/JsonHelper";
 import fs from "fs-extra";
 import { extractDatasetId, getAllSections, handleFilter, sortResults } from "../utils/QueryHelper";
@@ -27,15 +28,22 @@ import path from "node:path";
  */
 export default class InsightFacade implements IInsightFacade {
 	public datasetIds: Map<string, number>;
-	public nextAvailableName = 0;
+	public nextAvailableName: number;
 
 	//don't include any async code inside the constructor and make the constructor as simple as possible.
 	//A function itself could fail/succeed but a constructor should always pass.
 	constructor() {
 		this.datasetIds = new Map<string, number>();
+		this.nextAvailableName = 0;
 	}
 
 	public async addDataset(id: string, content: string, kind: InsightDatasetKind): Promise<string[]> {
+		if (this.datasetIds.size === 0) {
+			const parts = await getExistingDatasets();
+			this.datasetIds = parts[0];
+			this.nextAvailableName = parts[1];
+		}
+
 		//1) check kind of dataset
 		if (kind !== InsightDatasetKind.Sections) {
 			throw new InsightError("Dataset not of kind InsightDatasetKind.Sections, could not add dataset");
@@ -59,7 +67,7 @@ export default class InsightFacade implements IInsightFacade {
 			for (const fileString of fileStrings) {
 				parseJSONtoSections(fileString);
 			}
-			await writeFilesToDisk(fileStrings, this.nextAvailableName);
+			await writeFilesToDisk(fileStrings, this.nextAvailableName, id);
 		} catch (error) {
 			throw new InsightError("unable to convert all files to JSON formatted strings" + error);
 		}
@@ -82,7 +90,7 @@ export default class InsightFacade implements IInsightFacade {
 		try {
 			// remove from disk
 			const fileName = this.datasetIds.get(id);
-			const datasetPath = path.resolve(__dirname, "../data", String(fileName));
+			const datasetPath = path.resolve("./data", String(fileName));
 			await fs.promises.unlink(datasetPath); // txt file?
 			// remove from datasetId array
 			this.datasetIds.delete(id);

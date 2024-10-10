@@ -41,6 +41,7 @@ export interface JSONFile {
 	Pass: number;
 	Fail: number;
 	Audit: number;
+	Section?: string;
 }
 
 /**
