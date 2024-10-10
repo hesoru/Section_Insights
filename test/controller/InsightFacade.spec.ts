@@ -340,7 +340,11 @@ describe("InsightFacade", function () {
 					expect.fail(`performQuery resolved when it should have rejected with ${expected}`);
 				}
 				const expectedLength = expected.length;
+				//console.log(expected)
+				//console.log(result)
 				expect(result.length).to.equal(expectedLength);
+				expect(result).to.have.deep.members(expected);
+
 				return;
 			} catch (err) {
 				if (!errorExpected) {
@@ -413,5 +417,10 @@ describe("InsightFacade", function () {
 		it("[invalid/idDoesNotExist.json]", checkQuery);
 		it("[valid/negativeAverage(Valid).json]", checkQuery);
 		it("[valid/filterNOT.json]", checkQuery); //works but timesout at 2.47
+		it("[invalid/notObject.json]", checkQuery);
+		it("[invalid/badWHERE.json]", checkQuery);
+		it("[invalid/badOptions.json]", checkQuery);
+		it("[invalid/badOR.json]", checkQuery);
+		it("[invalid/emptyOptions.json]", checkQuery);
 	});
 });

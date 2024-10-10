@@ -57,32 +57,24 @@ function handleLogicComparison(filter: Body, data: InsightResult[]): InsightResu
 function handleMComparison(filter: any, data: InsightResult[]): InsightResult[] {
 	if (filter.GT) {
 		const mKey = Object.keys(filter.GT)[0];
-		const parts = mKey.split("_");
-		const field = parts[1];
 		const value = Object.values(filter.GT)[0];
-		return data.filter((section) => section[field] > (value as number));
+		return data.filter((section) => section[mKey] > (value as number));
 	}
 	if (filter.LT) {
 		const mKey = Object.keys(filter.LT)[0];
-		const parts = mKey.split("_");
-		const field = parts[1];
 		const value = Object.values(filter.LT)[0];
-		return data.filter((section) => section[field] < (value as number));
+		return data.filter((section) => section[mKey] < (value as number));
 	}
 	if (filter.EQ) {
 		const mKey = Object.keys(filter.EQ)[0];
-		const parts = mKey.split("_");
-		const field = parts[1];
 		const value = Object.values(filter.EQ)[0];
-		return data.filter((section) => section[field] === (value as number));
+		return data.filter((section) => section[mKey] === (value as number));
 	}
 	throw new InsightError("Invalid MComparator operator.");
 }
 
 function handleSComparison(filter: any, data: InsightResult[]): InsightResult[] {
 	const sKey = Object.keys(filter.IS)[0];
-	const parts = sKey.split("_");
-	const field = parts[1];
 	const value = Object.values(filter.IS)[0] as string;
 
 	const regex = new RegExp(/^\*?[^*]*\*?$/); // Handle wildcards
@@ -90,7 +82,7 @@ function handleSComparison(filter: any, data: InsightResult[]): InsightResult[] 
 		throw new InsightError("invalid SComparator operator, bad wildcard.");
 	}
 	const validValue = new RegExp(`^${value.replace(/\*/g, ".*")}$`); // Handle wildcards
-	return data.filter((section) => validValue.test(section[field] as string));
+	return data.filter((section) => validValue.test(section[sKey] as string));
 }
 
 function handleNegation(filter: any, data: InsightResult[]): InsightResult[] {
@@ -111,7 +103,7 @@ export async function getAllSections(query: Query, datasets: Map<string, number>
 		const sectionResult: InsightResult = {};
 		for (const item of columns) {
 			//iterate through indicies
-			sectionResult[item] = section[item as keyof Section];
+			sectionResult[`${idString}_${item}`] = section[item as keyof Section];
 		}
 		allResults.push(sectionResult);
 	}
@@ -124,11 +116,9 @@ export function sortResults(options: Options, results: InsightResult[]): Insight
 		if (!options.ORDER) {
 			throw new InsightError("invalid options passed to sortResults");
 		}
-		const parts = options.ORDER.split("_");
-		const field = parts[1];
 
-		const aValue = a[field];
-		const bValue = b[field];
+		const aValue = a[options.ORDER];
+		const bValue = b[options.ORDER];
 
 		if (typeof aValue === "string" && typeof bValue === "string") {
 			// string comparison (case-insensitive)
