@@ -11,6 +11,8 @@ import { clearDisk, getContentFromArchives, loadTestQuery } from "../TestUtil";
 
 import { expect, use } from "chai";
 import chaiAsPromised from "chai-as-promised";
+import fs, { readdir } from "fs-extra";
+import path from "node:path";
 
 use(chaiAsPromised);
 
@@ -166,7 +168,7 @@ describe("InsightFacade", function () {
 				expect(result1).to.deep.equal(["sections", "mini5"]);
 
 				const datasets = await newFacade.listDatasets();
-				expect(datasets).to.deep.equal([
+				expect(datasets).to.have.deep.members([
 					{
 						id: "sections",
 						kind: InsightDatasetKind.Sections,
@@ -301,6 +303,49 @@ describe("InsightFacade", function () {
 				expect.fail("should not have thrown err" + err);
 			}
 		});
+
+		it("checking persistence remove and erase", async function () {
+			try {
+				const result = await facade.addDataset("sections", sections, InsightDatasetKind.Sections);
+				expect(result).to.be.an("array");
+				expect(result).to.deep.equal(["sections"]);
+				const dataset = await facade.listDatasets();
+				expect(dataset).to.deep.equal([
+					{
+						id: "sections",
+						kind: InsightDatasetKind.Sections,
+						numRows: 64612,
+					},
+				]);
+
+				const newFacade = new InsightFacade();
+				const result1 = await newFacade.removeDataset("sections");
+				expect(result1).to.equal("sections");
+
+				const datasets = await newFacade.listDatasets();
+				expect(datasets).to.deep.equal([]);
+				const fileNames = await readdir("./data");
+				const promises = [];
+				for (const file of fileNames) {
+					const filePath = path.resolve("./data", file);
+					promises.push(fs.readJson(filePath));
+				}
+
+				try {
+					const files = await Promise.all(promises);
+					const ids = [];
+					for (const item of files) {
+						const id = item.datasetID;
+						ids.push(id);
+					}
+					expect(ids).to.not.include("sections");
+				} catch {
+					expect.fail("should not have thrown an exception");
+				}
+			} catch (err) {
+				expect.fail("should not have thrown err" + err);
+			}
+		});
 	});
 
 	describe("ListDatasets", function () {
@@ -400,6 +445,44 @@ describe("InsightFacade", function () {
 				expect.fail("should not have thrown err" + err);
 			}
 		});
+
+		it("checking persistence list multiple facade", async function () {
+			try {
+				const result = await facade.addDataset("sections", sections, InsightDatasetKind.Sections);
+				expect(result).to.be.an("array");
+				expect(result).to.deep.equal(["sections"]);
+				const dataset = await facade.listDatasets();
+				expect(dataset).to.deep.equal([
+					{
+						id: "sections",
+						kind: InsightDatasetKind.Sections,
+						numRows: 64612,
+					},
+				]);
+
+				const newFacade = new InsightFacade();
+				const miniData5 = await getContentFromArchives("miniData5.zip");
+				const result1 = await newFacade.addDataset("mini5", miniData5, InsightDatasetKind.Sections);
+				expect(result1).to.deep.equal(["sections", "mini5"]);
+
+				const newFacade2 = new InsightFacade();
+				const result2 = await newFacade2.listDatasets();
+				expect(result2).to.deep.equal([
+					{
+						id: "sections",
+						kind: InsightDatasetKind.Sections,
+						numRows: 64612,
+					},
+					{
+						id: "mini5",
+						kind: InsightDatasetKind.Sections,
+						numRows: 6,
+					},
+				]);
+			} catch (err) {
+				expect.fail("should not have thrown err" + err);
+			}
+		});
 	});
 
 	describe("PerformQuery", function () {
@@ -473,7 +556,6 @@ describe("InsightFacade", function () {
 
 		before(async function () {
 			facade = new InsightFacade();
-
 			// Add the datasets to InsightFacade once.
 			// Will *fail* if there is a problem reading ANY dataset.
 			const loadDatasetPromises: Promise<string[]>[] = [
@@ -509,6 +591,53 @@ describe("InsightFacade", function () {
 					{ sections_dept: "cnps", sections_avg: 99.19 },
 					{ sections_dept: "math", sections_avg: 99.78 },
 					{ sections_dept: "math", sections_avg: 99.78 },
+				];
+				const result1 = await newFacade.performQuery(query);
+				expect(result1).to.have.deep.members(queryResult);
+			} catch (err) {
+				expect.fail("should not have thrown err" + err);
+			}
+		});
+
+		it("checking persistence perform query large", async function () {
+			try {
+				const newFacade = new InsightFacade();
+				const query = {
+					WHERE: {
+						OR: [
+							{
+								GT: {
+									sections_year: 2025,
+								},
+							},
+							{
+								AND: [
+									{
+										EQ: {
+											sections_avg: 62,
+										},
+									},
+									{
+										LT: {
+											sections_fail: 2,
+										},
+									},
+								],
+							},
+						],
+					},
+					OPTIONS: {
+						COLUMNS: ["sections_id", "sections_title"],
+					},
+				};
+				const queryResult = [
+					{ sections_id: "319", sections_title: "prin frst econ" },
+					{ sections_id: "319", sections_title: "prin frst econ" },
+					{ sections_id: "225", sections_title: "eng concepts ii" },
+					{ sections_id: "410", sections_title: "immunogenetics" },
+					{ sections_id: "410", sections_title: "immunogenetics" },
+					{ sections_id: "571", sections_title: "physcal cosmolgy" },
+					{ sections_id: "571", sections_title: "physcal cosmolgy" },
 				];
 				const result1 = await newFacade.performQuery(query);
 				expect(result1).to.have.deep.members(queryResult);

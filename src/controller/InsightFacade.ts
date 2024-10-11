@@ -99,7 +99,7 @@ export default class InsightFacade implements IInsightFacade {
 			// remove from disk
 			const fileName = this.datasetIds.get(id);
 			const datasetPath = path.resolve("./data", String(fileName));
-			await fs.promises.unlink(datasetPath); // txt file?
+			await fs.remove(datasetPath); // txt file?
 			// remove from datasetId array
 			this.datasetIds.delete(id);
 			// return removed id

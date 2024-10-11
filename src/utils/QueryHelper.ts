@@ -27,22 +27,25 @@ export function handleFilter(filter: Body, data: InsightResult[]): InsightResult
 	}
 }
 
-export function handleLogicComparison(filter: Body, data: InsightResult[]): InsightResult[] {
+function handleLogicComparison(filter: Body, data: InsightResult[]): InsightResult[] {
 	//return array of insight result.
 	let results: InsightResult[] = [];
+	let alreadyAnd = false;
 
 	if (filter.AND) {
 		// intersection of all results: all filters must be true
 		// return filter.AND.reduce((acc, subBody) => handleBody(subBody, acc), data);
 		for (const subFilter of filter.AND) {
 			const subResults = handleFilter(subFilter, data);
-			if (results.length === 0) {
+			if (!alreadyAnd) {
 				results = subResults;
+				alreadyAnd = true;
 			} else {
 				results = results.filter((section) => subResults.includes(section)); // Intersection of results
 			}
 		}
 	} else if (filter.OR) {
+		results = [];
 		for (const subFilter of filter.OR) {
 			const subResults = handleFilter(subFilter, data);
 			results = results.concat(subResults); // Union of results
@@ -96,21 +99,16 @@ export async function getAllSections(query: Query, datasets: Map<string, number>
 	const fileName = String(datasets.get(idString));
 	const allSections = await loadDatasets(idString, fileName);
 
-	const columns = Object.keys(allSections[0]);
-
-	const allResults: InsightResult[] = [];
-	for (const section of allSections) {
-		const sectionResult: InsightResult = {};
-		for (const item of columns) {
-			//iterate through indices
-			sectionResult[`${idString}_${item}`] = section[item as keyof Section];
-		}
-		allResults.push(sectionResult);
-	}
-
-	return allResults;
+	return parseToInsightResult(allSections, idString);
 }
 
+/**
+ * @returns - InsightResult[], takes already filtered and selected results and sorts them according to options.ORDER
+ * if options.ORDER exists, if not throws an error as sort Results should not have been called. If types of values
+ * between 2 sections.ORDER differs throw InsightError
+ * @param options
+ * @param results
+ */
 export function sortResults(options: Options, results: InsightResult[]): InsightResult[] {
 	return results.sort((a, b) => {
 		if (!options.ORDER) {
@@ -135,6 +133,10 @@ export function sortResults(options: Options, results: InsightResult[]): Insight
 	});
 }
 
+/**
+ * @returns - string, extracts dataset id from first key found in OPTIONS.COLUMNS
+ * @param query
+ */
 export function extractDatasetId(query: Query): string {
 	const keys: string[] = query.OPTIONS.COLUMNS;
 	const keyParts = keys[0].split("_");
@@ -148,19 +150,50 @@ export function extractDatasetId(query: Query): string {
  * @param id
  */
 export async function loadDatasets(id: string, fileName: string): Promise<Section[]> {
-	const datasetPath = path.resolve(__dirname, "../data", fileName);
+	const datasetPath = path.resolve("./data", fileName);
 	let dataset;
 	try {
 		dataset = await fs.readJson(datasetPath);
 	} catch (error) {
-		throw new InsightError(`Could not find fileName for dataset with - id=${id};` + error);
+		throw new NotFoundError(`Could not find dataset with - id=${id};` + error);
 	}
 	const parsedSections: Section[] = [];
-	for (const file of dataset) {
+	for (const file of dataset.files) {
 		for (const section of file.result) {
 			const newSection = parseSectionObject(section);
 			parsedSections.push(newSection);
 		}
 	}
 	return parsedSections;
+}
+
+/**
+ * @returns - InsightResult[], takes the filtered InsightResults array and selects the columns to keep according to OPTIONS.COLUMNS
+ * @param filteredResults
+ * @param validatedQuery
+ */
+export function selectColumns(filteredResults: InsightResult[], validatedQuery: Query): InsightResult[] {
+	return filteredResults.map((section) => {
+		// can be string | number
+		const result: any = {};
+		const columns = validatedQuery.OPTIONS.COLUMNS;
+		for (const column of columns) {
+			result[column] = section[column];
+		}
+		return result;
+	});
+}
+
+export function parseToInsightResult(allSections: Section[], idString: string): InsightResult[] {
+	const columns = Object.keys(allSections[0]);
+	const allResults: InsightResult[] = [];
+	for (const section of allSections) {
+		const sectionResult: InsightResult = {};
+		for (const item of columns) {
+			//iterate through indicies
+			sectionResult[`${idString}_${item}`] = section[item as keyof Section];
+		}
+		allResults.push(sectionResult);
+	}
+	return allResults;
 }
