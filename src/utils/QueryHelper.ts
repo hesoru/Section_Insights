@@ -27,25 +27,22 @@ export function handleFilter(filter: Body, data: InsightResult[]): InsightResult
 	}
 }
 
-function handleLogicComparison(filter: Body, data: InsightResult[]): InsightResult[] {
+export function handleLogicComparison(filter: Body, data: InsightResult[]): InsightResult[] {
 	//return array of insight result.
 	let results: InsightResult[] = [];
-	let alreadyAnd = false;
 
 	if (filter.AND) {
 		// intersection of all results: all filters must be true
 		// return filter.AND.reduce((acc, subBody) => handleBody(subBody, acc), data);
 		for (const subFilter of filter.AND) {
 			const subResults = handleFilter(subFilter, data);
-			if (!alreadyAnd) {
+			if (results.length === 0) {
 				results = subResults;
-				alreadyAnd = true;
 			} else {
 				results = results.filter((section) => subResults.includes(section)); // Intersection of results
 			}
 		}
 	} else if (filter.OR) {
-		results = [];
 		for (const subFilter of filter.OR) {
 			const subResults = handleFilter(subFilter, data);
 			results = results.concat(subResults); // Union of results
@@ -57,7 +54,7 @@ function handleLogicComparison(filter: Body, data: InsightResult[]): InsightResu
 	return results;
 }
 
-function handleMComparison(filter: any, data: InsightResult[]): InsightResult[] {
+export function handleMComparison(filter: any, data: InsightResult[]): InsightResult[] {
 	if (filter.GT) {
 		const mKey = Object.keys(filter.GT)[0];
 		const value = Object.values(filter.GT)[0];
@@ -76,7 +73,7 @@ function handleMComparison(filter: any, data: InsightResult[]): InsightResult[] 
 	throw new InsightError("Invalid MComparator operator.");
 }
 
-function handleSComparison(filter: any, data: InsightResult[]): InsightResult[] {
+export function handleSComparison(filter: any, data: InsightResult[]): InsightResult[] {
 	const sKey = Object.keys(filter.IS)[0];
 	const value = Object.values(filter.IS)[0] as string;
 
@@ -88,7 +85,7 @@ function handleSComparison(filter: any, data: InsightResult[]): InsightResult[] 
 	return data.filter((section) => validValue.test(section[sKey] as string));
 }
 
-function handleNegation(filter: any, data: InsightResult[]): InsightResult[] {
+export function handleNegation(filter: any, data: InsightResult[]): InsightResult[] {
 	// Exclude matching sections
 	const notData = handleFilter(filter.NOT, data);
 	return data.filter((section) => !notData.includes(section));
@@ -99,16 +96,21 @@ export async function getAllSections(query: Query, datasets: Map<string, number>
 	const fileName = String(datasets.get(idString));
 	const allSections = await loadDatasets(idString, fileName);
 
-	return parseToInsightResult(allSections, idString);
+	const columns = Object.keys(allSections[0]);
+
+	const allResults: InsightResult[] = [];
+	for (const section of allSections) {
+		const sectionResult: InsightResult = {};
+		for (const item of columns) {
+			//iterate through indices
+			sectionResult[`${idString}_${item}`] = section[item as keyof Section];
+		}
+		allResults.push(sectionResult);
+	}
+
+	return allResults;
 }
 
-/**
- * @returns - InsightResult[], takes already filtered and selected results and sorts them according to options.ORDER
- * if options.ORDER exists, if not throws an error as sort Results should not have been called. If types of values
- * between 2 sections.ORDER differs throw InsightError
- * @param options
- * @param results
- */
 export function sortResults(options: Options, results: InsightResult[]): InsightResult[] {
 	return results.sort((a, b) => {
 		if (!options.ORDER) {
@@ -133,10 +135,6 @@ export function sortResults(options: Options, results: InsightResult[]): Insight
 	});
 }
 
-/**
- * @returns - string, extracts dataset id from first key found in OPTIONS.COLUMNS
- * @param query
- */
 export function extractDatasetId(query: Query): string {
 	const keys: string[] = query.OPTIONS.COLUMNS;
 	const keyParts = keys[0].split("_");
@@ -150,50 +148,19 @@ export function extractDatasetId(query: Query): string {
  * @param id
  */
 export async function loadDatasets(id: string, fileName: string): Promise<Section[]> {
-	const datasetPath = path.resolve("./data", fileName);
+	const datasetPath = path.resolve(__dirname, "../data", fileName);
 	let dataset;
 	try {
 		dataset = await fs.readJson(datasetPath);
 	} catch (error) {
-		throw new NotFoundError(`Could not find dataset with - id=${id};` + error);
+		throw new InsightError(`Could not find fileName for dataset with - id=${id};` + error);
 	}
 	const parsedSections: Section[] = [];
-	for (const file of dataset.files) {
+	for (const file of dataset) {
 		for (const section of file.result) {
 			const newSection = parseSectionObject(section);
 			parsedSections.push(newSection);
 		}
 	}
 	return parsedSections;
-}
-
-/**
- * @returns - InsightResult[], takes the filtered InsightResults array and selects the columns to keep according to OPTIONS.COLUMNS
- * @param filteredResults
- * @param validatedQuery
- */
-export function selectColumns(filteredResults: InsightResult[], validatedQuery: Query): InsightResult[] {
-	return filteredResults.map((section) => {
-		// can be string | number
-		const result: any = {};
-		const columns = validatedQuery.OPTIONS.COLUMNS;
-		for (const column of columns) {
-			result[column] = section[column];
-		}
-		return result;
-	});
-}
-
-export function parseToInsightResult(allSections: Section[], idString: string): InsightResult[] {
-	const columns = Object.keys(allSections[0]);
-	const allResults: InsightResult[] = [];
-	for (const section of allSections) {
-		const sectionResult: InsightResult = {};
-		for (const item of columns) {
-			//iterate through indicies
-			sectionResult[`${idString}_${item}`] = section[item as keyof Section];
-		}
-		allResults.push(sectionResult);
-	}
-	return allResults;
 }
