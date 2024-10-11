@@ -119,7 +119,6 @@ export default class InsightFacade implements IInsightFacade {
 	}
 
 	public async performQuery(query: unknown): Promise<InsightResult[]> {
-		await this.initializeFields();
 		const MAX_SIZE = 5000;
 
 		// 1) validate query
