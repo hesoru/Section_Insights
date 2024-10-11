@@ -28,10 +28,12 @@ describe("InsightFacade", function () {
 
 	// Declare datasets used in tests. You should add more datasets like this!
 	let sections: string;
+	let miniAddDataset: string;
 
 	before(async function () {
 		// This block runs once and loads the datasets.
 		sections = await getContentFromArchives("pair.zip");
+		miniAddDataset = await getContentFromArchives("miniAddData.zip");
 
 		// Just in case there is anything hanging around from a previous run of the test suite
 		await clearDisk();
@@ -53,7 +55,7 @@ describe("InsightFacade", function () {
 
 		it("should reject adding an empty dataset id", async function () {
 			try {
-				await facade.addDataset("", sections, InsightDatasetKind.Sections);
+				await facade.addDataset("", miniAddDataset, InsightDatasetKind.Sections);
 				expect.fail("Should have thrown above.");
 			} catch (err) {
 				expect(err).to.be.instanceOf(InsightError);
@@ -62,7 +64,7 @@ describe("InsightFacade", function () {
 
 		it("should reject adding an id that is only whitespace", async function () {
 			try {
-				await facade.addDataset(" ", sections, InsightDatasetKind.Sections);
+				await facade.addDataset(" ", miniAddDataset, InsightDatasetKind.Sections);
 				expect.fail("Should have thrown above.");
 			} catch (err) {
 				expect(err).to.be.instanceOf(InsightError);
@@ -71,7 +73,7 @@ describe("InsightFacade", function () {
 
 		it("should reject adding an id with underscore", async function () {
 			try {
-				await facade.addDataset("this_id", sections, InsightDatasetKind.Sections);
+				await facade.addDataset("this_id", miniAddDataset, InsightDatasetKind.Sections);
 				expect.fail("Should have thrown above.");
 			} catch (err) {
 				expect(err).to.be.instanceOf(InsightError);
@@ -90,7 +92,7 @@ describe("InsightFacade", function () {
 
 		it("should reject adding with invalid InsightDatasetKind (ie. not Sections)", async function () {
 			try {
-				await facade.addDataset("    ", sections, InsightDatasetKind.Rooms);
+				await facade.addDataset("    ", miniAddDataset, InsightDatasetKind.Rooms);
 				expect.fail("Should have thrown above.");
 			} catch (err) {
 				expect(err).to.be.instanceOf(InsightError);
@@ -151,7 +153,7 @@ describe("InsightFacade", function () {
 
 		it("checking persistence add", async function () {
 			try {
-				const result = await facade.addDataset("sections", sections, InsightDatasetKind.Sections);
+				const result = await facade.addDataset("sections", miniAddDataset, InsightDatasetKind.Sections);
 				expect(result).to.be.an("array");
 				expect(result).to.deep.equal(["sections"]);
 				const dataset = await facade.listDatasets();
@@ -159,7 +161,7 @@ describe("InsightFacade", function () {
 					{
 						id: "sections",
 						kind: InsightDatasetKind.Sections,
-						numRows: 64612,
+						numRows: 108,
 					},
 				]);
 				const newFacade = new InsightFacade();
@@ -172,7 +174,7 @@ describe("InsightFacade", function () {
 					{
 						id: "sections",
 						kind: InsightDatasetKind.Sections,
-						numRows: 64612,
+						numRows: 108,
 					},
 					{
 						id: "mini5",
@@ -194,6 +196,26 @@ describe("InsightFacade", function () {
 				// read file from disk
 			} catch (err) {
 				expect.fail("Should not have thrown an error" + err);
+			}
+		});
+		it("checking persistence add twice", async function () {
+			try {
+				const result = await facade.addDataset("mini", miniAddDataset, InsightDatasetKind.Sections);
+				expect(result).to.be.an("array");
+				expect(result).to.deep.equal(["mini"]);
+				const dataset = await facade.listDatasets();
+				expect(dataset).to.deep.equal([
+					{
+						id: "mini",
+						kind: InsightDatasetKind.Sections,
+						numRows: 108,
+					},
+				]);
+				const newFacade = new InsightFacade();
+				await newFacade.addDataset("mini", miniAddDataset, InsightDatasetKind.Sections);
+				expect.fail("should not have been able to add dataset with the same id");
+			} catch (e) {
+				expect(e).to.be.instanceOf(InsightError);
 			}
 		});
 	});
@@ -241,7 +263,7 @@ describe("InsightFacade", function () {
 
 		it("should reject removing id that is not in datasets", async function () {
 			try {
-				await facade.addDataset("data", sections, InsightDatasetKind.Sections);
+				await facade.addDataset("data", miniAddDataset, InsightDatasetKind.Sections);
 				await facade.removeDataset("badId");
 				expect.fail("Should have thrown above.");
 			} catch (err) {
@@ -251,7 +273,7 @@ describe("InsightFacade", function () {
 
 		it("removed dataset still in database", async function () {
 			try {
-				await facade.addDataset("data", sections, InsightDatasetKind.Sections);
+				await facade.addDataset("data", miniAddDataset, InsightDatasetKind.Sections);
 				await facade.removeDataset("data");
 			} catch (err) {
 				expect.fail("Should have sucessfully added and removed" + err);
@@ -271,7 +293,7 @@ describe("InsightFacade", function () {
 			//const miniData1 = await getContentFromArchives("miniData1.zip");  invalid dataset no courses folder
 			//const miniData2 = await getContentFromArchives("miniData2.zip");
 			try {
-				await facade.addDataset("data", sections, InsightDatasetKind.Sections);
+				await facade.addDataset("data", miniAddDataset, InsightDatasetKind.Sections);
 				const result = await facade.removeDataset("data");
 				expect(result).to.equal("data");
 			} catch (err) {
@@ -281,21 +303,21 @@ describe("InsightFacade", function () {
 
 		it("checking persistence remove", async function () {
 			try {
-				const result = await facade.addDataset("sections", sections, InsightDatasetKind.Sections);
+				const result = await facade.addDataset("mini", miniAddDataset, InsightDatasetKind.Sections);
 				expect(result).to.be.an("array");
-				expect(result).to.deep.equal(["sections"]);
+				expect(result).to.deep.equal(["mini"]);
 				const dataset = await facade.listDatasets();
 				expect(dataset).to.deep.equal([
 					{
-						id: "sections",
+						id: "mini",
 						kind: InsightDatasetKind.Sections,
-						numRows: 64612,
+						numRows: 108,
 					},
 				]);
 
 				const newFacade = new InsightFacade();
-				const result1 = await newFacade.removeDataset("sections");
-				expect(result1).to.equal("sections");
+				const result1 = await newFacade.removeDataset("mini");
+				expect(result1).to.equal("mini");
 
 				const datasets = await newFacade.listDatasets();
 				expect(datasets).to.deep.equal([]);
@@ -306,21 +328,21 @@ describe("InsightFacade", function () {
 
 		it("checking persistence remove and erase", async function () {
 			try {
-				const result = await facade.addDataset("sections", sections, InsightDatasetKind.Sections);
+				const result = await facade.addDataset("mini", miniAddDataset, InsightDatasetKind.Sections);
 				expect(result).to.be.an("array");
-				expect(result).to.deep.equal(["sections"]);
+				expect(result).to.deep.equal(["mini"]);
 				const dataset = await facade.listDatasets();
 				expect(dataset).to.deep.equal([
 					{
-						id: "sections",
+						id: "mini",
 						kind: InsightDatasetKind.Sections,
-						numRows: 64612,
+						numRows: 108,
 					},
 				]);
 
 				const newFacade = new InsightFacade();
-				const result1 = await newFacade.removeDataset("sections");
-				expect(result1).to.equal("sections");
+				const result1 = await newFacade.removeDataset("mini");
+				expect(result1).to.equal("mini");
 
 				const datasets = await newFacade.listDatasets();
 				expect(datasets).to.deep.equal([]);
@@ -338,7 +360,7 @@ describe("InsightFacade", function () {
 						const id = item.datasetID;
 						ids.push(id);
 					}
-					expect(ids).to.not.include("sections");
+					expect(ids).to.not.include("mini");
 				} catch {
 					expect.fail("should not have thrown an exception");
 				}
@@ -395,7 +417,7 @@ describe("InsightFacade", function () {
 			this.timeout(timeout);
 			try {
 				const miniData5 = await getContentFromArchives("miniData5.zip");
-				await facade.addDataset("miniData4", sections, InsightDatasetKind.Sections);
+				await facade.addDataset("miniData4", miniAddDataset, InsightDatasetKind.Sections);
 				await facade.addDataset("miniData5", miniData5, InsightDatasetKind.Sections);
 			} catch (error) {
 				expect.fail("addDataset failed" + error);
@@ -406,7 +428,7 @@ describe("InsightFacade", function () {
 				{
 					id: "miniData4",
 					kind: InsightDatasetKind.Sections,
-					numRows: 64612,
+					numRows: 108,
 				},
 				{
 					id: "miniData5",
@@ -420,7 +442,7 @@ describe("InsightFacade", function () {
 
 		it("checking persistence list", async function () {
 			try {
-				const result = await facade.addDataset("sections", sections, InsightDatasetKind.Sections);
+				const result = await facade.addDataset("sections", miniAddDataset, InsightDatasetKind.Sections);
 				expect(result).to.be.an("array");
 				expect(result).to.deep.equal(["sections"]);
 				const dataset = await facade.listDatasets();
@@ -428,7 +450,7 @@ describe("InsightFacade", function () {
 					{
 						id: "sections",
 						kind: InsightDatasetKind.Sections,
-						numRows: 64612,
+						numRows: 108,
 					},
 				]);
 
@@ -438,7 +460,7 @@ describe("InsightFacade", function () {
 					{
 						id: "sections",
 						kind: InsightDatasetKind.Sections,
-						numRows: 64612,
+						numRows: 108,
 					},
 				]);
 			} catch (err) {
@@ -448,7 +470,7 @@ describe("InsightFacade", function () {
 
 		it("checking persistence list multiple facade", async function () {
 			try {
-				const result = await facade.addDataset("sections", sections, InsightDatasetKind.Sections);
+				const result = await facade.addDataset("sections", miniAddDataset, InsightDatasetKind.Sections);
 				expect(result).to.be.an("array");
 				expect(result).to.deep.equal(["sections"]);
 				const dataset = await facade.listDatasets();
@@ -456,7 +478,7 @@ describe("InsightFacade", function () {
 					{
 						id: "sections",
 						kind: InsightDatasetKind.Sections,
-						numRows: 64612,
+						numRows: 108,
 					},
 				]);
 
@@ -471,7 +493,7 @@ describe("InsightFacade", function () {
 					{
 						id: "sections",
 						kind: InsightDatasetKind.Sections,
-						numRows: 64612,
+						numRows: 108,
 					},
 					{
 						id: "mini5",
