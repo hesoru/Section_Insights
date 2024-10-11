@@ -16,7 +16,7 @@ import {
 	writeFilesToDisk,
 } from "../utils/JsonHelper";
 import fs from "fs-extra";
-import { extractDatasetId, getAllSections, handleFilter, sortResults } from "../utils/QueryHelper";
+import { extractDatasetId, getAllSections, handleFilter, selectColumns, sortResults } from "../utils/QueryHelper";
 import { Query } from "../models/Section";
 import { validateQuery } from "../utils/ValidateHelper";
 import path from "node:path";
@@ -54,7 +54,6 @@ export default class InsightFacade implements IInsightFacade {
 		} catch (error) {
 			throw new InsightError("id passed to addDataset invalid" + error); //is this catch block necessary?
 		}
-
 		//3) Unzips content: checks for valid content, must be a base64 encoded string, all valid courses must be contained within courses folder
 		const unzipped = await unzipContent(content);
 		const fileStringsPromises = extractFileStrings(unzipped);
@@ -76,17 +75,17 @@ export default class InsightFacade implements IInsightFacade {
 		this.datasetIds.set(id, this.nextAvailableName);
 		this.nextAvailableName++;
 		//Check to make sure name corresponds to position in datasetIds array
-
 		return Array.from(this.datasetIds.keys());
 	}
 
 	public async removeDataset(id: string): Promise<string> {
-		// validate id: if "", contains _, or only whitespace
-		// if (!id || id.includes("_") || id.trim() === "") {
-		// 	throw new InsightError("Invalid dataset id.");
-		// }
-		checkValidId(id, Array.from(this.datasetIds.keys()), true); // 3rd parameter should be true
+		if (this.datasetIds.size === 0) {
+			const parts = await getExistingDatasets();
+			this.datasetIds = parts[0];
+			this.nextAvailableName = parts[1];
+		}
 
+		checkValidId(id, Array.from(this.datasetIds.keys()), true); // 3rd parameter should be true
 		try {
 			// remove from disk
 			const fileName = this.datasetIds.get(id);
@@ -102,6 +101,11 @@ export default class InsightFacade implements IInsightFacade {
 	}
 
 	public async performQuery(query: unknown): Promise<InsightResult[]> {
+		if (this.datasetIds.size === 0) {
+			const parts = await getExistingDatasets();
+			this.datasetIds = parts[0];
+			this.nextAvailableName = parts[1];
+		}
 		const MAX_SIZE = 5000;
 
 		// 1) validate query
@@ -133,16 +137,7 @@ export default class InsightFacade implements IInsightFacade {
 		}
 
 		// 6) select only specified columns (OPTIONS.COLUMNS)
-		//do we need to check if options exists?
-		filteredResults = filteredResults.map((section) => {
-			// can be string | number
-			const result: any = {};
-			const columns = validatedQuery.OPTIONS.COLUMNS;
-			for (const column of columns) {
-				result[column] = section[column];
-			}
-			return result;
-		});
+		filteredResults = selectColumns(filteredResults, validatedQuery);
 
 		// 7) sort results if necessary (OPTIONS.ORDER)
 		let sortedFilteredResults: InsightResult[];
@@ -151,11 +146,16 @@ export default class InsightFacade implements IInsightFacade {
 		} else {
 			sortedFilteredResults = filteredResults;
 		}
-
 		return sortedFilteredResults;
 	}
 
 	public async listDatasets(): Promise<InsightDataset[]> {
+		if (this.datasetIds.size === 0) {
+			const parts = await getExistingDatasets();
+			this.datasetIds = parts[0];
+			this.nextAvailableName = parts[1];
+		}
+
 		const datasetPromises: Promise<InsightDataset>[] = [];
 
 		// get datasets in datasetIds array

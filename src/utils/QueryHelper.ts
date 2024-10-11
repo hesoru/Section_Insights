@@ -114,6 +114,13 @@ export async function getAllSections(query: Query, datasets: Map<string, number>
 	return allResults;
 }
 
+/**
+ * @returns - InsightResult[], takes already filtered and selected results and sorts them according to options.ORDER
+ * if options.ORDER exists, if not throws an error as sort Results should not have been called. If types of values
+ * between 2 sections.ORDER differs throw InsightError
+ * @param options
+ * @param results
+ */
 export function sortResults(options: Options, results: InsightResult[]): InsightResult[] {
 	return results.sort((a, b) => {
 		if (!options.ORDER) {
@@ -138,6 +145,10 @@ export function sortResults(options: Options, results: InsightResult[]): Insight
 	});
 }
 
+/**
+ * @returns - string, extracts dataset id from first key found in OPTIONS.COLUMNS
+ * @param query
+ */
 export function extractDatasetId(query: Query): string {
 	const keys: string[] = query.OPTIONS.COLUMNS;
 	const keyParts = keys[0].split("_");
@@ -166,4 +177,21 @@ export async function loadDatasets(id: string, fileName: string): Promise<Sectio
 		}
 	}
 	return parsedSections;
+}
+
+/**
+ * @returns - InsightResult[], takes the filtered InsightResults array and selects the columns to keep according to OPTIONS.COLUMNS
+ * @param filteredResults
+ * @param validatedQuery
+ */
+export function selectColumns(filteredResults: InsightResult[], validatedQuery: Query): InsightResult[] {
+	return filteredResults.map((section) => {
+		// can be string | number
+		const result: any = {};
+		const columns = validatedQuery.OPTIONS.COLUMNS;
+		for (const column of columns) {
+			result[column] = section[column];
+		}
+		return result;
+	});
 }

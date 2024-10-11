@@ -177,6 +177,11 @@ export async function unzipContent(content: string): Promise<JSZip> {
 	return unzipped;
 }
 
+/**
+ * @returns - Promise<InsightDataset>, gets the dataset info for each dataset in the database, if loadDatasets fails throws InsightError
+ * @param id
+ * @param fileName
+ */
 export async function getDatasetInfo(id: string, fileName: string): Promise<InsightDataset> {
 	// shouldn't have to validate id in listDataset()
 	// checkValidId(id, datasetIds, true); // 3rd parameter true
@@ -197,6 +202,10 @@ export async function getDatasetInfo(id: string, fileName: string): Promise<Insi
 	}
 }
 
+/**
+ * @returns - Promise<[Map,string,number>,number]>, initializes a map with the names and ids of each file already existing in the ./data folder
+ * Will throw an InsightError unable to read a file.
+ */
 export async function getExistingDatasets(): Promise<[Map<string, number>, number]> {
 	const dataPath = "./data";
 	const result = new Map<string, number>();
