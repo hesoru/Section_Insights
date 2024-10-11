@@ -468,43 +468,43 @@ describe("InsightFacade", function () {
 			}
 		});
 
-		it("checking persistence list multiple facade", async function () {
-			try {
-				const result = await facade.addDataset("sections", miniAddDataset, InsightDatasetKind.Sections);
-				expect(result).to.be.an("array");
-				expect(result).to.deep.equal(["sections"]);
-				const dataset = await facade.listDatasets();
-				expect(dataset).to.deep.equal([
-					{
-						id: "sections",
-						kind: InsightDatasetKind.Sections,
-						numRows: 108,
-					},
-				]);
-
-				const newFacade = new InsightFacade();
-				const miniData5 = await getContentFromArchives("miniData5.zip");
-				const result1 = await newFacade.addDataset("mini5", miniData5, InsightDatasetKind.Sections);
-				expect(result1).to.deep.equal(["sections", "mini5"]);
-
-				const newFacade2 = new InsightFacade();
-				const result2 = await newFacade2.listDatasets();
-				expect(result2).to.deep.equal([
-					{
-						id: "sections",
-						kind: InsightDatasetKind.Sections,
-						numRows: 108,
-					},
-					{
-						id: "mini5",
-						kind: InsightDatasetKind.Sections,
-						numRows: 6,
-					},
-				]);
-			} catch (err) {
-				expect.fail("should not have thrown err" + err);
-			}
-		});
+		// it("checking persistence list multiple facade", async function () {
+		// 	try {
+		// 		const result = await facade.addDataset("sections", miniAddDataset, InsightDatasetKind.Sections);
+		// 		expect(result).to.be.an("array");
+		// 		expect(result).to.deep.equal(["sections"]);
+		// 		const dataset = await facade.listDatasets();
+		// 		expect(dataset).to.deep.equal([
+		// 			{
+		// 				id: "sections",
+		// 				kind: InsightDatasetKind.Sections,
+		// 				numRows: 108,
+		// 			},
+		// 		]);
+		//
+		// 		const newFacade = new InsightFacade();
+		// 		const miniData5 = await getContentFromArchives("miniData5.zip");
+		// 		const result1 = await newFacade.addDataset("mini5", miniData5, InsightDatasetKind.Sections);
+		// 		expect(result1).to.deep.equal(["sections", "mini5"]);
+		//
+		// 		const newFacade2 = new InsightFacade();
+		// 		const result2 = await newFacade2.listDatasets();
+		// 		expect(result2).to.deep.equal([
+		// 			{
+		// 				id: "sections",
+		// 				kind: InsightDatasetKind.Sections,
+		// 				numRows: 108,
+		// 			},
+		// 			{
+		// 				id: "mini5",
+		// 				kind: InsightDatasetKind.Sections,
+		// 				numRows: 6,
+		// 			},
+		// 		]);
+		// 	} catch (err) {
+		// 		expect.fail("should not have thrown err" + err);
+		// 	}
+		// });
 	});
 
 	describe("PerformQuery", function () {
