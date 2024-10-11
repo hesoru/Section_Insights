@@ -248,9 +248,6 @@ describe("InsightFacade", function () {
 		});
 
 		it("removed dataset still in database", async function () {
-			//const miniData1 = await getContentFromArchives("miniData1.zip");  invalid dataset no courses folder
-			//const miniData2 = await getContentFromArchives("miniData2.zip");
-
 			try {
 				await facade.addDataset("data", sections, InsightDatasetKind.Sections);
 				await facade.removeDataset("data");
@@ -522,6 +519,7 @@ describe("InsightFacade", function () {
 
 		// Examples demonstrating how to test performQuery using the JSON Test Queries.
 		// The relative path to the query file must be given in square brackets.
+
 		it("[valid/simple.json] SELECT dept, avg WHERE avg > 97", checkQuery);
 		it("[invalid/invalid.json] Query missing WHERE", checkQuery);
 		it("[invalid/queryingMultipleDatasets.json]", checkQuery);

@@ -99,19 +99,7 @@ export async function getAllSections(query: Query, datasets: Map<string, number>
 	const fileName = String(datasets.get(idString));
 	const allSections = await loadDatasets(idString, fileName);
 
-	const columns = Object.keys(allSections[0]);
-
-	const allResults: InsightResult[] = [];
-	for (const section of allSections) {
-		const sectionResult: InsightResult = {};
-		for (const item of columns) {
-			//iterate through indicies
-			sectionResult[`${idString}_${item}`] = section[item as keyof Section];
-		}
-		allResults.push(sectionResult);
-	}
-
-	return allResults;
+	return parseToInsightResult(allSections, idString);
 }
 
 /**
@@ -194,4 +182,18 @@ export function selectColumns(filteredResults: InsightResult[], validatedQuery: 
 		}
 		return result;
 	});
+}
+
+export function parseToInsightResult(allSections: Section[], idString: string): InsightResult[] {
+	const columns = Object.keys(allSections[0]);
+	const allResults: InsightResult[] = [];
+	for (const section of allSections) {
+		const sectionResult: InsightResult = {};
+		for (const item of columns) {
+			//iterate through indicies
+			sectionResult[`${idString}_${item}`] = section[item as keyof Section];
+		}
+		allResults.push(sectionResult);
+	}
+	return allResults;
 }
