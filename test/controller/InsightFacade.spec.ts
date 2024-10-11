@@ -147,7 +147,7 @@ describe("InsightFacade", function () {
 			}
 		});
 
-		it("checking persistence", async function () {
+		it("checking persistence add", async function () {
 			try {
 				const result = await facade.addDataset("sections", sections, InsightDatasetKind.Sections);
 				expect(result).to.be.an("array");
@@ -280,7 +280,7 @@ describe("InsightFacade", function () {
 			}
 		});
 
-		it("checking persistence", async function () {
+		it("checking persistence remove", async function () {
 			try {
 				const result = await facade.addDataset("sections", sections, InsightDatasetKind.Sections);
 				expect(result).to.be.an("array");
@@ -376,7 +376,7 @@ describe("InsightFacade", function () {
 			expect(result.length).to.equal(arrayLength);
 		});
 
-		it("checking persistence", async function () {
+		it("checking persistence list", async function () {
 			try {
 				const result = await facade.addDataset("sections", sections, InsightDatasetKind.Sections);
 				expect(result).to.be.an("array");
@@ -494,7 +494,7 @@ describe("InsightFacade", function () {
 			await clearDisk();
 		});
 
-		it("checking persistence", async function () {
+		it("checking persistence perform query", async function () {
 			try {
 				const newFacade = new InsightFacade();
 				const query = {
