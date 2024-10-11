@@ -190,9 +190,9 @@ describe("InsightFacade", function () {
 
 		it("should successfully add valid large dataset, and create file on disk", async function () {
 			try {
-				const result = await facade.addDataset("sections", sections, InsightDatasetKind.Sections);
+				const result = await facade.addDataset("miniAdd", miniAddDataset, InsightDatasetKind.Sections);
 				expect(result).to.be.an("array");
-				expect(result).to.deep.equal(["sections"]);
+				expect(result).to.deep.equal(["miniAdd"]);
 				// read file from disk
 			} catch (err) {
 				expect.fail("Should not have thrown an error" + err);
