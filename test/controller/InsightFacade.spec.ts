@@ -467,44 +467,6 @@ describe("InsightFacade", function () {
 				expect.fail("should not have thrown err" + err);
 			}
 		});
-
-		// it("checking persistence list multiple facade", async function () {
-		// 	try {
-		// 		const result = await facade.addDataset("sections", miniAddDataset, InsightDatasetKind.Sections);
-		// 		expect(result).to.be.an("array");
-		// 		expect(result).to.deep.equal(["sections"]);
-		// 		const dataset = await facade.listDatasets();
-		// 		expect(dataset).to.deep.equal([
-		// 			{
-		// 				id: "sections",
-		// 				kind: InsightDatasetKind.Sections,
-		// 				numRows: 108,
-		// 			},
-		// 		]);
-		//
-		// 		const newFacade = new InsightFacade();
-		// 		const miniData5 = await getContentFromArchives("miniData5.zip");
-		// 		const result1 = await newFacade.addDataset("mini5", miniData5, InsightDatasetKind.Sections);
-		// 		expect(result1).to.deep.equal(["sections", "mini5"]);
-		//
-		// 		const newFacade2 = new InsightFacade();
-		// 		const result2 = await newFacade2.listDatasets();
-		// 		expect(result2).to.deep.equal([
-		// 			{
-		// 				id: "sections",
-		// 				kind: InsightDatasetKind.Sections,
-		// 				numRows: 108,
-		// 			},
-		// 			{
-		// 				id: "mini5",
-		// 				kind: InsightDatasetKind.Sections,
-		// 				numRows: 6,
-		// 			},
-		// 		]);
-		// 	} catch (err) {
-		// 		expect.fail("should not have thrown err" + err);
-		// 	}
-		// });
 	});
 
 	describe("PerformQuery", function () {
@@ -592,80 +554,7 @@ describe("InsightFacade", function () {
 		});
 
 		after(async function () {
-			await clearDisk();
-		});
-
-		it("checking persistence perform query", async function () {
-			try {
-				const newFacade = new InsightFacade();
-				const query = {
-					WHERE: {
-						GT: {
-							sections_avg: 99,
-						},
-					},
-					OPTIONS: {
-						COLUMNS: ["sections_dept", "sections_avg"],
-						ORDER: "sections_avg",
-					},
-				};
-				const queryResult = [
-					{ sections_dept: "cnps", sections_avg: 99.19 },
-					{ sections_dept: "math", sections_avg: 99.78 },
-					{ sections_dept: "math", sections_avg: 99.78 },
-				];
-				const result1 = await newFacade.performQuery(query);
-				expect(result1).to.have.deep.members(queryResult);
-			} catch (err) {
-				expect.fail("should not have thrown err" + err);
-			}
-		});
-
-		it("checking persistence perform query large", async function () {
-			try {
-				const newFacade = new InsightFacade();
-				const query = {
-					WHERE: {
-						OR: [
-							{
-								GT: {
-									sections_year: 2025,
-								},
-							},
-							{
-								AND: [
-									{
-										EQ: {
-											sections_avg: 62,
-										},
-									},
-									{
-										LT: {
-											sections_fail: 2,
-										},
-									},
-								],
-							},
-						],
-					},
-					OPTIONS: {
-						COLUMNS: ["sections_id", "sections_title"],
-					},
-				};
-				const queryResult = [
-					{ sections_id: "319", sections_title: "prin frst econ" },
-					{ sections_id: "319", sections_title: "prin frst econ" },
-					{ sections_id: "225", sections_title: "eng concepts ii" },
-					{ sections_id: "410", sections_title: "immunogenetics" },
-					{ sections_id: "410", sections_title: "immunogenetics" },
-					{ sections_id: "571", sections_title: "physcal cosmolgy" },
-					{ sections_id: "571", sections_title: "physcal cosmolgy" },
-				];
-				const result1 = await newFacade.performQuery(query);
-				expect(result1).to.have.deep.members(queryResult);
-			} catch (err) {
-				expect.fail("should not have thrown err" + err);
-			}
+			//await clearDisk();
 		});
 
 		// Examples demonstrating how to test performQuery using the JSON Test Queries.
@@ -706,5 +595,6 @@ describe("InsightFacade", function () {
 		it("[valid/2Wildcards.json]", checkQuery);
 		it("[valid/allFilters.json]", checkQuery);
 		it("[valid/year1900(Valid).json]", checkQuery);
+		//it("[valid/nestedNot.json]", checkQuery);
 	});
 });

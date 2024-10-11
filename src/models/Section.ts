@@ -1,3 +1,5 @@
+import { InsightDatasetKind } from "../controller/IInsightFacade";
+
 /**
  * Interface to represent the data of a course section in memory. Queries will be checked against Section objects.
  * Fields will be populated from JSON file fields according to specification:
@@ -73,6 +75,12 @@ export interface Body {
 export interface Options {
 	COLUMNS: string[];
 	ORDER?: string;
+}
+
+export interface Meta {
+	id: string;
+	fileName: number;
+	kind: InsightDatasetKind;
 }
 
 /**
