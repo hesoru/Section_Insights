@@ -162,29 +162,28 @@ export async function unzipContent(content: string): Promise<JSZip> {
 	return unzipped;
 }
 
-//Why in the world can't I use then catch?!
-// fs.outputJSON(idPath, files).then(() => {
-//     return acc;
-// }).catch(() => {
-//     throw new InsightError("Failed to write file to disk");
-// })
-
+/**
+ * Returns InsightDataset data for dataset specified in @param by loading the respective dataset.
+ *
+ * @param id - id string of a dataset (id should be valid)
+ * @param fileName - name of file containing dataset identified by "id" (file should exist)
+ * @returns Promise <InsightDataset>
+ *
+ * Will return InsightDataset data for dataset specified in @param.
+ * Throws InsightError for any error retrieving the info.
+ */
 export async function getDatasetInfo(id: string, fileName: string): Promise<InsightDataset> {
-	// shouldn't have to validate id in listDataset()
-	// checkValidId(id, datasetIds, true); // 3rd parameter true
-
-	// get dataset file path
 	try {
 		const sections = await loadDatasets(id, fileName);
 		const numRows = sections.length;
 
-		// Return dataset info
+		// Return dataset info formatted as InsightDataset[]
 		return {
 			id: id,
 			kind: InsightDatasetKind.Sections,
 			numRows: numRows,
 		};
 	} catch (error: any) {
-		throw new InsightError(`Failed to retrieve dataset info for id '${id}': ${error.message}`);
+		throw new InsightError(`Failed to retrieve dataset info for id = "${id}": ` + error);
 	}
 }

@@ -1,12 +1,13 @@
 import { MKey, Query, SKey } from "../models/Section";
 import { InsightError } from "../controller/IInsightFacade";
+
 export function validateQuery(query: unknown): Query {
-	//1) check that query is an object
+	// 1) Check that query is an object
 	if (typeof query !== "object" || query === null) {
 		throw new InsightError("invalid query, query is not a non-null object");
 	}
 
-	//2) check WHERE fields
+	// 2) Check WHERE fields
 	if ("WHERE" in query) {
 		if (query.WHERE === null || typeof query.WHERE !== "object") {
 			throw new InsightError("invalid query, query contains null WHERE field");
@@ -16,16 +17,15 @@ export function validateQuery(query: unknown): Query {
 		throw new InsightError("invalid query, query does not contain WHERE field");
 	}
 
-	//3) check OPTION fields
+	// 3) Check OPTION fields
 	if ("OPTIONS" in query) {
-		//is the OPTIONS field allowed to be null? I don't think so
 		if (query.OPTIONS === null || typeof query.OPTIONS !== "object") {
 			throw new InsightError("invalid query, query contains invalid OPTIONS field");
 		}
 		validateOptions(query.OPTIONS);
 	} else {
-		//throw new InsightError('invalid query, query does not contain OPTION field');
-		//this is okay right
+		// throw new InsightError('invalid query, query does not contain OPTION field');
+		// this is okay right
 	}
 	return query as Query;
 }
@@ -55,7 +55,7 @@ export function validateBody(filter: any): void {
 				if (keys.length !== 0) {
 					throw new InsightError("invalid query, query.WHERE contains an invalid key");
 				}
-			//I think this is fine because WHERE can be empty
+			// I think this is fine because WHERE can be empty
 		}
 	}
 }
@@ -108,7 +108,7 @@ export function validateOptions(options: any): void {
 		validateKey(key);
 	}
 
-	//validate order
+	// validate order
 	if (keys[1]) {
 		if (keys[1] !== "ORDER") {
 			throw new InsightError("invalid query, query.OPTIONS does not contain ORDER as 2nd key");

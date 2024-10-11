@@ -36,23 +36,23 @@ export default class InsightFacade implements IInsightFacade {
 	}
 
 	public async addDataset(id: string, content: string, kind: InsightDatasetKind): Promise<string[]> {
-		//1) check kind of dataset
+		// 1) Check kind of dataset
 		if (kind !== InsightDatasetKind.Sections) {
 			throw new InsightError("Dataset not of kind InsightDatasetKind.Sections, could not add dataset");
 		}
-		//2) Check validity of id: can not be only white space, can not have underscores, reject if id is already in database
+		// 2) Check validity of id: can not be only white space, can not have underscores, reject if id is already in database
 		try {
 			checkValidId(id, Array.from(this.datasetIds.keys()), false); // adjusted function for map
 		} catch (error) {
 			throw new InsightError("id passed to addDataset invalid" + error); //is this catch block necessary?
 		}
 
-		//3) Unzips content: checks for valid content, must be a base64 encoded string, all valid courses must be contained within courses folder
+		// 3) Unzips content: checks for valid content, must be a base64 encoded string, all valid courses must be contained within courses folder
 		const unzipped = await unzipContent(content);
 		const fileStringsPromises = extractFileStrings(unzipped);
 
-		//4) parse to Sections in memory and write files to disk
-		//Adapted from ChatGPT generated response
+		// 4) Parse to Sections in memory and write files to disk
+		// Inspired by ChatGPT responses
 		let fileStrings: string[];
 		try {
 			fileStrings = await Promise.all(fileStringsPromises);
@@ -64,39 +64,34 @@ export default class InsightFacade implements IInsightFacade {
 			throw new InsightError("unable to convert all files to JSON formatted strings" + error);
 		}
 
-		//5) update datasetIds
+		// 5) Update datasetIds
 		this.datasetIds.set(id, this.nextAvailableName);
 		this.nextAvailableName++;
-		//Check to make sure name corresponds to position in datasetIds array
+		// Check to make sure name corresponds to position in datasetIds array
 
 		return Array.from(this.datasetIds.keys());
 	}
 
 	public async removeDataset(id: string): Promise<string> {
-		// validate id: if "", contains _, or only whitespace
-		// if (!id || id.includes("_") || id.trim() === "") {
-		// 	throw new InsightError("Invalid dataset id.");
-		// }
+		// 1) Validate id format and that id exists in InsightFacade (may throw NotFoundError)
 		checkValidId(id, Array.from(this.datasetIds.keys()), true); // 3rd parameter should be true
 
 		try {
-			// remove from disk
+			// 2) Remove dataset from disk
 			const fileName = this.datasetIds.get(id);
 			const datasetPath = path.resolve(__dirname, "../data", String(fileName));
-			await fs.promises.unlink(datasetPath); // txt file?
-			// remove from datasetId array
+			await fs.promises.unlink(datasetPath);
+			// 3) If file deletion succeeds, remove id from datasetIds map
 			this.datasetIds.delete(id);
-			// return removed id
+			// 4) Return removed id
 			return id;
 		} catch (error: any) {
-			throw new InsightError(`Error removing dataset with id "${id}": ${error.message}`);
+			throw new InsightError(`Error removing dataset with id = "${id}": ` + error);
 		}
 	}
 
 	public async performQuery(query: unknown): Promise<InsightResult[]> {
-		const MAX_SIZE = 5000;
-
-		// 1) validate query
+		// 1) Validate query format
 		let validatedQuery: Query;
 		try {
 			validatedQuery = validateQuery(query);
@@ -104,28 +99,29 @@ export default class InsightFacade implements IInsightFacade {
 			throw new InsightError(`Query not a valid format: ` + error);
 		}
 
-		// 2) extract dataset id from validated query, ensure dataset exists
+		// 2) Extract dataset id from validated query and ensure dataset exists
 		const id = extractDatasetId(validatedQuery);
 		if (!this.datasetIds.has(id)) {
-			throw new InsightError(`Dataset '${id}' does not exist.`);
+			throw new InsightError(`Dataset "${id}'" does not exist.`);
 		}
 
-		// process query on the dataset
+		// ----- process query on the dataset -----
 
-		// 3) start with data for all sections
+		// 3) Start with data for all sections as an InsightResult[]
 		const allSections = await getAllSections(validatedQuery, this.datasetIds);
 
-		// 4) filter results if necessary (WHERE)
+		// 4) Filter results if necessary (WHERE)
 		let filteredResults: InsightResult[];
 		filteredResults = handleFilter(validatedQuery.WHERE, allSections);
 
-		// 5) handle results that are too large
+		// 5) Handle results that are too large
+		const MAX_SIZE = 5000;
 		if (filteredResults.length > MAX_SIZE) {
 			throw new ResultTooLargeError("Query results exceed maximum size (5000 sections).");
 		}
 
-		// 6) select only specified columns (OPTIONS.COLUMNS)
-		//do we need to check if options exists?
+		// 6) Select only specified columns (OPTIONS.COLUMNS)
+		// Inspired by ChatGPT responses
 		filteredResults = filteredResults.map((section) => {
 			// can be string | number
 			const result: any = {};
@@ -136,7 +132,7 @@ export default class InsightFacade implements IInsightFacade {
 			return result;
 		});
 
-		// 7) sort results if necessary (OPTIONS.ORDER)
+		// 7) Sort results if necessary (OPTIONS.ORDER)
 		let sortedFilteredResults: InsightResult[];
 		if (validatedQuery.OPTIONS.ORDER) {
 			sortedFilteredResults = sortResults(validatedQuery.OPTIONS, filteredResults);
@@ -150,16 +146,19 @@ export default class InsightFacade implements IInsightFacade {
 	public async listDatasets(): Promise<InsightDataset[]> {
 		const datasetPromises: Promise<InsightDataset>[] = [];
 
-		// get datasets in datasetIds array
+		// Get datasets in datasetIds array
 		for (const id of this.datasetIds.keys()) {
+			// 1) Obtain file names of all ids in datasetIds
 			const fileName = String(this.datasetIds.get(id));
+			// 2) Push promises to array: each promise returns an InsightDataset
 			datasetPromises.push(getDatasetInfo(String(id), fileName)); // need to write this
 		}
-		// list id, kind, and numRows
+
 		try {
+			// 3) Resolve array of promises, returning an InsightDataset[]
 			return await Promise.all(datasetPromises);
 		} catch (error: any) {
-			throw new InsightError("Failed to list datasets: " + error.message);
+			throw new InsightError("Failed to list datasets: " + error);
 		}
 	}
 }
