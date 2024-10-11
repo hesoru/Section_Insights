@@ -11,6 +11,8 @@ import { clearDisk, getContentFromArchives, loadTestQuery } from "../TestUtil";
 
 import { expect, use } from "chai";
 import chaiAsPromised from "chai-as-promised";
+import fs, { readdir } from "fs-extra";
+import path from "node:path";
 
 use(chaiAsPromised);
 
@@ -26,10 +28,12 @@ describe("InsightFacade", function () {
 
 	// Declare datasets used in tests. You should add more datasets like this!
 	let sections: string;
+	let miniAddDataset: string;
 
 	before(async function () {
 		// This block runs once and loads the datasets.
 		sections = await getContentFromArchives("pair.zip");
+		miniAddDataset = await getContentFromArchives("miniAddData.zip");
 
 		// Just in case there is anything hanging around from a previous run of the test suite
 		await clearDisk();
@@ -51,7 +55,7 @@ describe("InsightFacade", function () {
 
 		it("should reject adding an empty dataset id", async function () {
 			try {
-				await facade.addDataset("", sections, InsightDatasetKind.Sections);
+				await facade.addDataset("", miniAddDataset, InsightDatasetKind.Sections);
 				expect.fail("Should have thrown above.");
 			} catch (err) {
 				expect(err).to.be.instanceOf(InsightError);
@@ -60,7 +64,7 @@ describe("InsightFacade", function () {
 
 		it("should reject adding an id that is only whitespace", async function () {
 			try {
-				await facade.addDataset(" ", sections, InsightDatasetKind.Sections);
+				await facade.addDataset(" ", miniAddDataset, InsightDatasetKind.Sections);
 				expect.fail("Should have thrown above.");
 			} catch (err) {
 				expect(err).to.be.instanceOf(InsightError);
@@ -69,7 +73,7 @@ describe("InsightFacade", function () {
 
 		it("should reject adding an id with underscore", async function () {
 			try {
-				await facade.addDataset("this_id", sections, InsightDatasetKind.Sections);
+				await facade.addDataset("this_id", miniAddDataset, InsightDatasetKind.Sections);
 				expect.fail("Should have thrown above.");
 			} catch (err) {
 				expect(err).to.be.instanceOf(InsightError);
@@ -88,7 +92,7 @@ describe("InsightFacade", function () {
 
 		it("should reject adding with invalid InsightDatasetKind (ie. not Sections)", async function () {
 			try {
-				await facade.addDataset("    ", sections, InsightDatasetKind.Rooms);
+				await facade.addDataset("    ", miniAddDataset, InsightDatasetKind.Rooms);
 				expect.fail("Should have thrown above.");
 			} catch (err) {
 				expect(err).to.be.instanceOf(InsightError);
@@ -149,7 +153,7 @@ describe("InsightFacade", function () {
 
 		it("checking persistence add", async function () {
 			try {
-				const result = await facade.addDataset("sections", sections, InsightDatasetKind.Sections);
+				const result = await facade.addDataset("sections", miniAddDataset, InsightDatasetKind.Sections);
 				expect(result).to.be.an("array");
 				expect(result).to.deep.equal(["sections"]);
 				const dataset = await facade.listDatasets();
@@ -157,7 +161,7 @@ describe("InsightFacade", function () {
 					{
 						id: "sections",
 						kind: InsightDatasetKind.Sections,
-						numRows: 64612,
+						numRows: 108,
 					},
 				]);
 				const newFacade = new InsightFacade();
@@ -166,11 +170,11 @@ describe("InsightFacade", function () {
 				expect(result1).to.deep.equal(["sections", "mini5"]);
 
 				const datasets = await newFacade.listDatasets();
-				expect(datasets).to.deep.equal([
+				expect(datasets).to.have.deep.members([
 					{
 						id: "sections",
 						kind: InsightDatasetKind.Sections,
-						numRows: 64612,
+						numRows: 108,
 					},
 					{
 						id: "mini5",
@@ -192,6 +196,26 @@ describe("InsightFacade", function () {
 				// read file from disk
 			} catch (err) {
 				expect.fail("Should not have thrown an error" + err);
+			}
+		});
+		it("checking persistence add twice", async function () {
+			try {
+				const result = await facade.addDataset("mini", miniAddDataset, InsightDatasetKind.Sections);
+				expect(result).to.be.an("array");
+				expect(result).to.deep.equal(["mini"]);
+				const dataset = await facade.listDatasets();
+				expect(dataset).to.deep.equal([
+					{
+						id: "mini",
+						kind: InsightDatasetKind.Sections,
+						numRows: 108,
+					},
+				]);
+				const newFacade = new InsightFacade();
+				await newFacade.addDataset("mini", miniAddDataset, InsightDatasetKind.Sections);
+				expect.fail("should not have been able to add dataset with the same id");
+			} catch (e) {
+				expect(e).to.be.instanceOf(InsightError);
 			}
 		});
 	});
@@ -239,7 +263,7 @@ describe("InsightFacade", function () {
 
 		it("should reject removing id that is not in datasets", async function () {
 			try {
-				await facade.addDataset("data", sections, InsightDatasetKind.Sections);
+				await facade.addDataset("data", miniAddDataset, InsightDatasetKind.Sections);
 				await facade.removeDataset("badId");
 				expect.fail("Should have thrown above.");
 			} catch (err) {
@@ -248,11 +272,8 @@ describe("InsightFacade", function () {
 		});
 
 		it("removed dataset still in database", async function () {
-			//const miniData1 = await getContentFromArchives("miniData1.zip");  invalid dataset no courses folder
-			//const miniData2 = await getContentFromArchives("miniData2.zip");
-
 			try {
-				await facade.addDataset("data", sections, InsightDatasetKind.Sections);
+				await facade.addDataset("data", miniAddDataset, InsightDatasetKind.Sections);
 				await facade.removeDataset("data");
 			} catch (err) {
 				expect.fail("Should have sucessfully added and removed" + err);
@@ -272,7 +293,7 @@ describe("InsightFacade", function () {
 			//const miniData1 = await getContentFromArchives("miniData1.zip");  invalid dataset no courses folder
 			//const miniData2 = await getContentFromArchives("miniData2.zip");
 			try {
-				await facade.addDataset("data", sections, InsightDatasetKind.Sections);
+				await facade.addDataset("data", miniAddDataset, InsightDatasetKind.Sections);
 				const result = await facade.removeDataset("data");
 				expect(result).to.equal("data");
 			} catch (err) {
@@ -282,24 +303,67 @@ describe("InsightFacade", function () {
 
 		it("checking persistence remove", async function () {
 			try {
-				const result = await facade.addDataset("sections", sections, InsightDatasetKind.Sections);
+				const result = await facade.addDataset("mini", miniAddDataset, InsightDatasetKind.Sections);
 				expect(result).to.be.an("array");
-				expect(result).to.deep.equal(["sections"]);
+				expect(result).to.deep.equal(["mini"]);
 				const dataset = await facade.listDatasets();
 				expect(dataset).to.deep.equal([
 					{
-						id: "sections",
+						id: "mini",
 						kind: InsightDatasetKind.Sections,
-						numRows: 64612,
+						numRows: 108,
 					},
 				]);
 
 				const newFacade = new InsightFacade();
-				const result1 = await newFacade.removeDataset("sections");
-				expect(result1).to.equal("sections");
+				const result1 = await newFacade.removeDataset("mini");
+				expect(result1).to.equal("mini");
 
 				const datasets = await newFacade.listDatasets();
 				expect(datasets).to.deep.equal([]);
+			} catch (err) {
+				expect.fail("should not have thrown err" + err);
+			}
+		});
+
+		it("checking persistence remove and erase", async function () {
+			try {
+				const result = await facade.addDataset("mini", miniAddDataset, InsightDatasetKind.Sections);
+				expect(result).to.be.an("array");
+				expect(result).to.deep.equal(["mini"]);
+				const dataset = await facade.listDatasets();
+				expect(dataset).to.deep.equal([
+					{
+						id: "mini",
+						kind: InsightDatasetKind.Sections,
+						numRows: 108,
+					},
+				]);
+
+				const newFacade = new InsightFacade();
+				const result1 = await newFacade.removeDataset("mini");
+				expect(result1).to.equal("mini");
+
+				const datasets = await newFacade.listDatasets();
+				expect(datasets).to.deep.equal([]);
+				const fileNames = await readdir("./data");
+				const promises = [];
+				for (const file of fileNames) {
+					const filePath = path.resolve("./data", file);
+					promises.push(fs.readJson(filePath));
+				}
+
+				try {
+					const files = await Promise.all(promises);
+					const ids = [];
+					for (const item of files) {
+						const id = item.datasetID;
+						ids.push(id);
+					}
+					expect(ids).to.not.include("mini");
+				} catch {
+					expect.fail("should not have thrown an exception");
+				}
 			} catch (err) {
 				expect.fail("should not have thrown err" + err);
 			}
@@ -353,7 +417,7 @@ describe("InsightFacade", function () {
 			this.timeout(timeout);
 			try {
 				const miniData5 = await getContentFromArchives("miniData5.zip");
-				await facade.addDataset("miniData4", sections, InsightDatasetKind.Sections);
+				await facade.addDataset("miniData4", miniAddDataset, InsightDatasetKind.Sections);
 				await facade.addDataset("miniData5", miniData5, InsightDatasetKind.Sections);
 			} catch (error) {
 				expect.fail("addDataset failed" + error);
@@ -364,7 +428,7 @@ describe("InsightFacade", function () {
 				{
 					id: "miniData4",
 					kind: InsightDatasetKind.Sections,
-					numRows: 64612,
+					numRows: 108,
 				},
 				{
 					id: "miniData5",
@@ -378,7 +442,7 @@ describe("InsightFacade", function () {
 
 		it("checking persistence list", async function () {
 			try {
-				const result = await facade.addDataset("sections", sections, InsightDatasetKind.Sections);
+				const result = await facade.addDataset("sections", miniAddDataset, InsightDatasetKind.Sections);
 				expect(result).to.be.an("array");
 				expect(result).to.deep.equal(["sections"]);
 				const dataset = await facade.listDatasets();
@@ -386,7 +450,7 @@ describe("InsightFacade", function () {
 					{
 						id: "sections",
 						kind: InsightDatasetKind.Sections,
-						numRows: 64612,
+						numRows: 108,
 					},
 				]);
 
@@ -396,7 +460,45 @@ describe("InsightFacade", function () {
 					{
 						id: "sections",
 						kind: InsightDatasetKind.Sections,
-						numRows: 64612,
+						numRows: 108,
+					},
+				]);
+			} catch (err) {
+				expect.fail("should not have thrown err" + err);
+			}
+		});
+
+		it("checking persistence list multiple facade", async function () {
+			try {
+				const result = await facade.addDataset("sections", miniAddDataset, InsightDatasetKind.Sections);
+				expect(result).to.be.an("array");
+				expect(result).to.deep.equal(["sections"]);
+				const dataset = await facade.listDatasets();
+				expect(dataset).to.deep.equal([
+					{
+						id: "sections",
+						kind: InsightDatasetKind.Sections,
+						numRows: 108,
+					},
+				]);
+
+				const newFacade = new InsightFacade();
+				const miniData5 = await getContentFromArchives("miniData5.zip");
+				const result1 = await newFacade.addDataset("mini5", miniData5, InsightDatasetKind.Sections);
+				expect(result1).to.deep.equal(["sections", "mini5"]);
+
+				const newFacade2 = new InsightFacade();
+				const result2 = await newFacade2.listDatasets();
+				expect(result2).to.deep.equal([
+					{
+						id: "sections",
+						kind: InsightDatasetKind.Sections,
+						numRows: 108,
+					},
+					{
+						id: "mini5",
+						kind: InsightDatasetKind.Sections,
+						numRows: 6,
 					},
 				]);
 			} catch (err) {
@@ -476,7 +578,6 @@ describe("InsightFacade", function () {
 
 		before(async function () {
 			facade = new InsightFacade();
-
 			// Add the datasets to InsightFacade once.
 			// Will *fail* if there is a problem reading ANY dataset.
 			const loadDatasetPromises: Promise<string[]>[] = [
@@ -520,15 +621,63 @@ describe("InsightFacade", function () {
 			}
 		});
 
+		it("checking persistence perform query large", async function () {
+			try {
+				const newFacade = new InsightFacade();
+				const query = {
+					WHERE: {
+						OR: [
+							{
+								GT: {
+									sections_year: 2025,
+								},
+							},
+							{
+								AND: [
+									{
+										EQ: {
+											sections_avg: 62,
+										},
+									},
+									{
+										LT: {
+											sections_fail: 2,
+										},
+									},
+								],
+							},
+						],
+					},
+					OPTIONS: {
+						COLUMNS: ["sections_id", "sections_title"],
+					},
+				};
+				const queryResult = [
+					{ sections_id: "319", sections_title: "prin frst econ" },
+					{ sections_id: "319", sections_title: "prin frst econ" },
+					{ sections_id: "225", sections_title: "eng concepts ii" },
+					{ sections_id: "410", sections_title: "immunogenetics" },
+					{ sections_id: "410", sections_title: "immunogenetics" },
+					{ sections_id: "571", sections_title: "physcal cosmolgy" },
+					{ sections_id: "571", sections_title: "physcal cosmolgy" },
+				];
+				const result1 = await newFacade.performQuery(query);
+				expect(result1).to.have.deep.members(queryResult);
+			} catch (err) {
+				expect.fail("should not have thrown err" + err);
+			}
+		});
+
 		// Examples demonstrating how to test performQuery using the JSON Test Queries.
 		// The relative path to the query file must be given in square brackets.
+
 		it("[valid/simple.json] SELECT dept, avg WHERE avg > 97", checkQuery);
 		it("[invalid/invalid.json] Query missing WHERE", checkQuery);
 		it("[invalid/queryingMultipleDatasets.json]", checkQuery);
 		it("[invalid/ResultTooLarge.json]", checkQuery);
 		it("[valid/valid1.json] WHERE: OR, GT, LT", checkQuery);
-		it("[valid/Cwildcard.json] *wildcard", checkQuery);
-		it("[valid/Cwildcard.json] wildcard*", checkQuery);
+		it("[valid/wildcardC.json] *wildcard", checkQuery);
+		it("[valid/wildcardC.json] wildcard*", checkQuery);
 		it("[valid/wildcard2astrix.json] wildcard2astrix.json", checkQuery);
 		it("[invalid/wildCcard.json] wild*card", checkQuery);
 		it("[valid/complexValidQuery.json]", checkQuery);

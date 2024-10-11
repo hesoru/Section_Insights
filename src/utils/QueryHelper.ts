@@ -57,7 +57,7 @@ function handleLogicComparison(filter: Body, data: InsightResult[]): InsightResu
 	return results;
 }
 
-function handleMComparison(filter: any, data: InsightResult[]): InsightResult[] {
+export function handleMComparison(filter: any, data: InsightResult[]): InsightResult[] {
 	if (filter.GT) {
 		const mKey = Object.keys(filter.GT)[0];
 		const value = Object.values(filter.GT)[0];
@@ -76,7 +76,7 @@ function handleMComparison(filter: any, data: InsightResult[]): InsightResult[] 
 	throw new InsightError("Invalid MComparator operator.");
 }
 
-function handleSComparison(filter: any, data: InsightResult[]): InsightResult[] {
+export function handleSComparison(filter: any, data: InsightResult[]): InsightResult[] {
 	const sKey = Object.keys(filter.IS)[0];
 	const value = Object.values(filter.IS)[0] as string;
 
@@ -88,7 +88,7 @@ function handleSComparison(filter: any, data: InsightResult[]): InsightResult[] 
 	return data.filter((section) => validValue.test(section[sKey] as string));
 }
 
-function handleNegation(filter: any, data: InsightResult[]): InsightResult[] {
+export function handleNegation(filter: any, data: InsightResult[]): InsightResult[] {
 	// Exclude matching sections
 	const notData = handleFilter(filter.NOT, data);
 	return data.filter((section) => !notData.includes(section));
@@ -99,19 +99,7 @@ export async function getAllSections(query: Query, datasets: Map<string, number>
 	const fileName = String(datasets.get(idString));
 	const allSections = await loadDatasets(idString, fileName);
 
-	const columns = Object.keys(allSections[0]);
-
-	const allResults: InsightResult[] = [];
-	for (const section of allSections) {
-		const sectionResult: InsightResult = {};
-		for (const item of columns) {
-			//iterate through indicies
-			sectionResult[`${idString}_${item}`] = section[item as keyof Section];
-		}
-		allResults.push(sectionResult);
-	}
-
-	return allResults;
+	return parseToInsightResult(allSections, idString);
 }
 
 /**
@@ -194,4 +182,18 @@ export function selectColumns(filteredResults: InsightResult[], validatedQuery: 
 		}
 		return result;
 	});
+}
+
+export function parseToInsightResult(allSections: Section[], idString: string): InsightResult[] {
+	const columns = Object.keys(allSections[0]);
+	const allResults: InsightResult[] = [];
+	for (const section of allSections) {
+		const sectionResult: InsightResult = {};
+		for (const item of columns) {
+			//iterate through indicies
+			sectionResult[`${idString}_${item}`] = section[item as keyof Section];
+		}
+		allResults.push(sectionResult);
+	}
+	return allResults;
 }

@@ -15,7 +15,6 @@ import { loadDatasets } from "./QueryHelper";
 export function checkValidId(id: string, datasetIds: string[], includes: boolean): boolean {
 	const validId = /^[^_]+$/; //Adapted from chatGPT generated response.
 	if (!validId.test(id) || id.trim().length === 0) {
-		//Adapted from chatGPT generated response.
 		throw new InsightError(`id provided to addDataset not valid - id=${id};`);
 	}
 	if (includes) {
@@ -93,7 +92,6 @@ export function parseJSONtoSections(file: string): Section[] {
 		}
 	} catch (error) {
 		throw new InsightError("Unable to parse to JSON, file is not a JSON formatted string" + error);
-		//skip dont add section?
 	}
 
 	return addedSections;
@@ -110,7 +108,6 @@ export async function writeFilesToDisk(files: string[], name: number, id: string
 	const acc = []; //this might cause problems down the line
 	for (const file of files) {
 		const JSONObject = JSON.parse(file);
-		//Adapted from ChatGPT generated response
 		acc.push(JSONObject);
 	}
 
@@ -118,7 +115,6 @@ export async function writeFilesToDisk(files: string[], name: number, id: string
 		datasetID: id,
 		files: acc,
 	};
-	//Adapted from ChatGPT generated response
 	const idPath = path.resolve("./data", String(name));
 	try {
 		const space = 2;

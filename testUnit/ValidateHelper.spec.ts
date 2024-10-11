@@ -1,24 +1,22 @@
-// import { InsightDatasetKind, InsightError } from "../../src/controller/IInsightFacade";
-// import { clearDisk, getContentFromArchives, loadTestQuery } from "../TestUtil";
+// import {
+// 	InsightError
+// } from "../src/controller/IInsightFacade";
+// import { clearDisk, loadTestQuery } from "../test/TestUtil";
 //
 // import { expect, use } from "chai";
 // import chaiAsPromised from "chai-as-promised";
-// import IInsightFacade from "../../src/controller/InsightFacade";
-// import InsightFacade from "../../src/controller/InsightFacade";
-// import { validateBody, validateOptions, validateQuery } from "../../src/utils/ValidateHelper";
+// import IInsightFacade from "../src/controller/InsightFacade";
+// import { validateBody, validateOptions, validateQuery } from "../src/utils/ValidateHelper";
 //
 // use(chaiAsPromised);
 //
-// describe("InsightFacade", function () {
-// 	let facade: IInsightFacade;
+// describe("QueryHelper", function () {
+// 	// let facade: IInsightFacade;
 //
 // 	// Declare datasets used in tests. You should add more datasets like this!
-// 	let sections: string;
+// 	// let sections: string;
 //
 // 	before(async function () {
-// 		// This block runs once and loads the datasets.
-// 		sections = await getContentFromArchives("pair.zip");
-//
 // 		// Just in case there is anything hanging around from a previous run of the test suite
 // 		await clearDisk();
 // 	});
@@ -36,13 +34,13 @@
 // 		it("valid query", async function () {
 // 			try {
 // 				const test1 = await loadTestQuery("[valid/complexValidQuery.json]");
-// 				const test2 = await loadTestQuery("[valid/futureYear(Valid)nestedLogicals.json]");
-// 				const test3 = await loadTestQuery("[valid/inputStringEmpty(Valid)nestedLogicals.json]");
-// 				const test4 = await loadTestQuery("[valid/negativeAverage(Valid)nestedLogicals.json]");
+// 				const test2 = await loadTestQuery("[valid/futureYear(Valid).json]");
+// 				const test3 = await loadTestQuery("[valid/inputStringEmpty(Valid).json]");
+// 				const test4 = await loadTestQuery("[valid/negativeAverage(Valid).json]");
 // 				const test5 = await loadTestQuery("[valid/notFound.json]");
-// 				const test6 = await loadTestQuery("[valid/orderMissing(Valid)nestedLogicals.json]");
-// 				const test7 = await loadTestQuery("[valid/rightSyntaxNOT(Valid)nestedLogicals.json]");
-// 				const test8 = await loadTestQuery("[valid/year1900(Valid)nestedLogicals.json]");
+// 				const test6 = await loadTestQuery("[valid/orderMissing(Valid).json]");
+// 				const test7 = await loadTestQuery("[valid/rightSyntaxNOT(Valid).json]");
+// 				const test8 = await loadTestQuery("[valid/year1900(Valid).json]");
 //
 // 				validateQuery(test1.input);
 // 				validateQuery(test2.input);
@@ -85,7 +83,7 @@
 //
 // 			//Have not checked wildcards yet
 // 			// try {
-// 			//     const test4 = await loadTestQuery('[invalid/wildCcard.json]');
+// 			//     const test4 = await loadTestQuery('[invalid/wildcard(C_S).json]');
 // 			//     validateQuery(test4.input);
 // 			//     expect.fail('passed invalidComplex1.json');
 // 			// } catch (ea) {
@@ -132,13 +130,13 @@
 // 				expect(ea).to.be.instanceOf(InsightError);
 // 			}
 //
-// 			try {
-// 				const test10 = await loadTestQuery("[invalid/noFilter.json]");
-// 				validateQuery(test10.input);
-// 				expect.fail("passed invalidComplex1.json");
-// 			} catch (ea) {
-// 				expect(ea).to.be.instanceOf(InsightError);
-// 			}
+// 			// try {
+// 			// 	const test10 = await loadTestQuery("[invalid/noFilter.json]");
+// 			// 	validateQuery(test10.input);
+// 			// 	expect.fail("passed invalidComplex1.json");
+// 			// } catch (ea) {
+// 			// 	expect(ea).to.be.instanceOf(InsightError);
+// 			// }
 //
 // 			try {
 // 				const test11 = await loadTestQuery("[invalid/orderKeyMissing.json]");
@@ -195,7 +193,7 @@
 //
 // 		it("testValidBodies", async function () {
 // 			try {
-// 				const test1 = await loadTestQuery("[body/validGT.json]");
+// 				const test1 = await loadTestQuery("[Body/validGT.json]");
 // 				const test2 = await loadTestQuery("[body/validAND.LT.IS.json]");
 // 				const test3 = await loadTestQuery("[body/validIS.json]");
 // 				const test4 = await loadTestQuery("[body/validLT.json]");
@@ -228,13 +226,13 @@
 // 				expect(er).to.be.instanceOf(InsightError);
 // 			}
 //
-// 			try {
-// 				const test3 = await loadTestQuery("[body/invalidComplex2.json]");
-// 				validateBody(test3.input);
-// 				expect.fail("passed invalidComplex2.json");
-// 			} catch (err) {
-// 				expect(err).to.be.instanceOf(InsightError);
-// 			}
+// 			// try {
+// 			// 	const test3 = await loadTestQuery("[body/invalidComplex2.json]");
+// 			// 	validateBody(test3.input);
+// 			// 	expect.fail("passed invalidComplex2.json");
+// 			// } catch (err) {
+// 			// 	expect(err).to.be.instanceOf(InsightError);
+// 			// }
 //
 // 			try {
 // 				const test4 = await loadTestQuery("[body/invalidComplex3.json]");
@@ -325,100 +323,4 @@
 // 			//readable format of file can be found in src/utils/ANTH312
 // 		});
 // 	});
-//
-// 	describe("getAllSections", function () {
-// 		beforeEach(async function () {
-// 			await clearDisk();
-// 			facade = new InsightFacade();
-// 			try {
-// 				const result = await facade.addDataset("sections", sections, InsightDatasetKind.Sections);
-// 				//expect(result).to.have.members(["sections"]);
-// 				expect(result).to.be.an("array");
-// 			} catch (err) {
-// 				expect.fail("Should not have thrown an error" + err);
-// 			}
-// 		});
-//
-// 		afterEach(async function () {
-// 			await clearDisk();
-// 		});
-//
-// 		// it("valid queries", async function () {
-// 		// 	const timeout = 10000;
-// 		// 	const answer = 64612;
-// 		// 	this.timeout(timeout);
-// 		// 	const test = new Map<string, number>();
-// 		// 	test.set("sections", 0);
-// 		// 	try {
-// 		// 		const test1 = await loadTestQuery("[valid/simple.json]");
-// 		// 		const result1 = await getAllSections(test1.input as Query, test);
-// 		// 		expect(result1).to.be.an("array");
-// 		// 		expect(result1.length).to.equal(answer);
-// 		// 	} catch (e) {
-// 		// 		expect.fail("should not have thrown" + e);
-// 		// 	}
-// 		// });
-// 	});
-//
-// 	// describe("getMatchingSections", function () {
-// 	//     beforeEach(async function () {
-// 	//         await clearDisk();
-// 	//         facade = new InsightFacade();
-// 	//         try {
-// 	//             const result = await facade.addDataset("sections", sections, InsightDatasetKind.Sections);
-// 	//             //expect(result).to.have.members(["sections"]);
-// 	//             expect(result).to.be.an("array");
-// 	//         } catch (err) {
-// 	//             expect.fail("Should not have thrown an error" + err);
-// 	//         }
-// 	//     });
-// 	//
-// 	//     afterEach(async function () {
-// 	//         await clearDisk();
-// 	//     });
-// 	//
-// 	//     it("MKey examples", async function () {
-// 	//         const input1 = 97
-// 	//         const input2 = 2
-// 	//         const input3 =  2007
-// 	//         const input4 = 4
-// 	//         const input5 = 21
-// 	//         const answer1 = 49
-// 	//         const answer2 = 188
-// 	//         const answer3 = 3950
-// 	//         const answer4 = 186
-// 	//         const answer5 = 126
-// 	//         try {
-// 	//             const result1 = await getMatchingSections('GT', ['sections_avg', input1]);
-// 	//             expect(result1).to.be.an("array");
-// 	//             expect(result1.length).to.equal(answer1);
-// 	//             const result2 = await getMatchingSections('LT', ['sections_pass', input2]);
-// 	//             expect(result2).to.be.an("array");
-// 	//             expect(result2.length).to.equal(answer2);
-// 	//             const result3 = await getMatchingSections('EQ', ['sections_year', input3]);
-// 	//             expect(result3).to.be.an("array");
-// 	//             expect(result3.length).to.equal(answer3);
-// 	//             const result4 = await getMatchingSections('GT', ['sections_audit', input4]);
-// 	//             expect(result4).to.be.an("array");
-// 	//             expect(result4.length).to.equal(answer4);
-// 	//             const result5 = await getMatchingSections('EQ', ['sections_fail', input5]);
-// 	//             expect(result5).to.be.an("array");
-// 	//             expect(result5.length).to.equal(answer5);
-// 	//         } catch (e) {
-// 	//             expect.fail('should not have thrown an error here' + e);
-// 	//         }
-// 	//
-// 	//     });
-// 	//
-// 	//     it("result too large", async function () {
-// 	//         try {
-// 	//             const input1 = 2009
-// 	//             await getMatchingSections('GT', ['sections_year', input1]);
-// 	//             expect.fail('should have thrown result too large error')
-// 	//         } catch (e) {
-// 	//             expect(e).to.be.instanceOf(ResultTooLargeError);
-// 	//         }
-// 	//     });
-// 	//
-// 	// });
 // });

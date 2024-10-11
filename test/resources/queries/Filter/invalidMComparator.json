@@ -1,0 +1,19 @@
+{
+	"title": "invalid MComparator",
+	"input": {
+		"WHERE": {
+			"equal": {
+				"sections_avg": 69
+			}
+		},
+		"OPTIONS": {
+			"COLUMNS": [
+				"sections_dept",
+				"sections_id"
+			],
+			"ORDER": "sections_id"
+		}
+	},
+	"errorExpected": true,
+	"expected": "InsightError"
+}
