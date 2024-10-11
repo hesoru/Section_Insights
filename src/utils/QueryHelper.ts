@@ -94,7 +94,7 @@ export function handleNegation(filter: any, data: InsightResult[]): InsightResul
 	return data.filter((section) => !notData.includes(section));
 }
 
-export async function getAllSections(query: Query, datasets: Map<string, number>): Promise<InsightResult[]> {
+export async function getAllSections(query: Query, datasets: Map<string, number>): Promise<Set<InsightResult>> {
 	const idString = extractDatasetId(query);
 	const fileName = String(datasets.get(idString));
 	const allSections = await loadDatasets(idString, fileName);
@@ -149,7 +149,7 @@ export function extractDatasetId(query: Query): string {
  * @param fileName
  * @param id
  */
-export async function loadDatasets(id: string, fileName: string): Promise<Section[]> {
+export async function loadDatasets(id: string, fileName: string): Promise<Set<Section>> {
 	const datasetPath = path.resolve("./data", fileName);
 	let dataset;
 	try {
@@ -157,11 +157,11 @@ export async function loadDatasets(id: string, fileName: string): Promise<Sectio
 	} catch (error) {
 		throw new NotFoundError(`Could not find dataset with - id=${id};` + error);
 	}
-	const parsedSections: Section[] = [];
+	const parsedSections = new Set<Section>();
 	for (const file of dataset.files) {
 		for (const section of file.result) {
 			const newSection = parseSectionObject(section);
-			parsedSections.push(newSection);
+			parsedSections.add(newSection);
 		}
 	}
 	return parsedSections;
@@ -184,16 +184,27 @@ export function selectColumns(filteredResults: InsightResult[], validatedQuery: 
 	});
 }
 
-export function parseToInsightResult(allSections: Section[], idString: string): InsightResult[] {
-	const columns = Object.keys(allSections[0]);
-	const allResults: InsightResult[] = [];
+export function parseToInsightResult(allSections: Set<Section>, idString: string): Set<InsightResult> {
+	const columns = new Set<string>([
+		"uuid",
+		"id",
+		"title",
+		"instructor",
+		"dept",
+		"year",
+		"avg",
+		"pass",
+		"fail",
+		"audit",
+	]);
+	const allResults = new Set<InsightResult>();
 	for (const section of allSections) {
 		const sectionResult: InsightResult = {};
 		for (const item of columns) {
 			//iterate through indicies
 			sectionResult[`${idString}_${item}`] = section[item as keyof Section];
 		}
-		allResults.push(sectionResult);
+		allResults.add(sectionResult);
 	}
 	return allResults;
 }

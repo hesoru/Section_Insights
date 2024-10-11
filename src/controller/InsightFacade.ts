@@ -15,7 +15,7 @@ import {
 	unzipContent,
 	writeFilesToDisk,
 } from "../utils/JsonHelper";
-import fs from "fs-extra";
+import fs, { readJson } from "fs-extra";
 import {
 	extractDatasetId,
 	getAllSections,
@@ -24,7 +24,7 @@ import {
 	selectColumns,
 	sortResults,
 } from "../utils/QueryHelper";
-import { Query, Section } from "../models/Section";
+import { Meta, Query, Section } from "../models/Section";
 import { validateQuery } from "../utils/ValidateHelper";
 import path from "node:path";
 
@@ -36,13 +36,13 @@ import path from "node:path";
 export default class InsightFacade implements IInsightFacade {
 	public datasetIds: Map<string, number>;
 	public nextAvailableName: number;
-	public loadedSections: Map<string, Section[]>;
+	public loadedSections: Map<string, Set<Section>>;
 	public datasetInfo: Map<string, InsightDataset>;
 
 	constructor() {
 		this.datasetIds = new Map<string, number>();
 		this.nextAvailableName = 0;
-		this.loadedSections = new Map<string, Section[]>();
+		this.loadedSections = new Map<string, Set<Section>>();
 		this.datasetInfo = new Map<string, InsightDataset>();
 	}
 
@@ -66,11 +66,11 @@ export default class InsightFacade implements IInsightFacade {
 		//4) parse to Sections in memory and write files to disk
 		//Adapted from ChatGPT generated response
 		let fileStrings: string[];
-		let addedSections: Section[] = [];
+		const addedSections = new Set<Section>();
 		try {
 			fileStrings = await Promise.all(fileStringsPromises);
 			for (const fileString of fileStrings) {
-				addedSections = addedSections.concat(parseJSONtoSections(fileString));
+				parseJSONtoSections(fileString).forEach((section) => addedSections.add(section));
 			}
 			await writeFilesToDisk(fileStrings, this.nextAvailableName, id);
 		} catch (error) {
@@ -81,7 +81,7 @@ export default class InsightFacade implements IInsightFacade {
 		const insightDataset = {
 			id: id,
 			kind: InsightDatasetKind.Sections,
-			numRows: addedSections.length,
+			numRows: addedSections.size,
 		};
 		this.datasetInfo.set(id, insightDataset);
 		this.datasetIds.set(id, this.nextAvailableName);
@@ -102,6 +102,15 @@ export default class InsightFacade implements IInsightFacade {
 			await fs.remove(datasetPath); // txt file?
 			// remove from datasetId array
 			this.datasetIds.delete(id);
+			this.datasetInfo.delete(id);
+			this.loadedSections.delete(id);
+
+			//remove from meta
+			const metaData: Meta[] = await readJson("./data/meta");
+			const newMeta = metaData.filter((meta) => {
+				return meta.id !== id;
+			});
+			await fs.outputFile("./data/meta", JSON.stringify(newMeta));
 			// return removed id
 			return id;
 		} catch (error: any) {
@@ -140,7 +149,7 @@ export default class InsightFacade implements IInsightFacade {
 
 		// 4) filter results if necessary (WHERE)
 		let filteredResults: InsightResult[];
-		filteredResults = handleFilter(validatedQuery.WHERE, allResults);
+		filteredResults = handleFilter(validatedQuery.WHERE, Array.from(allResults));
 
 		// 5) handle results that are too large
 		if (filteredResults.length > MAX_SIZE) {
