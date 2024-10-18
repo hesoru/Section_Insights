@@ -77,6 +77,15 @@ export interface Options {
 	ORDER?: string;
 }
 
+export interface Transformations {
+	GROUP: string;
+	APPLY?: object[]; //is this necessary? what did we do for where?
+}
+
+export interface ApplyRule {
+	applyKey: {ApplyToken: MKey | SKey};
+}
+
 export interface Meta {
 	id: string;
 	fileName: number;
@@ -90,3 +99,4 @@ export type MKey = `${string}_${MField}`; //adapted from ChatGPT generated respo
 export type SKey = `${string}_${SField}`; //adapted from ChatGPT generated response
 export type MField = "avg" | "pass" | "fail" | "audit" | "year";
 export type SField = "dept" | "id" | "instructor" | "title" | "uuid";
+export type ApplyToken = "MIN" | "MAX" | "AVG" | "COUNT" | "SUM";
