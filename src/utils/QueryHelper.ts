@@ -95,22 +95,6 @@ export function handleNegation(filter: any, data: InsightResult[]): InsightResul
 	return data.filter((section) => !notData.includes(section));
 }
 
-// export function handleNotFilter(filter: any, data: InsightResult[]): InsightResult[] {
-// 	let mkey;
-// 	let
-// 	switch (filter.NOT.keys()[0]) {
-// 		case "IS":
-//
-// 			break;
-// 		case "GT":
-// 			const mKey = Object.keys(filter.GT)[0];
-// 			const value = Object.values(filter.GT)[0];
-// 			return data.filter((section) => section[mKey] <= (value as number));
-// 		case "LT":
-//
-// 	}
-// }
-
 export async function getAllSections(query: Query, datasets: Map<string, number>): Promise<Set<InsightResult>> {
 	const idString = extractDatasetId(query);
 	const fileName = String(datasets.get(idString));

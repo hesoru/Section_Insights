@@ -52,6 +52,7 @@ export interface JSONFile {
 export interface Query {
 	WHERE: Body;
 	OPTIONS: Options;
+	TRANSFORMATIONS: Transformations;
 }
 
 /**
@@ -78,7 +79,7 @@ export interface Options {
 }
 
 export interface Transformations {
-	GROUP: string;
+	GROUP: string[];
 	APPLY?: object[]; //is this necessary? what did we do for where?
 }
 

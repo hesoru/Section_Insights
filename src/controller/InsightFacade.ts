@@ -27,6 +27,7 @@ import {
 import { Meta, Query, Section } from "../models/Section";
 import { validateQuery } from "../utils/ValidateHelper";
 import path from "node:path";
+import {groupBy} from "../utils/TransformationsHelper";
 
 /**
  * This is the main programmatic entry point for the project.
@@ -147,8 +148,7 @@ export default class InsightFacade implements IInsightFacade {
 		}
 
 		// 4) filter results if necessary (WHERE)
-		let filteredResults: InsightResult[];
-		filteredResults = handleFilter(validatedQuery.WHERE, Array.from(allResults));
+		const filteredResults = handleFilter(validatedQuery.WHERE, Array.from(allResults));
 
 		// 5) handle results that are too large
 		if (filteredResults.length > MAX_SIZE) {
@@ -156,12 +156,13 @@ export default class InsightFacade implements IInsightFacade {
 		}
 
 		// 6) select only specified columns (OPTIONS.COLUMNS)
-		filteredResults = selectColumns(filteredResults, validatedQuery);
+		const groupedResults = groupBy(filteredResults, validatedQuery);
+		//filteredResults = selectColumns(filteredResults, validatedQuery);
 
 		// 7) sort results if necessary (OPTIONS.ORDER)
 		let sortedFilteredResults: InsightResult[];
 		if (validatedQuery.OPTIONS.ORDER) {
-			sortedFilteredResults = sortResults(validatedQuery.OPTIONS, filteredResults);
+			sortedFilteredResults = sortResults(validatedQuery.OPTIONS, filteredResults);  //CHANGE THIS LINE
 		} else {
 			sortedFilteredResults = filteredResults;
 		}

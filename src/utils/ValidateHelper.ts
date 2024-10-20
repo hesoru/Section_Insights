@@ -1,5 +1,15 @@
 import { MKey, Query, SKey } from "../models/Section";
 import { InsightError } from "../controller/IInsightFacade";
+
+/**
+ * Questions:
+ * is it okay to have a query without an options block?
+ * for where I think our match all values scenario is not working
+ * is it possible to have a transformations block without an options block?
+ * Can the apply array be empty?
+ * MAX/MIN/AVG/SUM should only be requested for numeric keys. COUNT can be requested for all keys.
+ * If GROUP is present, all COLUMNS keys must correspond to one of the GROUP keys or to applykeys defined in the APPLY block.
+ */
 /**
  * @returns - Query, validates that the query param conforms to Query structure, if not throws InsightError
  * @param query
@@ -21,15 +31,23 @@ export function validateQuery(query: unknown): Query {
 	}
 
 	//3) check OPTION fields
+	let columnKeys
 	if ("OPTIONS" in query) {
 		//is the OPTIONS field allowed to be null? I don't think so
 		if (query.OPTIONS === null || typeof query.OPTIONS !== "object") {
 			throw new InsightError("invalid query, query contains invalid OPTIONS field");
 		}
-		validateOptions(query.OPTIONS);
+		columnKeys = validateOptions(query.OPTIONS);
 	} else {
-		//throw new InsightError('invalid query, query does not contain OPTION field');
+		throw new InsightError('invalid query, query does not contain OPTIONS field');
 		//this is okay right
+	}
+
+	if("TRANSFORMATIONS" in query) {
+		if(query.TRANSFORMATIONS === null || typeof query.TRANSFORMATIONS !== "object") {
+			throw new InsightError("invalid query, query contains invalid TRANSFORMATIONS field");
+		}
+		validateTransformation(query.TRANSFORMATIONS, columnKeys)
 	}
 	return query as Query;
 }
@@ -120,7 +138,7 @@ export function checkKeys(filter: any): string[] {
  * @returns - validates that OPTIONS portion of query conforms to Options interface, if not throws Insight Error
  * @param options
  */
-export function validateOptions(options: any): void {
+export function validateOptions(options: any): Set<string> {
 	const keys = Object.keys(options);
 	const KEY_LENGTH = 2;
 	if (keys.length === 0 || keys.length > KEY_LENGTH) {
@@ -133,8 +151,10 @@ export function validateOptions(options: any): void {
 	if (!Array.isArray(options.COLUMNS) || options.COLUMNS.length === 0) {
 		throw new InsightError("invalid query, query.OPTIONS.COLUMNS is not an array");
 	}
+	const columnsKeys = new Set<string>()
 	for (const key of options.COLUMNS) {
 		validateKey(key);
+		columnsKeys.add(key);
 	}
 
 	//validate order
@@ -149,6 +169,7 @@ export function validateOptions(options: any): void {
 			validateKey(options.ORDER);
 		}
 	}
+	return columnsKeys
 }
 
 /**
@@ -221,4 +242,82 @@ function isSKey(key: string): boolean {
 	}
 	const validSFields = ["dept", "id", "instructor", "title", "uuid"];
 	return validSFields.includes(parts[1]);
+}
+
+function validateTransformation(transformations: any, columnKeys: Set<string>): void {
+	const keys = Object.keys(transformations);
+	const keyLength = 2;
+	if(keys.length !== keyLength) {
+		throw new InsightError("invalid transformation");
+	}
+	if(keys[0] !== "GROUP" || keys[1] !== "APPLY") {
+		throw new InsightError("invalid transformation, keys are not named GROUP and APPLY");
+	}
+	const groupKeys = validateGroup(transformations.GROUP);
+	const applyKeys = validateApply(transformations.APPLY);
+
+	columnKeys.forEach((key) => {
+		if(groupKeys.has(key) && applyKeys.has(key)) {
+			throw new InsightError("all column keys do not correspond to group keys or apply keys")
+		}
+	})
+}
+
+function validateGroup(group: any): Set<string> {
+	if(!Array.isArray(group)) {
+		throw new InsightError("invalid group field within transformations, not an array");
+	}
+	const groupKeys = new Set<string>()
+	for(const key of group) {
+		validateKey(key);
+		groupKeys.add(key);
+	}
+	return groupKeys
+}
+//Is an empty apply block okay?
+function validateApply(apply: any): Set<string> {
+	if(!Array.isArray(apply)) {
+		throw new InsightError("invalid apply field in transformations");
+	}
+	const usedApplyKeys = new Set<string>()
+	for(const applyRule of apply) {
+		const newApplyKey = validateApplyRule(applyRule)
+		if(usedApplyKeys.has(newApplyKey)) {
+			throw new InsightError("apply key in transformations not unique");
+		}
+		usedApplyKeys.add(newApplyKey);
+	}
+	return usedApplyKeys;
+}
+
+function validateApplyRule(applyRule: any): string {
+	if(typeof applyRule === "object") {
+		throw new InsightError("invalid apply field in transformations, invalid applyRule found")
+	}
+	const keys = Object.keys(applyRule)
+	if(keys.length !== 1) {
+		throw new InsightError("invalid apply field in transformations, invalid applyRule found");
+	}
+	const validApplyKey = /^[^_]+$/;
+	const applyKey = keys[0]
+	if (!validApplyKey.test(applyKey)) {
+		throw new InsightError("invalid apply field in transformations, invalid applyKey");
+	}
+
+	const values = Object.values(applyRule);
+	if(values.length !== 1 || typeof values[0] !== "object") {
+		throw new InsightError("invalid apply field in transformations, invalid applyKey value");
+	}
+	const applyKeyObjectKeys = Object.keys(applyRule[applyKey])
+	const validApplyTokens = ['MAX', 'MIN', 'AVG', 'COUNT', 'SUM']
+	if(applyKeyObjectKeys.length !== 1 || !validApplyTokens.includes(applyKeyObjectKeys[0])) {
+		throw new InsightError("invalid apply field in transformations, invalid applyToken");
+	}
+
+	const applyKeyObjectValues = Object.values(applyRule[applyKey])
+	if(applyKeyObjectValues.length !== 1) {
+		throw new InsightError("invalid apply field in transformations, invalid applyKeyObjectValues");
+	}
+	validateKey(applyKeyObjectValues[0]);
+	return applyKey;
 }
