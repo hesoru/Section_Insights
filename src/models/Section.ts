@@ -90,3 +90,25 @@ export type MKey = `${string}_${MField}`; //adapted from ChatGPT generated respo
 export type SKey = `${string}_${SField}`; //adapted from ChatGPT generated response
 export type MField = "avg" | "pass" | "fail" | "audit" | "year";
 export type SField = "dept" | "id" | "instructor" | "title" | "uuid";
+
+export interface Building {
+	fullname: string;
+	shortname: string;
+	address: string;
+	lat: number;
+	lon: number;
+	href: string;
+}
+
+export interface Room {
+	building: Building;
+	name: string;
+	number: string;	// not always a number so represented as a string
+	type: string;
+	furniture: string;
+	seats: number;
+}
+
+// 'lat' | 'lon' | 'seats' | 'fullname' | 'shortname' | 'number' | 'name' | 'address' | 'type' | 'furniture' | 'href'
+
+

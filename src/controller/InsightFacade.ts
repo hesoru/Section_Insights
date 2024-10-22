@@ -8,7 +8,7 @@ import {
 } from "./IInsightFacade";
 import {
 	checkValidId,
-	extractFileStrings,
+	extractCourseStrings, extractFileStrings,
 	getDatasetInfo,
 	getExistingDatasets,
 	parseJSONtoSections,
@@ -24,9 +24,10 @@ import {
 	selectColumns,
 	sortResults,
 } from "../utils/QueryHelper";
-import { Meta, Query, Section } from "../models/Section";
+import {Meta, Query, Room, Section} from "../models/Section";
 import { validateQuery } from "../utils/ValidateHelper";
 import path from "node:path";
+import {parseBuildingStrings, parseIndexString} from "../utils/HTMLHelper";
 
 /**
  * This is the main programmatic entry point for the project.
@@ -37,12 +38,14 @@ export default class InsightFacade implements IInsightFacade {
 	public datasetIds: Map<string, number>;
 	public nextAvailableName: number;
 	public loadedSections: Map<string, Set<Section>>;
+	public loadedRooms: Map<string, Set<Room>>;
 	public datasetInfo: Map<string, InsightDataset>;
 
 	constructor() {
 		this.datasetIds = new Map<string, number>();
 		this.nextAvailableName = 0;
 		this.loadedSections = new Map<string, Set<Section>>();
+		this.loadedRooms = new Map<string, Set<Section>>();
 		this.datasetInfo = new Map<string, InsightDataset>();
 	}
 
@@ -50,8 +53,8 @@ export default class InsightFacade implements IInsightFacade {
 		await this.initializeFields();
 
 		//1) check kind of dataset
-		if (kind !== InsightDatasetKind.Sections) {
-			throw new InsightError("Dataset not of kind InsightDatasetKind.Sections, could not add dataset");
+		if (kind !== (InsightDatasetKind.Sections || InsightDatasetKind.Rooms)) {
+			throw new InsightError("Dataset not of valid kind (Sections or Rooms), could not add dataset");
 		}
 		//2) Check validity of id: can not be only white space, can not have underscores, reject if id is already in database
 		try {
@@ -59,34 +62,57 @@ export default class InsightFacade implements IInsightFacade {
 		} catch (error) {
 			throw new InsightError("id passed to addDataset invalid" + error); //is this catch block necessary?
 		}
-		//3) Unzips content: checks for valid content, must be a base64 encoded string, all valid courses must be contained within courses folder
+
+		//3) Unzips content: checks for valid content, must be a base64-encoded string, all valid courses must be contained within courses folder
 		const unzipped = await unzipContent(content);
-		const fileStringsPromises = extractFileStrings(unzipped);
+		let fileStringsPromises: Promise<string>[]
+
+		fileStringsPromises = extractFileStrings(unzipped, kind);
 
 		//4) parse to Sections in memory and write files to disk
 		//Adapted from ChatGPT generated response
 		let fileStrings: string[];
-		const addedSections = new Set<Section>();
+		const added = new Set<any>();
 		try {
 			fileStrings = await Promise.all(fileStringsPromises);
-			for (const fileString of fileStrings) {
-				parseJSONtoSections(fileString).forEach((section) => addedSections.add(section));
+
+			if (kind === InsightDatasetKind.Sections) {
+				for (const fileString of fileStrings) {
+					parseJSONtoSections(fileString).forEach((section) => added.add(section));
+					await writeFilesToDisk(fileStrings, this.nextAvailableName, id);
+				}
+			} else if (kind === InsightDatasetKind.Rooms) {
+				const indexHTML = unzipped.file("index.htm");
+				if (!indexHTML) {
+					throw new InsightError("index.htm not found in dataset");
+				}
+				const indexString = indexHTML.async("string");
+				const buildings = parseIndexString(indexString);
+				const roomsDataset = parseBuildingStrings(fileStrings, buildings);
+				roomsDataset.forEach((room) => added.add(room));
+
+				for (const fileString of fileStrings) {
+					await writeFilesToDisk(fileStrings, this.nextAvailableName, id);
+				}
 			}
-			await writeFilesToDisk(fileStrings, this.nextAvailableName, id);
 		} catch (error) {
-			throw new InsightError("unable to convert all files to JSON formatted strings" + error);
+			throw new InsightError("unable to convert all sections to JSON formatted strings" + error);
 		}
 
 		//5) update datasetIds
 		const insightDataset = {
 			id: id,
-			kind: InsightDatasetKind.Sections,
-			numRows: addedSections.size,
+			kind: kind,
+			numRows: added.size,
 		};
 		this.datasetInfo.set(id, insightDataset);
 		this.datasetIds.set(id, this.nextAvailableName);
 		this.nextAvailableName++;
-		this.loadedSections.set(id, addedSections);
+		if (kind === InsightDatasetKind.Sections) {
+			this.loadedSections.set(id, added);
+		} else {
+			this.loadedRooms.set(id, added);
+		}
 		//Check to make sure name corresponds to position in datasetIds array
 		return Array.from(this.datasetIds.keys());
 	}
