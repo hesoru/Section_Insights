@@ -1,6 +1,6 @@
 import { InsightDataset, InsightDatasetKind, InsightError, NotFoundError } from "../controller/IInsightFacade";
 import { JSONFile, Section } from "../models/Section";
-import fs, { readdir } from "fs-extra";
+import fs, { readJson } from "fs-extra";
 import path from "node:path";
 import JSZip from "jszip";
 import { loadDatasets } from "./QueryHelper";
@@ -15,7 +15,6 @@ import { loadDatasets } from "./QueryHelper";
 export function checkValidId(id: string, datasetIds: string[], includes: boolean): boolean {
 	const validId = /^[^_]+$/; //Adapted from chatGPT generated response.
 	if (!validId.test(id) || id.trim().length === 0) {
-		//Adapted from chatGPT generated response.
 		throw new InsightError(`id provided to addDataset not valid - id=${id};`);
 	}
 	if (includes) {
@@ -81,19 +80,18 @@ export function parseSectionObject(section: JSONFile): Section {
  * @returns - Sections[], separates file into its individual sections passing each section to parseSectionObject and adding the returned object to the array
  * Will throw an InsightDatasetError if file is not a JSON formatted string
  */
-export function parseJSONtoSections(file: string): Section[] {
-	const addedSections: Section[] = [];
+export function parseJSONtoSections(file: string): Set<Section> {
+	const addedSections: Set<Section> = new Set<Section>();
 
 	try {
 		const sections = JSON.parse(file).result as JSONFile[];
 
 		for (const section of sections) {
 			const newSection = parseSectionObject(section);
-			addedSections.push(newSection);
+			addedSections.add(newSection);
 		}
 	} catch (error) {
 		throw new InsightError("Unable to parse to JSON, file is not a JSON formatted string" + error);
-		//skip dont add section?
 	}
 
 	return addedSections;
@@ -110,7 +108,6 @@ export async function writeFilesToDisk(files: string[], name: number, id: string
 	const acc = []; //this might cause problems down the line
 	for (const file of files) {
 		const JSONObject = JSON.parse(file);
-		//Adapted from ChatGPT generated response
 		acc.push(JSONObject);
 	}
 
@@ -118,7 +115,6 @@ export async function writeFilesToDisk(files: string[], name: number, id: string
 		datasetID: id,
 		files: acc,
 	};
-	//Adapted from ChatGPT generated response
 	const idPath = path.resolve("./data", String(name));
 	try {
 		const space = 2;
@@ -127,6 +123,22 @@ export async function writeFilesToDisk(files: string[], name: number, id: string
 		throw new InsightError("failed to write files to disk" + name + error);
 	}
 
+	//handle meta:
+	const fileMeta = {
+		id: id,
+		fileName: name,
+		kind: InsightDatasetKind.Sections,
+	};
+	const metaPath = path.resolve("./data", "meta");
+	let dataMeta;
+	try {
+		dataMeta = await readJson(metaPath);
+	} catch {
+		//initialize new dataMeta array
+		dataMeta = [];
+	}
+	dataMeta.push(fileMeta);
+	await fs.outputFile(metaPath, JSON.stringify(dataMeta));
 	return name;
 }
 
@@ -189,7 +201,7 @@ export async function getDatasetInfo(id: string, fileName: string): Promise<Insi
 	// get dataset file path
 	try {
 		const sections = await loadDatasets(id, fileName);
-		const numRows = sections.length;
+		const numRows = sections.size;
 
 		// Return dataset info
 		return {
@@ -207,33 +219,22 @@ export async function getDatasetInfo(id: string, fileName: string): Promise<Insi
  * Will throw an InsightError unable to read a file
  */
 export async function getExistingDatasets(): Promise<[Map<string, number>, number]> {
-	const dataPath = "./data";
+	const dataPath = "./data/meta";
 	const result = new Map<string, number>();
-	let fileNames;
+	let metaFile;
 	try {
-		fileNames = await readdir(dataPath);
+		metaFile = await readJson(dataPath);
 	} catch {
 		return [result, 0];
 	}
-	const promises = [];
+
 	let nextName = 0;
-	for (const file of fileNames) {
-		const filePath = path.resolve(dataPath, file);
-		promises.push(fs.readJson(filePath));
-		if (Number(file) > nextName) {
-			nextName = Number(file);
+	for (const meta of metaFile) {
+		result.set(meta.id, meta.fileName);
+		if (meta.fileName > nextName) {
+			nextName = meta.fileName;
 		}
 	}
 	nextName++;
-
-	try {
-		const datasets = await Promise.all(promises);
-		for (let i = 0; i < datasets.length; i++) {
-			const id = datasets[i].datasetID;
-			result.set(id, i);
-		}
-	} catch {
-		throw new InsightError("error recovering persistent files");
-	}
 	return [result, nextName];
 }

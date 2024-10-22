@@ -15,9 +15,16 @@ import {
 	unzipContent,
 	writeFilesToDisk,
 } from "../utils/JsonHelper";
-import fs from "fs-extra";
-import { extractDatasetId, getAllSections, handleFilter, selectColumns, sortResults } from "../utils/QueryHelper";
-import { Query } from "../models/Section";
+import fs, { readJson } from "fs-extra";
+import {
+	extractDatasetId,
+	getAllSections,
+	handleFilter,
+	parseToInsightResult,
+	selectColumns,
+	sortResults,
+} from "../utils/QueryHelper";
+import { Meta, Query, Section } from "../models/Section";
 import { validateQuery } from "../utils/ValidateHelper";
 import path from "node:path";
 
@@ -29,20 +36,18 @@ import path from "node:path";
 export default class InsightFacade implements IInsightFacade {
 	public datasetIds: Map<string, number>;
 	public nextAvailableName: number;
+	public loadedSections: Map<string, Set<Section>>;
+	public datasetInfo: Map<string, InsightDataset>;
 
-	//don't include any async code inside the constructor and make the constructor as simple as possible.
-	//A function itself could fail/succeed but a constructor should always pass.
 	constructor() {
 		this.datasetIds = new Map<string, number>();
 		this.nextAvailableName = 0;
+		this.loadedSections = new Map<string, Set<Section>>();
+		this.datasetInfo = new Map<string, InsightDataset>();
 	}
 
 	public async addDataset(id: string, content: string, kind: InsightDatasetKind): Promise<string[]> {
-		if (this.datasetIds.size === 0) {
-			const parts = await getExistingDatasets();
-			this.datasetIds = parts[0];
-			this.nextAvailableName = parts[1];
-		}
+		await this.initializeFields();
 
 		//1) check kind of dataset
 		if (kind !== InsightDatasetKind.Sections) {
@@ -61,10 +66,11 @@ export default class InsightFacade implements IInsightFacade {
 		//4) parse to Sections in memory and write files to disk
 		//Adapted from ChatGPT generated response
 		let fileStrings: string[];
+		const addedSections = new Set<Section>();
 		try {
 			fileStrings = await Promise.all(fileStringsPromises);
 			for (const fileString of fileStrings) {
-				parseJSONtoSections(fileString);
+				parseJSONtoSections(fileString).forEach((section) => addedSections.add(section));
 			}
 			await writeFilesToDisk(fileStrings, this.nextAvailableName, id);
 		} catch (error) {
@@ -72,27 +78,39 @@ export default class InsightFacade implements IInsightFacade {
 		}
 
 		//5) update datasetIds
+		const insightDataset = {
+			id: id,
+			kind: InsightDatasetKind.Sections,
+			numRows: addedSections.size,
+		};
+		this.datasetInfo.set(id, insightDataset);
 		this.datasetIds.set(id, this.nextAvailableName);
 		this.nextAvailableName++;
+		this.loadedSections.set(id, addedSections);
 		//Check to make sure name corresponds to position in datasetIds array
 		return Array.from(this.datasetIds.keys());
 	}
 
 	public async removeDataset(id: string): Promise<string> {
-		if (this.datasetIds.size === 0) {
-			const parts = await getExistingDatasets();
-			this.datasetIds = parts[0];
-			this.nextAvailableName = parts[1];
-		}
+		await this.initializeFields();
 
 		checkValidId(id, Array.from(this.datasetIds.keys()), true); // 3rd parameter should be true
 		try {
 			// remove from disk
 			const fileName = this.datasetIds.get(id);
 			const datasetPath = path.resolve("./data", String(fileName));
-			await fs.promises.unlink(datasetPath); // txt file?
+			await fs.remove(datasetPath); // txt file?
 			// remove from datasetId array
 			this.datasetIds.delete(id);
+			this.datasetInfo.delete(id);
+			this.loadedSections.delete(id);
+
+			//remove from meta
+			const metaData: Meta[] = await readJson("./data/meta");
+			const newMeta = metaData.filter((meta) => {
+				return meta.id !== id;
+			});
+			await fs.outputFile("./data/meta", JSON.stringify(newMeta));
 			// return removed id
 			return id;
 		} catch (error: any) {
@@ -101,11 +119,6 @@ export default class InsightFacade implements IInsightFacade {
 	}
 
 	public async performQuery(query: unknown): Promise<InsightResult[]> {
-		if (this.datasetIds.size === 0) {
-			const parts = await getExistingDatasets();
-			this.datasetIds = parts[0];
-			this.nextAvailableName = parts[1];
-		}
 		const MAX_SIZE = 5000;
 
 		// 1) validate query
@@ -125,11 +138,17 @@ export default class InsightFacade implements IInsightFacade {
 		// process query on the dataset
 
 		// 3) start with data for all sections
-		const allSections = await getAllSections(validatedQuery, this.datasetIds);
+		const allSections = this.loadedSections.get(id);
+		let allResults;
+		if (typeof allSections === "undefined") {
+			allResults = await getAllSections(validatedQuery, this.datasetIds);
+		} else {
+			allResults = parseToInsightResult(allSections, id);
+		}
 
 		// 4) filter results if necessary (WHERE)
 		let filteredResults: InsightResult[];
-		filteredResults = handleFilter(validatedQuery.WHERE, allSections);
+		filteredResults = handleFilter(validatedQuery.WHERE, Array.from(allResults));
 
 		// 5) handle results that are too large
 		if (filteredResults.length > MAX_SIZE) {
@@ -150,24 +169,33 @@ export default class InsightFacade implements IInsightFacade {
 	}
 
 	public async listDatasets(): Promise<InsightDataset[]> {
+		await this.initializeFields();
+		const datasetPromises: Promise<InsightDataset>[] = [];
+
+		// get datasets in datasetIds array
+		let result: InsightDataset[] = [];
+		for (const id of this.datasetIds.keys()) {
+			const fileName = String(this.datasetIds.get(id));
+			const existingResult = this.datasetInfo.get(id);
+			if (typeof existingResult !== "undefined") {
+				result = result.concat(existingResult);
+			} else {
+				datasetPromises.push(getDatasetInfo(String(id), fileName));
+			}
+		}
+		// list id, kind, and numRows
+		try {
+			return result.concat(await Promise.all(datasetPromises));
+		} catch (error: any) {
+			throw new InsightError("Failed to list datasets: " + error.message);
+		}
+	}
+
+	public async initializeFields(): Promise<void> {
 		if (this.datasetIds.size === 0) {
 			const parts = await getExistingDatasets();
 			this.datasetIds = parts[0];
 			this.nextAvailableName = parts[1];
-		}
-
-		const datasetPromises: Promise<InsightDataset>[] = [];
-
-		// get datasets in datasetIds array
-		for (const id of this.datasetIds.keys()) {
-			const fileName = String(this.datasetIds.get(id));
-			datasetPromises.push(getDatasetInfo(String(id), fileName)); // need to write this
-		}
-		// list id, kind, and numRows
-		try {
-			return await Promise.all(datasetPromises);
-		} catch (error: any) {
-			throw new InsightError("Failed to list datasets: " + error.message);
 		}
 	}
 }
