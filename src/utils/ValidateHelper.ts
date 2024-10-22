@@ -1,13 +1,16 @@
 import { MKey, Query, SKey } from "../models/Section";
 import { InsightError } from "../controller/IInsightFacade";
-
+/**
+ * @returns - Query, validates that the query param conforms to Query structure, if not throws InsightError
+ * @param query
+ */
 export function validateQuery(query: unknown): Query {
-	// 1) Check that query is an object
+	//1) check that query is an object
 	if (typeof query !== "object" || query === null) {
 		throw new InsightError("invalid query, query is not a non-null object");
 	}
 
-	// 2) Check WHERE fields
+	//2) check WHERE fields
 	if ("WHERE" in query) {
 		if (query.WHERE === null || typeof query.WHERE !== "object") {
 			throw new InsightError("invalid query, query contains null WHERE field");
@@ -17,19 +20,24 @@ export function validateQuery(query: unknown): Query {
 		throw new InsightError("invalid query, query does not contain WHERE field");
 	}
 
-	// 3) Check OPTION fields
+	//3) check OPTION fields
 	if ("OPTIONS" in query) {
+		//is the OPTIONS field allowed to be null? I don't think so
 		if (query.OPTIONS === null || typeof query.OPTIONS !== "object") {
 			throw new InsightError("invalid query, query contains invalid OPTIONS field");
 		}
 		validateOptions(query.OPTIONS);
 	} else {
-		// throw new InsightError('invalid query, query does not contain OPTION field');
-		// this is okay right
+		//throw new InsightError('invalid query, query does not contain OPTION field');
+		//this is okay right
 	}
 	return query as Query;
 }
 
+/**
+ * @returns - void, if filter does not conform to query.WHERE structure throws InsightError
+ * @param filter
+ */
 export function validateBody(filter: any): void {
 	const keys = checkKeys(filter);
 	const validateArray = (key: string, value: any): void => {
@@ -55,10 +63,17 @@ export function validateBody(filter: any): void {
 				if (keys.length !== 0) {
 					throw new InsightError("invalid query, query.WHERE contains an invalid key");
 				}
-			// I think this is fine because WHERE can be empty
+			//I think this is fine because WHERE can be empty
 		}
 	}
 }
+
+/**
+ * @returns void, checks that the key is an object, if not throws InsightError.
+ * @param key
+ * @param value
+ * @param type
+ */
 export function validateObject(key: string, value: any, type: string): void {
 	if (value === null || typeof value !== "object") {
 		throw new InsightError(`invalid query, query.WHERE.${key} is invalid`);
@@ -66,6 +81,12 @@ export function validateObject(key: string, value: any, type: string): void {
 	validateComparator(value, type);
 }
 
+/**
+ * @returns - void, validates that LogicComparator structure is correct as specified in Body interface
+ * if not valid throws InsightError
+ * @param key
+ * @param filter
+ */
 export function validateLogicComparator(key: string, filter: any): void {
 	switch (key) {
 		case "GT":
@@ -83,6 +104,10 @@ export function validateLogicComparator(key: string, filter: any): void {
 	}
 }
 
+/**
+ * @returns - validates that query.WHERE contains the correct number of keys, if not throws InsightError
+ * @param filter
+ */
 export function checkKeys(filter: any): string[] {
 	const keys = Object.keys(filter);
 	if (keys.length > 1) {
@@ -91,6 +116,10 @@ export function checkKeys(filter: any): string[] {
 	return keys;
 }
 
+/**
+ * @returns - validates that OPTIONS portion of query conforms to Options interface, if not throws Insight Error
+ * @param options
+ */
 export function validateOptions(options: any): void {
 	const keys = Object.keys(options);
 	const KEY_LENGTH = 2;
@@ -108,7 +137,7 @@ export function validateOptions(options: any): void {
 		validateKey(key);
 	}
 
-	// validate order
+	//validate order
 	if (keys[1]) {
 		if (keys[1] !== "ORDER") {
 			throw new InsightError("invalid query, query.OPTIONS does not contain ORDER as 2nd key");
@@ -122,6 +151,11 @@ export function validateOptions(options: any): void {
 	}
 }
 
+/**
+ * @returns - void, validates the value found in SCompparator or MComparator, if invalid throws InsightError
+ * @param comparator
+ * @param field
+ */
 function validateComparator(comparator: [MKey, number] | [SKey, number], field: string): void {
 	const keys = Object.keys(comparator);
 	const values = Object.values(comparator);
@@ -142,6 +176,10 @@ function validateComparator(comparator: [MKey, number] | [SKey, number], field: 
 	}
 }
 
+/**
+ * @returns - validates the a given key is either a valid MKey or a valid SKey, if not throws InsightError
+ * @param key
+ */
 function validateKey(key: any): void {
 	if (typeof key !== "string") {
 		throw new InsightError("invalid query, key is not a string");
@@ -151,6 +189,10 @@ function validateKey(key: any): void {
 	}
 }
 
+/**
+ * @returns - validates the structure of a given MKey, checks that the field is a valid MField, if not throws InsightError
+ * @param key
+ */
 function isMKey(key: string): boolean {
 	if (!key.includes("_")) {
 		return false;
@@ -164,6 +206,10 @@ function isMKey(key: string): boolean {
 	return validMFields.includes(parts[1]);
 }
 
+/**
+ * @returns - validates the structure of a given SKey, checks that the field is a valid SField, if not throws InsightError
+ * @param key
+ */
 function isSKey(key: string): boolean {
 	if (!key.includes("_")) {
 		return false;

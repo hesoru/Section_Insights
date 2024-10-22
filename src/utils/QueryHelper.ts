@@ -1,18 +1,15 @@
-import { InsightError, InsightResult } from "../controller/IInsightFacade";
+import { InsightError, InsightResult, NotFoundError } from "../controller/IInsightFacade";
 import { Query, Section, Body, Options } from "../models/Section";
 import fs from "fs-extra";
 import path from "node:path";
 import { parseSectionObject } from "./JsonHelper";
 
 /**
- * Takes Body portion of a valid Query and filters InsightResult[] according to specified conditions in Query
- *
- * @param filter - Body portion of a valid Query
- * @param data - InsightResult[] data to filter
- * @return InsightResult[]
- *
- * Returns filtered results, or an InsightError for any errors with filtering.
+ * @returns - Query, validates that the query param conforms to Query structure, if not throws InsightError
+ * @param filter
+ * @param data
  */
+
 export function handleFilter(filter: Body, data: InsightResult[]): InsightResult[] {
 	if (Object.keys(filter).length === 0) {
 		return data;
@@ -26,56 +23,41 @@ export function handleFilter(filter: Body, data: InsightResult[]): InsightResult
 	} else if (filter.NOT) {
 		return handleNegation(filter, data);
 	} else {
-		throw new InsightError("Invalid filter.");
+		throw new InsightError("Invalid filter");
 	}
 }
 
-/**
- * Takes logic comparison portions of the query and filters InsightResult[] according to specified conditions.
- * Recursively calls handleFilter() for inner operators (eg. LT/NOT).
- *
- * @param filter - logic (AND/OR) operations within Body portion of a valid Query
- * @param data - InsightResult[] data to filter
- * @returns InsightResult[]
- *
- * Returns filtered results, or an InsightError for any errors with filtering.
- */
-export function handleLogicComparison(filter: Body, data: InsightResult[]): InsightResult[] {
+function handleLogicComparison(filter: Body, data: InsightResult[]): InsightResult[] {
+	//return array of insight result.
 	let results: InsightResult[] = [];
+	let alreadyAnd = false;
 
-	// Inspired by ChatGPT responses
 	if (filter.AND) {
+		// intersection of all results: all filters must be true
+		// return filter.AND.reduce((acc, subBody) => handleBody(subBody, acc), data);
 		for (const subFilter of filter.AND) {
 			const subResults = handleFilter(subFilter, data);
-			if (results.length === 0) {
+			if (!alreadyAnd) {
 				results = subResults;
+				alreadyAnd = true;
 			} else {
 				results = results.filter((section) => subResults.includes(section)); // Intersection of results
 			}
 		}
 	} else if (filter.OR) {
+		results = [];
 		for (const subFilter of filter.OR) {
 			const subResults = handleFilter(subFilter, data);
 			results = results.concat(subResults); // Union of results
 		}
 		results = Array.from(new Set(results)); // Remove duplicates
 	} else {
-		throw new InsightError("Invalid logic filter.");
+		throw new InsightError("Invalid logic filter");
 	}
 	return results;
 }
 
-/**
- * Takes numeric (M) comparison portions of the query and filters InsightResult[] according to specified conditions.
- *
- * @param filter - numeric (LT/GT/EQ) operations within Body portion of a valid Query
- * @param data - InsightResult[] data to filter
- * @returns InsightResult[]
- *
- * Returns filtered results, or an InsightError for any errors with filtering.
- */
-export function handleMComparison(filter: any, data: InsightResult[]): InsightResult[] {
-	// Inspired by ChatGPT responses
+function handleMComparison(filter: any, data: InsightResult[]): InsightResult[] {
 	if (filter.GT) {
 		const mKey = Object.keys(filter.GT)[0];
 		const value = Object.values(filter.GT)[0];
@@ -91,57 +73,27 @@ export function handleMComparison(filter: any, data: InsightResult[]): InsightRe
 		const value = Object.values(filter.EQ)[0];
 		return data.filter((section) => section[mKey] === (value as number));
 	}
-	throw new InsightError("Invalid numeric comparison filter.");
+	throw new InsightError("Invalid MComparator operator.");
 }
 
-/**
- * Takes string (S) comparison portions of the query and filters InsightResult[] according to specified conditions.
- *
- * @param filter - string (IS) operations within Body portion of a valid Query
- * @param data - InsightResult[] data to filter
- * @returns InsightResult[]
- *
- * Returns filtered results, or an InsightError for any errors with filtering.
- */
-export function handleSComparison(filter: any, data: InsightResult[]): InsightResult[] {
+function handleSComparison(filter: any, data: InsightResult[]): InsightResult[] {
 	const sKey = Object.keys(filter.IS)[0];
 	const value = Object.values(filter.IS)[0] as string;
 
-	// Inspired by ChatGPT responses
 	const regex = new RegExp(/^\*?[^*]*\*?$/); // Handle wildcards
 	if (!regex.test(value)) {
-		throw new InsightError("Invalid string comparison operator: bad wildcard.");
+		throw new InsightError("invalid SComparator operator, bad wildcard.");
 	}
 	const validValue = new RegExp(`^${value.replace(/\*/g, ".*")}$`); // Handle wildcards
 	return data.filter((section) => validValue.test(section[sKey] as string));
 }
 
-/**
- * Takes negation portions of the query and filters InsightResult[] according to specified conditions.
- * Recursively calls handleFilter() for inner operators (eg. LT/NOT).
- *
- * @param filter - negation (NOT) operations within Body portion of a valid Query
- * @param data - InsightResult[] data to filter
- * @returns InsightResult[]
- *
- * Returns filtered results, or an InsightError for any errors with filtering.
- */
-export function handleNegation(filter: any, data: InsightResult[]): InsightResult[] {
+function handleNegation(filter: any, data: InsightResult[]): InsightResult[] {
 	// Exclude matching sections
 	const notData = handleFilter(filter.NOT, data);
 	return data.filter((section) => !notData.includes(section));
 }
 
-/**
- * Returns InsightResult[] containing all sections in dataset specified by query.
- *
- * @param query - valid Query
- * @param datasets - map of datasetIds for your current InsightFacade
- * @returns Promise<InsightResult[]>
- *
- * Will return InsightResult[] containing all sections in a dataset upon resolving,
- * or an InsightError for any errors with retrieving data.
- */
 export async function getAllSections(query: Query, datasets: Map<string, number>): Promise<InsightResult[]> {
 	const idString = extractDatasetId(query);
 	const fileName = String(datasets.get(idString));
@@ -153,7 +105,7 @@ export async function getAllSections(query: Query, datasets: Map<string, number>
 	for (const section of allSections) {
 		const sectionResult: InsightResult = {};
 		for (const item of columns) {
-			// Iterate through indices
+			//iterate through indicies
 			sectionResult[`${idString}_${item}`] = section[item as keyof Section];
 		}
 		allResults.push(sectionResult);
@@ -163,17 +115,13 @@ export async function getAllSections(query: Query, datasets: Map<string, number>
 }
 
 /**
- * Sorts given InsightResult[] based on column specified in ORDER within OPTIONS portion of valid Query.
- *
- * @param options - OPTIONS portion of Query
- * @param results - InsightResult[] to sort
- * @returns InsightResult[]
- *
- * Will return sorted InsightResult[], or an InsightError for any errors with sorting data
- * (e.g. columns contains string and numbers, ORDER does not exist).
+ * @returns - InsightResult[], takes already filtered and selected results and sorts them according to options.ORDER
+ * if options.ORDER exists, if not throws an error as sort Results should not have been called. If types of values
+ * between 2 sections.ORDER differs throw InsightError
+ * @param options
+ * @param results
  */
 export function sortResults(options: Options, results: InsightResult[]): InsightResult[] {
-	// Inspired by ChatGPT responses
 	return results.sort((a, b) => {
 		if (!options.ORDER) {
 			throw new InsightError("invalid options passed to sortResults");
@@ -182,27 +130,24 @@ export function sortResults(options: Options, results: InsightResult[]): Insight
 		const aValue = a[options.ORDER];
 		const bValue = b[options.ORDER];
 
-		// Inspired by ChatGPT responses
-		// String comparison (case-insensitive)
 		if (typeof aValue === "string" && typeof bValue === "string") {
-
+			// string comparison (case-insensitive)
 			return aValue.localeCompare(bValue, undefined, { sensitivity: "base" });
 		}
-		// Numeric comparison
+
 		if (typeof aValue === "number" && typeof bValue === "number") {
+			// numeric comparison
 			return aValue - bValue;
 		}
 
-		// If types differ
+		// types differ
 		throw new InsightError("Comparison column contains strings and numbers together!");
 	});
 }
 
 /**
- * Extracts dataset id string from a valid Query.
- *
- * @param query - valid Query
- * @returns string - dataset id
+ * @returns - string, extracts dataset id from first key found in OPTIONS.COLUMNS
+ * @param query
  */
 export function extractDatasetId(query: Query): string {
 	const keys: string[] = query.OPTIONS.COLUMNS;
@@ -211,28 +156,42 @@ export function extractDatasetId(query: Query): string {
 }
 
 /**
- * Loads a Section[] containing all the sections in a dataset specified by id in @param.
- *
- * @param id - id of dataset to load
- * @param fileName - name of file associated with dataset with id in @param
- * @returns Promise<Section[]>
- *
- * Will return Section[] upon resolving, or an InsightError for any errors with retrieving data.
+ * @returns - Promise<Section[]> an array of the sections contained in the data specified by param id.
+ * If dataset with name data/fileName can not be found throws NotFoundError
+ * @param fileName
+ * @param id
  */
 export async function loadDatasets(id: string, fileName: string): Promise<Section[]> {
-	const datasetPath = path.resolve(__dirname, "../data", fileName);
+	const datasetPath = path.resolve("./data", fileName);
 	let dataset;
 	try {
 		dataset = await fs.readJson(datasetPath);
 	} catch (error) {
-		throw new InsightError(`Could not find fileName for dataset with - id=${id};` + error);
+		throw new NotFoundError(`Could not find dataset with - id=${id};` + error);
 	}
 	const parsedSections: Section[] = [];
-	for (const file of dataset) {
+	for (const file of dataset.files) {
 		for (const section of file.result) {
 			const newSection = parseSectionObject(section);
 			parsedSections.push(newSection);
 		}
 	}
 	return parsedSections;
+}
+
+/**
+ * @returns - InsightResult[], takes the filtered InsightResults array and selects the columns to keep according to OPTIONS.COLUMNS
+ * @param filteredResults
+ * @param validatedQuery
+ */
+export function selectColumns(filteredResults: InsightResult[], validatedQuery: Query): InsightResult[] {
+	return filteredResults.map((section) => {
+		// can be string | number
+		const result: any = {};
+		const columns = validatedQuery.OPTIONS.COLUMNS;
+		for (const column of columns) {
+			result[column] = section[column];
+		}
+		return result;
+	});
 }

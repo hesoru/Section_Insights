@@ -1,6 +1,6 @@
 import { InsightDataset, InsightDatasetKind, InsightError, NotFoundError } from "../controller/IInsightFacade";
 import { JSONFile, Section } from "../models/Section";
-import fs from "fs-extra";
+import fs, { readdir } from "fs-extra";
 import path from "node:path";
 import JSZip from "jszip";
 import { loadDatasets } from "./QueryHelper";
@@ -47,22 +47,31 @@ export function parseSectionObject(section: JSONFile): Section {
 	}
 
 	let newSection: Section;
-	try {
-		newSection = {
-			//I like it this way it is more explicit.
-			uuid: String(section.id), //how to I specify that the parameter contains these fields.
-			id: section.Course,
-			title: section.Title,
-			instructor: section.Professor,
-			dept: section.Subject,
-			year: Number(section.Year),
-			avg: section.Avg,
-			pass: section.Pass,
-			fail: section.Fail,
-			audit: section.Audit,
-		};
-	} catch (error) {
-		throw new InsightError("failed to create new Section Object in parse Section Object" + error);
+	let newYear = section.Year;
+	const overall = 1900;
+	if (Object.prototype.hasOwnProperty.call(section, "Section")) {
+		if (section.Section === "overall") {
+			newYear = overall;
+		}
+	}
+	{
+		try {
+			newSection = {
+				//I like it this way it is more explicit.
+				uuid: String(section.id), //how to I specify that the parameter contains these fields.
+				id: section.Course,
+				title: section.Title,
+				instructor: section.Professor,
+				dept: section.Subject,
+				year: Number(newYear),
+				avg: section.Avg,
+				pass: section.Pass,
+				fail: section.Fail,
+				audit: section.Audit,
+			};
+		} catch (error) {
+			throw new InsightError("failed to create new Section Object in parse Section Object" + error);
+		}
 	}
 	return newSection;
 }
@@ -93,21 +102,27 @@ export function parseJSONtoSections(file: string): Section[] {
 /**
  * @param files - Files contained within an added Dataset, ASSUME files is a list of JSON formatted strings
  * @param name
+ * @param id
  * @returns - Sections[], separates file into its individual sections passing each section to parseSectionObject and adding the returned object to the array
  * Will throw an InsightDatasetError if file is not a JSON formatted string
  */
-export async function writeFilesToDisk(files: string[], name: number): Promise<number> {
+export async function writeFilesToDisk(files: string[], name: number, id: string): Promise<number> {
 	const acc = []; //this might cause problems down the line
 	for (const file of files) {
 		const JSONObject = JSON.parse(file);
 		//Adapted from ChatGPT generated response
 		acc.push(JSONObject);
 	}
+
+	const outputObject = {
+		datasetID: id,
+		files: acc,
+	};
 	//Adapted from ChatGPT generated response
-	const idPath = path.resolve(__dirname, "../data", String(name));
+	const idPath = path.resolve("./data", String(name));
 	try {
 		const space = 2;
-		await fs.outputFile(idPath, JSON.stringify(acc, null, space)); //How can I add the space argument?
+		await fs.outputFile(idPath, JSON.stringify(outputObject, null, space)); //How can I add the space argument?
 	} catch (error) {
 		throw new InsightError("failed to write files to disk" + name + error);
 	}
@@ -163,27 +178,62 @@ export async function unzipContent(content: string): Promise<JSZip> {
 }
 
 /**
- * Returns InsightDataset data for dataset specified in @param by loading the respective dataset.
- *
- * @param id - id string of a dataset (id should be valid)
- * @param fileName - name of file containing dataset identified by "id" (file should exist)
- * @returns Promise <InsightDataset>
- *
- * Will return InsightDataset data for dataset specified in @param.
- * Throws InsightError for any error retrieving the info.
+ * @returns - Promise<InsightDataset>, gets the dataset info for each dataset in the database, if loadDatasets fails throws InsightError
+ * @param id
+ * @param fileName
  */
 export async function getDatasetInfo(id: string, fileName: string): Promise<InsightDataset> {
+	// shouldn't have to validate id in listDataset()
+	// checkValidId(id, datasetIds, true); // 3rd parameter true
+
+	// get dataset file path
 	try {
 		const sections = await loadDatasets(id, fileName);
 		const numRows = sections.length;
 
-		// Return dataset info formatted as InsightDataset[]
+		// Return dataset info
 		return {
 			id: id,
 			kind: InsightDatasetKind.Sections,
 			numRows: numRows,
 		};
 	} catch (error: any) {
-		throw new InsightError(`Failed to retrieve dataset info for id = "${id}": ` + error);
+		throw new InsightError(`Failed to retrieve dataset info for id '${id}': ${error.message}`);
 	}
+}
+
+/**
+ * @returns - Promise<[Map,string,number>,number]>, initializes a map with the names and ids of each file already existing in the ./data folder
+ * Will throw an InsightError unable to read a file
+ */
+export async function getExistingDatasets(): Promise<[Map<string, number>, number]> {
+	const dataPath = "./data";
+	const result = new Map<string, number>();
+	let fileNames;
+	try {
+		fileNames = await readdir(dataPath);
+	} catch {
+		return [result, 0];
+	}
+	const promises = [];
+	let nextName = 0;
+	for (const file of fileNames) {
+		const filePath = path.resolve(dataPath, file);
+		promises.push(fs.readJson(filePath));
+		if (Number(file) > nextName) {
+			nextName = Number(file);
+		}
+	}
+	nextName++;
+
+	try {
+		const datasets = await Promise.all(promises);
+		for (let i = 0; i < datasets.length; i++) {
+			const id = datasets[i].datasetID;
+			result.set(id, i);
+		}
+	} catch {
+		throw new InsightError("error recovering persistent files");
+	}
+	return [result, nextName];
 }

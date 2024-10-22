@@ -46,7 +46,7 @@ describe("InsightFacade", function () {
 		afterEach(async function () {
 			// This section resets the data directory (removing any cached data)
 			// This runs after each test, which should make each test independent of the previous one
-			await clearDisk();
+			//await clearDisk();
 		});
 
 		it("should reject adding an empty dataset id", async function () {
@@ -96,7 +96,7 @@ describe("InsightFacade", function () {
 		});
 
 		it("should reject adding same id twice", async function () {
-			const miniData5 = await getContentFromArchives("miniData5.zip"); // TODO: where is this??
+			const miniData5 = await getContentFromArchives("miniData5.zip");
 			try {
 				await facade.addDataset("mini", miniData5, InsightDatasetKind.Sections);
 				expect("should have added correctly");
@@ -129,7 +129,7 @@ describe("InsightFacade", function () {
 
 		it("should reject adding dataset with invalid sections", async function () {
 			try {
-				const miniData6 = await getContentFromArchives("miniData6.zip"); // TODO: where is this??
+				const miniData6 = await getContentFromArchives("miniData6.zip");
 				await facade.addDataset("noCoursesData", miniData6, InsightDatasetKind.Sections);
 				expect.fail("Should have thrown above.");
 			} catch (err) {
@@ -144,6 +144,43 @@ describe("InsightFacade", function () {
 				expect.fail("Should have thrown above.");
 			} catch (err) {
 				expect(err).to.be.instanceOf(InsightError);
+			}
+		});
+
+		it("checking persistence add", async function () {
+			try {
+				const result = await facade.addDataset("sections", sections, InsightDatasetKind.Sections);
+				expect(result).to.be.an("array");
+				expect(result).to.deep.equal(["sections"]);
+				const dataset = await facade.listDatasets();
+				expect(dataset).to.deep.equal([
+					{
+						id: "sections",
+						kind: InsightDatasetKind.Sections,
+						numRows: 64612,
+					},
+				]);
+				const newFacade = new InsightFacade();
+				const miniData5 = await getContentFromArchives("miniData5.zip");
+				const result1 = await newFacade.addDataset("mini5", miniData5, InsightDatasetKind.Sections);
+				expect(result1).to.deep.equal(["sections", "mini5"]);
+
+				const datasets = await newFacade.listDatasets();
+				expect(datasets).to.deep.equal([
+					{
+						id: "sections",
+						kind: InsightDatasetKind.Sections,
+						numRows: 64612,
+					},
+					{
+						id: "mini5",
+						kind: InsightDatasetKind.Sections,
+						numRows: 6,
+					},
+				]);
+				// read file from disk
+			} catch (err) {
+				expect.fail("Should not have thrown an error" + err);
 			}
 		});
 
@@ -242,6 +279,31 @@ describe("InsightFacade", function () {
 				expect.fail("Should have successfully added and removed" + err);
 			}
 		});
+
+		it("checking persistence remove", async function () {
+			try {
+				const result = await facade.addDataset("sections", sections, InsightDatasetKind.Sections);
+				expect(result).to.be.an("array");
+				expect(result).to.deep.equal(["sections"]);
+				const dataset = await facade.listDatasets();
+				expect(dataset).to.deep.equal([
+					{
+						id: "sections",
+						kind: InsightDatasetKind.Sections,
+						numRows: 64612,
+					},
+				]);
+
+				const newFacade = new InsightFacade();
+				const result1 = await newFacade.removeDataset("sections");
+				expect(result1).to.equal("sections");
+
+				const datasets = await newFacade.listDatasets();
+				expect(datasets).to.deep.equal([]);
+			} catch (err) {
+				expect.fail("should not have thrown err" + err);
+			}
+		});
 	});
 
 	describe("ListDatasets", function () {
@@ -313,6 +375,34 @@ describe("InsightFacade", function () {
 			const arrayLength = 2;
 			expect(result.length).to.equal(arrayLength);
 		});
+
+		it("checking persistence list", async function () {
+			try {
+				const result = await facade.addDataset("sections", sections, InsightDatasetKind.Sections);
+				expect(result).to.be.an("array");
+				expect(result).to.deep.equal(["sections"]);
+				const dataset = await facade.listDatasets();
+				expect(dataset).to.deep.equal([
+					{
+						id: "sections",
+						kind: InsightDatasetKind.Sections,
+						numRows: 64612,
+					},
+				]);
+
+				const newFacade = new InsightFacade();
+				const result1 = await newFacade.listDatasets();
+				expect(result1).to.deep.equal([
+					{
+						id: "sections",
+						kind: InsightDatasetKind.Sections,
+						numRows: 64612,
+					},
+				]);
+			} catch (err) {
+				expect.fail("should not have thrown err" + err);
+			}
+		});
 	});
 
 	describe("PerformQuery", function () {
@@ -344,6 +434,15 @@ describe("InsightFacade", function () {
 				//console.log(result)
 				expect(result.length).to.equal(expectedLength);
 				expect(result).to.have.deep.members(expected);
+				const validInput = input as { OPTIONS: { ORDER?: string } };
+				if (validInput.OPTIONS.ORDER) {
+					const field = validInput.OPTIONS.ORDER;
+					for (let i = 1; i < result.length; i++) {
+						if (result[i][field] < result[i - 1][field]) {
+							expect.fail("not in correct order");
+						}
+					}
+				}
 
 				return;
 			} catch (err) {
@@ -395,6 +494,32 @@ describe("InsightFacade", function () {
 			await clearDisk();
 		});
 
+		it("checking persistence perform query", async function () {
+			try {
+				const newFacade = new InsightFacade();
+				const query = {
+					WHERE: {
+						GT: {
+							sections_avg: 99,
+						},
+					},
+					OPTIONS: {
+						COLUMNS: ["sections_dept", "sections_avg"],
+						ORDER: "sections_avg",
+					},
+				};
+				const queryResult = [
+					{ sections_dept: "cnps", sections_avg: 99.19 },
+					{ sections_dept: "math", sections_avg: 99.78 },
+					{ sections_dept: "math", sections_avg: 99.78 },
+				];
+				const result1 = await newFacade.performQuery(query);
+				expect(result1).to.have.deep.members(queryResult);
+			} catch (err) {
+				expect.fail("should not have thrown err" + err);
+			}
+		});
+
 		// Examples demonstrating how to test performQuery using the JSON Test Queries.
 		// The relative path to the query file must be given in square brackets.
 		it("[valid/simple.json] SELECT dept, avg WHERE avg > 97", checkQuery);
@@ -430,6 +555,7 @@ describe("InsightFacade", function () {
 		it("[valid/nestedLogicals.json]", checkQuery);
 		it("[valid/wildcardNOT.json]", checkQuery);
 		it("[valid/2Wildcards.json]", checkQuery);
-		//it("[valid/allFilters.json]", checkQuery);
+		it("[valid/allFilters.json]", checkQuery);
+		it("[valid/year1900(Valid).json]", checkQuery);
 	});
 });
