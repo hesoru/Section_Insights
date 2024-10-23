@@ -95,8 +95,8 @@ export interface Building {
 	fullname: string;
 	shortname: string;
 	address: string;
-	lat: number;
-	lon: number;
+	lat?: number;
+	lon?: number;
 	href: string;
 }
 
@@ -107,6 +107,13 @@ export interface Room {
 	type: string;
 	furniture: string;
 	seats: number;
+}
+
+interface GeoResponse {
+	address: string;
+	lat?: number;
+	lon?: number;
+	error?: string;
 }
 
 // 'lat' | 'lon' | 'seats' | 'fullname' | 'shortname' | 'number' | 'name' | 'address' | 'type' | 'furniture' | 'href'

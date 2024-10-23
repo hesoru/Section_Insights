@@ -5,27 +5,70 @@ import {InsightDataset, InsightError} from "../controller/IInsightFacade";
 import {unzipContent} from "./JsonHelper";
 import {Building, Room} from "../models/Section";
 import { Document } from 'parse5/dist/tree-adapters/default';
+import * as http from "node:http";
 
-
-
-export function parseIndexString(indexString: string): Building[] {
+export async function parseIndexString(indexString: string): Promise<Building[]> {
 	const document = parse5.parse(indexString);
 	const tableBodyNode = findTableBodyNode(document);
-	return extractBuildingsIndex(tableBodyNode);
+	const buildingsIndex = extractBuildingsIndex(tableBodyNode);
+	return await awaitGeolocationData(buildingsIndex);
 }
 
 export function parseBuildingStrings(buildingStrings: string[], buildingsIndex: Building[]): Room[] {
 	const roomsDataset: Room[] = [];
 	buildingStrings.forEach(file => {
 		const document = parse5.parse(file);
-		const buildingString = extractBuildingStringForRooms();
-		// getLocationData;
+		const buildingString = extractBuildingString(document);
 		const tableBodyNode = findTableBodyNode(document);
 		const buildingRooms = extractRooms(tableBodyNode);
 		const buildingData = addBuildingToRooms(buildingsIndex, buildingString, buildingRooms);
 		roomsDataset.push(buildingData);
 	});
 	return roomsDataset;
+}
+
+async function awaitGeolocationData(buildingsIndex: Building[]): Promise<Building[]> {
+	try {
+		return await Promise.all(buildingsIndex.map(async (building) => {
+			const addressURL = encodeURIComponent(building.address);
+			try {
+				return await addGeolocationData(building, addressURL);
+			} catch {
+				return building;
+			}
+		}));
+	} catch (error) {
+		throw new InsightError("Adding geolocation data failed: " + error);
+	}
+}
+
+async function addGeolocationData(building: Building, addressURL: string): Promise<Building> {
+	return new Promise((resolve, reject) => {
+		const url = `http://cs310.students.cs.ubc.ca:11316/api/v1/project_team154/${addressURL}`;
+		let geoResponse = null;
+
+		http.get(url, (res) => {
+			let data = '';
+			// collect response data
+			res.on('data', (chunk) => {
+				data += chunk;
+			});
+			res.on('end', () => {
+				try {
+					geoResponse = JSON.parse(data);
+					if (!geoResponse.error) {
+						building.lat = geoResponse.lat;
+						building.lon = geoResponse.lon;
+					}
+					resolve(building);  // resolve promise
+				} catch (error) {
+					reject(error);  // reject promise
+				}
+			});
+		}).on('error', (error) => {
+			reject(error);  // reject promise
+		});
+	});
 }
 
 function addBuildingToRooms(buildingsIndex: Building[], buildingString: string, buildingRooms: Room[]): Room[] {
@@ -138,7 +181,7 @@ function extractRooms(node): Room[] {
 	return rooms;
 }
 
-function extractBuildingStringForRooms(node): string {
+function extractBuildingString(node): string {
 	let building: string;
 	if (node.nodeName === 'div' && node.attrs) {
 		const isBuildingInfo = node.attrs.some(attr => attr.name === 'id' && attr.value === 'building-info');
