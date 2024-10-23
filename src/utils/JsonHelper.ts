@@ -148,24 +148,39 @@ export async function writeFilesToDisk(files: string[], name: number, id: string
  * If no courses directory found throws InsightError
  * Second extracts the contents of each file as a string. If another directory is contained inside courses throws an Insight Error
  * Third checks that there is at least one file extracted from courses, otherwise throws InsightError
+ * @param kind
  * @returns - Promise<string>[], when all promises are resolved will be an array of file contents.
  */
-export function extractFileStrings(unzipped: JSZip): Promise<string>[] {
+export async function extractFileStrings(unzipped: JSZip, kind: InsightDatasetKind): Promise<string>[] {
 	//forEach documentation: https://stuk.github.io/jszip/documentation/api_jszip/for_each.html
 	const fileStringsPromises: Promise<string>[] = [];
-	const courses = unzipped.folder("courses/");
-	if (!courses) {
-		throw new InsightError("courses folder not found in file");
+	let directory: JSZip | null;
+	if (kind === InsightDatasetKind.Sections) {
+		directory = unzipped.folder("courses/");
+		if (!directory) {
+			throw new InsightError("courses directory not found in dataset");
+		}
+	} else {
+		directory = unzipped.folder("campus/discover/buildings-and-classrooms/");
+		if (!directory) {
+			throw new InsightError("campus/discover/buildings-and-classrooms/ directory not found in dataset");
+		}
+		// filter buildings-and-classrooms/ for HTML files
+		directory.filter(file => path.extname(file) === '.htm');
+		if (!directory) {
+			throw new InsightError("campus/discover/buildings-and-classrooms/ contains no HTML files");
+		}
 	}
-	courses.forEach((relativePath, file) => {
+
+	directory.forEach((relativePath, file) => {
 		if (file.dir) {
-			throw new InsightError("file " + relativePath + "is a folder within courses folder");
+			throw new InsightError("file " + relativePath + " is a folder within courses folder");
 		}
 		fileStringsPromises.push(file.async("string"));
 	});
 
 	if (fileStringsPromises.length === 0) {
-		throw new InsightError("file does not contain at least one valid section");
+		throw new InsightError("file does not contain at least one valid section or building");
 	}
 
 	return fileStringsPromises;
@@ -238,3 +253,8 @@ export async function getExistingDatasets(): Promise<[Map<string, number>, numbe
 	nextName++;
 	return [result, nextName];
 }
+
+
+
+
+

@@ -101,3 +101,32 @@ export type SKey = `${string}_${SField}`; //adapted from ChatGPT generated respo
 export type MField = "avg" | "pass" | "fail" | "audit" | "year";
 export type SField = "dept" | "id" | "instructor" | "title" | "uuid";
 export type ApplyToken = "MIN" | "MAX" | "AVG" | "COUNT" | "SUM";
+
+export interface Building {
+	fullname: string;
+	shortname: string;
+	address: string;
+	lat?: number;
+	lon?: number;
+	href: string;
+}
+
+export interface Room {
+	building: Building;
+	name: string;
+	number: string;	// not always a number so represented as a string
+	type: string;
+	furniture: string;
+	seats: number;
+}
+
+interface GeoResponse {
+	address: string;
+	lat?: number;
+	lon?: number;
+	error?: string;
+}
+
+// 'lat' | 'lon' | 'seats' | 'fullname' | 'shortname' | 'number' | 'name' | 'address' | 'type' | 'furniture' | 'href'
+
+
