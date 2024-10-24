@@ -1,8 +1,10 @@
-import { InsightError, InsightResult, NotFoundError } from "../controller/IInsightFacade";
-import { Query, Section, Body, Options } from "../models/Section";
+import { InsightError, InsightResult, NotFoundError, ResultTooLargeError } from "../controller/IInsightFacade";
+import { Query, Section, Body } from "../models/Section";
 import fs from "fs-extra";
 import path from "node:path";
 import { parseSectionObject } from "./JsonHelper";
+import { Building, Room } from "../models/Room";
+import {sortResults} from "./SortHelper";
 
 /**
  * @returns - Query, validates that the query param conforms to Query structure, if not throws InsightError
@@ -100,39 +102,10 @@ export async function getAllSections(query: Query, datasets: Map<string, number>
 	const fileName = String(datasets.get(idString));
 	const allSections = await loadDatasets(idString, fileName);
 
-	return parseToInsightResult(allSections, idString);
+	return parseSectionsToInsightResult(allSections, idString);
 }
 
-/**
- * @returns - InsightResult[], takes already filtered and selected results and sorts them according to options.ORDER
- * if options.ORDER exists, if not throws an error as sort Results should not have been called. If types of values
- * between 2 sections.ORDER differs throw InsightError
- * @param options
- * @param results
- */
-export function sortResults(options: Options, results: InsightResult[]): InsightResult[] {
-	return results.sort((a, b) => {
-		if (!options.ORDER) {
-			throw new InsightError("invalid options passed to sortResults");
-		}
 
-		const aValue = a[options.ORDER];
-		const bValue = b[options.ORDER];
-
-		if (typeof aValue === "string" && typeof bValue === "string") {
-			// string comparison (case-insensitive)
-			return aValue.localeCompare(bValue, undefined, { sensitivity: "base" });
-		}
-
-		if (typeof aValue === "number" && typeof bValue === "number") {
-			// numeric comparison
-			return aValue - bValue;
-		}
-
-		// types differ
-		throw new InsightError("Comparison column contains strings and numbers together!");
-	});
-}
 
 /**
  * @returns - string, extracts dataset id from first key found in OPTIONS.COLUMNS
@@ -185,7 +158,7 @@ export function selectColumns(filteredResults: InsightResult[], validatedQuery: 
 	});
 }
 
-export function parseToInsightResult(allSections: Set<Section>, idString: string): Set<InsightResult> {
+export function parseSectionsToInsightResult(allSections: Set<Section>, idString: string): Set<InsightResult> {
 	const columns = new Set<string>([
 		"uuid",
 		"id",
@@ -202,10 +175,58 @@ export function parseToInsightResult(allSections: Set<Section>, idString: string
 	for (const section of allSections) {
 		const sectionResult: InsightResult = {};
 		for (const item of columns) {
-			//iterate through indicies
 			sectionResult[`${idString}_${item}`] = section[item as keyof Section];
 		}
 		allResults.add(sectionResult);
 	}
 	return allResults;
+}
+
+export function parseRoomsToInsightResult(allRooms: Set<Room>, idString: string): Set<InsightResult> {
+	const roomColumns = new Set<string>(["name", "number", "type", "furniture", "seats"]);
+	const buildingColumns = new Set<string>(["fullname", "shortname", "address", "lat", "lon", "href"]);
+	const allResults = new Set<InsightResult>();
+	for (const room of allRooms) {
+		const roomResult: InsightResult = {};
+		for (const item of roomColumns) {
+			const value = room[item as keyof Room];
+			if (typeof value === "string" || typeof value === "number") {
+				roomResult[`${idString}_${item}`] = value;
+			}
+			//this should always be the case, but I had to put the explicit type guard in because typescript was complaining about the building field.
+		}
+		for (const item of buildingColumns) {
+			const value = room.building[item as keyof Building];
+			if (value) {
+				//since lat or lon will be undefined
+				roomResult[`${idString}_${item}`] = value;
+			}
+		}
+		allResults.add(roomResult);
+	}
+	return allResults;
+}
+
+export function queryInsightResults(allResults: Set<InsightResult>, validatedQuery: Query): InsightResult[] {
+	const MAX_SIZE = 5000;
+	//4) Filter results according to WHERE
+	let filteredResults: InsightResult[];
+	filteredResults = handleFilter(validatedQuery.WHERE, Array.from(allResults));
+
+	// 5) handle results that are too large
+	if (filteredResults.length > MAX_SIZE) {
+		throw new ResultTooLargeError("Query results exceed maximum size (5000 sections).");
+	}
+
+	// 6) select only specified columns (OPTIONS.COLUMNS)
+	filteredResults = selectColumns(filteredResults, validatedQuery);
+
+	// 7) sort results if necessary (OPTIONS.ORDER)
+	let sortedFilteredResults: InsightResult[];
+	if (validatedQuery.OPTIONS.ORDER) {
+		sortedFilteredResults = sortResults(validatedQuery.OPTIONS, filteredResults);
+	} else {
+		sortedFilteredResults = filteredResults;
+	}
+	return sortedFilteredResults;
 }

@@ -151,7 +151,7 @@ export async function writeFilesToDisk(files: string[], name: number, id: string
  * @param kind
  * @returns - Promise<string>[], when all promises are resolved will be an array of file contents.
  */
-export async function extractFileStrings(unzipped: JSZip, kind: InsightDatasetKind): Promise<string>[] {
+export function extractFileStrings(unzipped: JSZip, kind: InsightDatasetKind): Promise<string>[] {
 	//forEach documentation: https://stuk.github.io/jszip/documentation/api_jszip/for_each.html
 	const fileStringsPromises: Promise<string>[] = [];
 	let directory: JSZip | null;
@@ -166,7 +166,7 @@ export async function extractFileStrings(unzipped: JSZip, kind: InsightDatasetKi
 			throw new InsightError("campus/discover/buildings-and-classrooms/ directory not found in dataset");
 		}
 		// filter buildings-and-classrooms/ for HTML files
-		directory.filter(file => path.extname(file) === '.htm');
+		directory.filter((file) => path.extname(file) === ".htm");
 		if (!directory) {
 			throw new InsightError("campus/discover/buildings-and-classrooms/ contains no HTML files");
 		}
@@ -253,8 +253,3 @@ export async function getExistingDatasets(): Promise<[Map<string, number>, numbe
 	nextName++;
 	return [result, nextName];
 }
-
-
-
-
-

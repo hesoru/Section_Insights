@@ -24,10 +24,38 @@
  * Address must be URL encoded version of the address.
  * Must only query the service when processing initial dataset zips not when answering queries.
  */
+//
+// interface GeoResponse {
+//     lat?: number;
+//     lon?: number;
+//     error?: string;
+// }
 
-interface GeoResponse {
-    lat?: number;
-    lon?: number;
-    error?: string;
+//why do lat and lon here have? Shouldn't we always have them?
+export interface Building {
+	fullname: string;
+	shortname: string;
+	address: string;
+	lat?: number;
+	lon?: number;
+	href: string;
 }
 
+export interface Room {
+	building: Building;
+	name: string;
+	number: string; // not always a number so represented as a string
+	type: string;
+	furniture: string;
+	seats: number;
+}
+
+//Why do we have the address in GeoResponse? is it not the return type they specified in the specs?
+interface GeoResponse {
+	address: string;
+	lat?: number;
+	lon?: number;
+	error?: string;
+}
+
+// 'lat' | 'lon' | 'seats' | 'fullname' | 'shortname' | 'number' | 'name' | 'address' | 'type' | 'furniture' | 'href'

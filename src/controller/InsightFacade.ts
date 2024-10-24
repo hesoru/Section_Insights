@@ -4,11 +4,10 @@ import {
 	InsightDatasetKind,
 	InsightError,
 	InsightResult,
-	ResultTooLargeError,
 } from "./IInsightFacade";
 import {
 	checkValidId,
-	extractCourseStrings, extractFileStrings,
+	extractFileStrings,
 	getDatasetInfo,
 	getExistingDatasets,
 	parseJSONtoSections,
@@ -19,15 +18,15 @@ import fs, { readJson } from "fs-extra";
 import {
 	extractDatasetId,
 	getAllSections,
-	handleFilter,
-	parseToInsightResult,
-	selectColumns,
-	sortResults,
+	parseRoomsToInsightResult,
+	parseSectionsToInsightResult,
+	queryInsightResults,
 } from "../utils/QueryHelper";
-import {Meta, Query, Room, Section} from "../models/Section";
+import { Meta, Section } from "../models/Section";
 import { validateQuery } from "../utils/ValidateHelper";
 import path from "node:path";
-import {parseBuildingStrings, parseIndexString} from "../utils/HTMLHelper";
+import { parseBuildingStrings, parseIndexString } from "../utils/HTMLHelper";
+import { Room } from "../models/Room";
 
 /**
  * This is the main programmatic entry point for the project.
@@ -45,7 +44,7 @@ export default class InsightFacade implements IInsightFacade {
 		this.datasetIds = new Map<string, number>();
 		this.nextAvailableName = 0;
 		this.loadedSections = new Map<string, Set<Section>>();
-		this.loadedRooms = new Map<string, Set<Section>>();
+		this.loadedRooms = new Map<string, Set<Room>>();
 		this.datasetInfo = new Map<string, InsightDataset>();
 	}
 
@@ -65,9 +64,7 @@ export default class InsightFacade implements IInsightFacade {
 
 		//3) Unzips content: checks for valid content, must be a base64-encoded string, all valid courses must be contained within courses folder
 		const unzipped = await unzipContent(content);
-		let fileStringsPromises: Promise<string>[]
-
-		fileStringsPromises = extractFileStrings(unzipped, kind);
+		const fileStringsPromises = extractFileStrings(unzipped, kind);
 
 		//4) parse to Sections in memory and write files to disk
 		//Adapted from ChatGPT generated response
@@ -145,15 +142,8 @@ export default class InsightFacade implements IInsightFacade {
 	}
 
 	public async performQuery(query: unknown): Promise<InsightResult[]> {
-		const MAX_SIZE = 5000;
-
 		// 1) validate query
-		let validatedQuery: Query;
-		try {
-			validatedQuery = validateQuery(query);
-		} catch (error) {
-			throw new InsightError(`Query not a valid format: ` + error);
-		}
+		const validatedQuery = validateQuery(query);
 
 		// 2) extract dataset id from validated query, ensure dataset exists
 		const id = extractDatasetId(validatedQuery);
@@ -161,37 +151,25 @@ export default class InsightFacade implements IInsightFacade {
 			throw new InsightError(`Dataset '${id}' does not exist.`);
 		}
 
-		// process query on the dataset
-
 		// 3) start with data for all sections
-		const allSections = this.loadedSections.get(id);
-		let allResults;
-		if (typeof allSections === "undefined") {
-			allResults = await getAllSections(validatedQuery, this.datasetIds);
+		let allResults: Set<InsightResult>;
+		if (this.datasetInfo.get(id)?.kind === InsightDatasetKind.Sections) {
+			const allSections = this.loadedSections.get(id);
+			if (typeof allSections === "undefined") {
+				allResults = await getAllSections(validatedQuery, this.datasetIds);
+			} else {
+				allResults = parseSectionsToInsightResult(allSections, id);
+			}
 		} else {
-			allResults = parseToInsightResult(allSections, id);
+			const allRooms = this.loadedRooms.get(id);
+			if (typeof allRooms === "undefined") {
+				allResults = await getAllRooms(validatedQuery, this.datasetIds);
+			} else {
+				allResults = parseRoomsToInsightResult(allRooms, id);
+			}
 		}
 
-		// 4) filter results if necessary (WHERE)
-		let filteredResults: InsightResult[];
-		filteredResults = handleFilter(validatedQuery.WHERE, Array.from(allResults));
-
-		// 5) handle results that are too large
-		if (filteredResults.length > MAX_SIZE) {
-			throw new ResultTooLargeError("Query results exceed maximum size (5000 sections).");
-		}
-
-		// 6) select only specified columns (OPTIONS.COLUMNS)
-		filteredResults = selectColumns(filteredResults, validatedQuery);
-
-		// 7) sort results if necessary (OPTIONS.ORDER)
-		let sortedFilteredResults: InsightResult[];
-		if (validatedQuery.OPTIONS.ORDER) {
-			sortedFilteredResults = sortResults(validatedQuery.OPTIONS, filteredResults);
-		} else {
-			sortedFilteredResults = filteredResults;
-		}
-		return sortedFilteredResults;
+		return queryInsightResults(allResults, validatedQuery);
 	}
 
 	public async listDatasets(): Promise<InsightDataset[]> {
