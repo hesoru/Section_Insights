@@ -1,8 +1,8 @@
-import { InsightError, InsightResult, NotFoundError } from "../controller/IInsightFacade";
-import { Query, Section, Body, Options } from "../models/Section";
+import {InsightDatasetKind, InsightError, InsightResult, NotFoundError} from "../controller/IInsightFacade";
+import {Body, Options, Query, Room, Section} from "../models/Section";
 import fs from "fs-extra";
 import path from "node:path";
-import { parseSectionObject } from "./JsonHelper";
+import {parseSectionObject} from "./JsonHelper";
 
 /**
  * @returns - Query, validates that the query param conforms to Query structure, if not throws InsightError
@@ -111,12 +111,16 @@ export function handleNegation(filter: any, data: InsightResult[]): InsightResul
 // 	}
 // }
 
-export async function getAllSections(query: Query, datasets: Map<string, number>): Promise<Set<InsightResult>> {
+export async function getAllSections(query: Query, datasets: Map<string, number>, kind: InsightDatasetKind): Promise<Set<InsightResult>> {
 	const idString = extractDatasetId(query);
 	const fileName = String(datasets.get(idString));
-	const allSections = await loadDatasets(idString, fileName);
+	const dataset = await loadDataset(idString, fileName);
 
-	return parseToInsightResult(allSections, idString);
+	if (kind === InsightDatasetKind.Sections) {
+		return parseToInsightResult(dataset as Set<Section>, idString);
+	} else {
+		return parseRoomsToInsightResult(dataset as Set<Room>, idString);
+	}
 }
 
 /**
@@ -166,7 +170,7 @@ export function extractDatasetId(query: Query): string {
  * @param fileName
  * @param id
  */
-export async function loadDatasets(id: string, fileName: string): Promise<Set<Section>> {
+export async function loadDataset(id: string, fileName: string): Promise<Set<Section> | Set<Room>> {
 	const datasetPath = path.resolve("./data", fileName);
 	let dataset;
 	try {
@@ -174,6 +178,7 @@ export async function loadDatasets(id: string, fileName: string): Promise<Set<Se
 	} catch (error) {
 		throw new NotFoundError(`Could not find dataset with - id=${id};` + error);
 	}
+	const parsedRooms = new Set<Room>();
 	const parsedSections = new Set<Section>();
 	for (const file of dataset.files) {
 		for (const section of file.result) {
@@ -201,6 +206,7 @@ export function selectColumns(filteredResults: InsightResult[], validatedQuery: 
 	});
 }
 
+// different for rooms?
 export function parseToInsightResult(allSections: Set<Section>, idString: string): Set<InsightResult> {
 	const columns = new Set<string>([
 		"uuid",

@@ -1,9 +1,9 @@
-import { InsightDataset, InsightDatasetKind, InsightError, NotFoundError } from "../controller/IInsightFacade";
-import { JSONFile, Section } from "../models/Section";
-import fs, { readJson } from "fs-extra";
+import {InsightDataset, InsightDatasetKind, InsightError, NotFoundError} from "../controller/IInsightFacade";
+import {JSONFile, Room, Section} from "../models/Section";
+import fs, {readJson} from "fs-extra";
 import path from "node:path";
 import JSZip from "jszip";
-import { loadDatasets } from "./QueryHelper";
+import {loadDataset} from "./QueryHelper";
 
 /**
  * @returns - true if id is a valid dataset id and has not already been used in the database
@@ -98,23 +98,33 @@ export function parseJSONtoSections(file: string): Set<Section> {
 }
 
 /**
- * @param files - Files contained within an added Dataset, ASSUME files is a list of JSON formatted strings
+ * @param fileStrings - Files contained within an added Dataset, ASSUME files is a list of JSON formatted strings
+ * @param roomsDataset
  * @param name
  * @param id
+ * @param kind
  * @returns - Sections[], separates file into its individual sections passing each section to parseSectionObject and adding the returned object to the array
  * Will throw an InsightDatasetError if file is not a JSON formatted string
  */
-export async function writeFilesToDisk(files: string[], name: number, id: string): Promise<number> {
-	const acc = []; //this might cause problems down the line
-	for (const file of files) {
-		const JSONObject = JSON.parse(file);
-		acc.push(JSONObject);
+export async function writeFilesToDisk(fileStrings: string[], roomsDataset: Room[],
+									   name: number, id: string, kind: InsightDatasetKind): Promise<number> {
+	let outputObject;
+	if (kind === InsightDatasetKind.Sections) {
+		const acc = []; //this might cause problems down the line
+		for (const file of fileStrings) {
+			const JSONObject = JSON.parse(file);
+			acc.push(JSONObject);
+		}
+		outputObject = {
+			datasetID: id,
+			files: acc,
+		};
+	} else {
+		outputObject = {
+			datasetID: id,
+			files: roomsDataset,
+		};
 	}
-
-	const outputObject = {
-		datasetID: id,
-		files: acc,
-	};
 	const idPath = path.resolve("./data", String(name));
 	try {
 		const space = 2;
@@ -127,7 +137,7 @@ export async function writeFilesToDisk(files: string[], name: number, id: string
 	const fileMeta = {
 		id: id,
 		fileName: name,
-		kind: InsightDatasetKind.Sections,
+		kind: kind,
 	};
 	const metaPath = path.resolve("./data", "meta");
 	let dataMeta;
@@ -215,7 +225,7 @@ export async function getDatasetInfo(id: string, fileName: string): Promise<Insi
 
 	// get dataset file path
 	try {
-		const sections = await loadDatasets(id, fileName);
+		const sections = await loadDataset(id, fileName);
 		const numRows = sections.size;
 
 		// Return dataset info

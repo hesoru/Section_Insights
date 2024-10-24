@@ -45,7 +45,7 @@ export default class InsightFacade implements IInsightFacade {
 		this.datasetIds = new Map<string, number>();
 		this.nextAvailableName = 0;
 		this.loadedSections = new Map<string, Set<Section>>();
-		this.loadedRooms = new Map<string, Set<Section>>();
+		this.loadedRooms = new Map<string, Set<Room>>();
 		this.datasetInfo = new Map<string, InsightDataset>();
 	}
 
@@ -65,9 +65,8 @@ export default class InsightFacade implements IInsightFacade {
 
 		//3) Unzips content: checks for valid content, must be a base64-encoded string, all valid courses must be contained within courses folder
 		const unzipped = await unzipContent(content);
-		let fileStringsPromises: Promise<string>[]
 
-		fileStringsPromises = extractFileStrings(unzipped, kind);
+		const fileStringsPromises = extractFileStrings(unzipped, kind);
 
 		//4) parse to Sections in memory and write files to disk
 		//Adapted from ChatGPT generated response
@@ -79,21 +78,18 @@ export default class InsightFacade implements IInsightFacade {
 			if (kind === InsightDatasetKind.Sections) {
 				for (const fileString of fileStrings) {
 					parseJSONtoSections(fileString).forEach((section) => added.add(section));
-					await writeFilesToDisk(fileStrings, this.nextAvailableName, id);
 				}
+				await writeFilesToDisk(fileStrings, null, this.nextAvailableName, id, kind);
 			} else if (kind === InsightDatasetKind.Rooms) {
 				const indexHTML = unzipped.file("index.htm");
 				if (!indexHTML) {
 					throw new InsightError("index.htm not found in dataset");
 				}
-				const indexString = indexHTML.async("string");
-				const buildings = parseIndexString(indexString);
+				const indexString = await indexHTML.async("string");
+				const buildings = await parseIndexString(indexString);
 				const roomsDataset = parseBuildingStrings(fileStrings, buildings);
 				roomsDataset.forEach((room) => added.add(room));
-
-				for (const fileString of fileStrings) {
-					await writeFilesToDisk(fileStrings, this.nextAvailableName, id);
-				}
+				await writeFilesToDisk(null, roomsDataset, this.nextAvailableName, id, kind);
 			}
 		} catch (error) {
 			throw new InsightError("unable to convert all sections to JSON formatted strings" + error);
@@ -115,6 +111,7 @@ export default class InsightFacade implements IInsightFacade {
 		}
 		//Check to make sure name corresponds to position in datasetIds array
 		return Array.from(this.datasetIds.keys());
+		// final output should be array of sections or array of rooms (each room contains Building)
 	}
 
 	public async removeDataset(id: string): Promise<string> {
@@ -218,6 +215,7 @@ export default class InsightFacade implements IInsightFacade {
 	}
 
 	public async initializeFields(): Promise<void> {
+		// what if 1 added after making new instance?
 		if (this.datasetIds.size === 0) {
 			const parts = await getExistingDatasets();
 			this.datasetIds = parts[0];
