@@ -169,8 +169,9 @@ export function extractDatasetId(query: Query): string {
  * If dataset with name data/fileName can not be found throws NotFoundError
  * @param fileName
  * @param id
+ * @param kind
  */
-export async function loadDataset(id: string, fileName: string): Promise<Set<Section> | Set<Room>> {
+export async function loadDataset(id: string, fileName: string, kind: InsightDatasetKind): Promise<Set<Section> | Set<Room>> {
 	const datasetPath = path.resolve("./data", fileName);
 	let dataset;
 	try {
@@ -178,15 +179,26 @@ export async function loadDataset(id: string, fileName: string): Promise<Set<Sec
 	} catch (error) {
 		throw new NotFoundError(`Could not find dataset with - id=${id};` + error);
 	}
-	const parsedRooms = new Set<Room>();
-	const parsedSections = new Set<Section>();
-	for (const file of dataset.files) {
-		for (const section of file.result) {
-			const newSection = parseSectionObject(section);
-			parsedSections.add(newSection);
+
+	if (kind === InsightDatasetKind.Sections) {
+		const parsedSections = new Set<Section>();
+		for (const file of dataset.files) {
+			for (const section of file.result) {
+				const newSection = parseSectionObject(section);
+				parsedSections.add(newSection);
+			}
 		}
+		return parsedSections;
+	} else {
+		const parsedRooms = new Set<Room>();
+		for (const file of dataset.files) {
+			for (const room of file.result) {
+				const newRoom = JSON.parse(room);
+				parsedRooms.add(newRoom);
+			}
+		}
+		return parsedRooms;
 	}
-	return parsedSections;
 }
 
 /**
