@@ -1,9 +1,8 @@
 import {InsightDataset, InsightDatasetKind, InsightError, NotFoundError} from "../controller/IInsightFacade";
-import {JSONFile, Room, Section} from "../models/Section";
+import {JSONFile, MetadataEntry, Room, Section} from "../models/Section";
 import fs, {readJson} from "fs-extra";
 import path from "node:path";
 import JSZip from "jszip";
-import {loadDataset} from "./QueryHelper";
 
 /**
  * @returns - true if id is a valid dataset id and has not already been used in the database
@@ -82,7 +81,6 @@ export function parseSectionObject(section: JSONFile): Section {
  */
 export function parseJSONtoSections(file: string): Set<Section> {
 	const addedSections: Set<Section> = new Set<Section>();
-
 	try {
 		const sections = JSON.parse(file).result as JSONFile[];
 
@@ -106,24 +104,27 @@ export function parseJSONtoSections(file: string): Set<Section> {
  * @returns - Sections[], separates file into its individual sections passing each section to parseSectionObject and adding the returned object to the array
  * Will throw an InsightDatasetError if file is not a JSON formatted string
  */
-export async function writeFilesToDisk(fileStrings: string[], roomsDataset: Room[],
+export async function writeFilesToDisk(fileStrings: string[] | null, roomsDataset: Room[] | null,
 									   name: number, id: string, kind: InsightDatasetKind): Promise<number> {
 	let outputObject;
+	let datasetSize;
 	if (kind === InsightDatasetKind.Sections) {
-		const acc = []; //this might cause problems down the line
+		if (!fileStrings) {
+			throw new InsightError("Section dataset file strings missing!");
+		}
+		const acc: Section[] = []; //this might cause problems down the line
 		for (const file of fileStrings) {
 			const JSONObject = JSON.parse(file);
 			acc.push(JSONObject);
 		}
-		outputObject = {
-			datasetID: id,
-			files: acc,
-		};
+		outputObject = {datasetID: id, files: acc};
+		datasetSize = outputObject.files.length;
 	} else {
-		outputObject = {
-			datasetID: id,
-			files: roomsDataset,
-		};
+		if (!roomsDataset) {
+			throw new InsightError("Rooms dataset missing!");
+		}
+		outputObject = {datasetID: id, files: roomsDataset};
+		datasetSize = outputObject.files.length;
 	}
 	const idPath = path.resolve("./data", String(name));
 	try {
@@ -133,18 +134,24 @@ export async function writeFilesToDisk(fileStrings: string[], roomsDataset: Room
 		throw new InsightError("failed to write files to disk" + name + error);
 	}
 
-	//handle meta:
+	return await writeMetadataFile(name, id, kind, datasetSize);
+}
+
+export async function writeMetadataFile(name: number, id: string, kind: InsightDatasetKind, datasetSize: number):
+	Promise<number> {
+	// handle meta:
 	const fileMeta = {
 		id: id,
 		fileName: name,
 		kind: kind,
+		numRows: datasetSize
 	};
 	const metaPath = path.resolve("./data", "meta");
 	let dataMeta;
 	try {
 		dataMeta = await readJson(metaPath);
 	} catch {
-		//initialize new dataMeta array
+		// initialize new dataMeta array
 		dataMeta = [];
 	}
 	dataMeta.push(fileMeta);
@@ -161,7 +168,7 @@ export async function writeFilesToDisk(fileStrings: string[], roomsDataset: Room
  * @param kind
  * @returns - Promise<string>[], when all promises are resolved will be an array of file contents.
  */
-export async function extractFileStrings(unzipped: JSZip, kind: InsightDatasetKind): Promise<string>[] {
+export function extractFileStrings(unzipped: JSZip, kind: InsightDatasetKind): Promise<string>[] {
 	//forEach documentation: https://stuk.github.io/jszip/documentation/api_jszip/for_each.html
 	const fileStringsPromises: Promise<string>[] = [];
 	let directory: JSZip | null;
@@ -218,6 +225,7 @@ export async function unzipContent(content: string): Promise<JSZip> {
  * @returns - Promise<InsightDataset>, gets the dataset info for each dataset in the database, if loadDatasets fails throws InsightError
  * @param id
  * @param fileName
+ * @param kind
  */
 export async function getDatasetInfo(id: string, fileName: string): Promise<InsightDataset> {
 	// shouldn't have to validate id in listDataset()
@@ -225,15 +233,30 @@ export async function getDatasetInfo(id: string, fileName: string): Promise<Insi
 
 	// get dataset file path
 	try {
-		const sections = await loadDataset(id, fileName);
-		const numRows = sections.size;
+		const metadataPath = path.resolve("./data", fileName);
+		const metadataFile = await fs.readJson(metadataPath);
+		const metadata = JSON.parse(metadataFile) as MetadataEntry[];
+		const datasetInfo = metadata.find((entry) => entry.id === id);
 
 		// Return dataset info
-		return {
-			id: id,
-			kind: InsightDatasetKind.Sections,
-			numRows: numRows,
-		};
+		if (datasetInfo) {
+			return {
+				id: id,
+				kind: datasetInfo?.kind,
+				numRows: datasetInfo?.numRows,
+			};
+		} else {
+			throw new InsightError("Dataset info not found in metadata file.");
+		}
+	// 	const sections = await loadDataset(id, fileName, kind);
+	// 	const numRows = sections.size;
+	//
+	// 	// Return dataset info
+	// 	return {
+	// 		id: id,
+	// 		kind: kind,
+	// 		numRows: numRows,
+	// 	};
 	} catch (error: any) {
 		throw new InsightError(`Failed to retrieve dataset info for id '${id}': ${error.message}`);
 	}

@@ -111,10 +111,11 @@ export function handleNegation(filter: any, data: InsightResult[]): InsightResul
 // 	}
 // }
 
-export async function getAllSections(query: Query, datasets: Map<string, number>, kind: InsightDatasetKind): Promise<Set<InsightResult>> {
+export async function getAllData(query: Query, datasets: Map<string, number>, kind: InsightDatasetKind):
+	Promise<Set<InsightResult>> {
 	const idString = extractDatasetId(query);
 	const fileName = String(datasets.get(idString));
-	const dataset = await loadDataset(idString, fileName);
+	const dataset = await loadDataset(idString, fileName, kind);
 
 	if (kind === InsightDatasetKind.Sections) {
 		return parseToInsightResult(dataset as Set<Section>, idString);
@@ -171,7 +172,8 @@ export function extractDatasetId(query: Query): string {
  * @param id
  * @param kind
  */
-export async function loadDataset(id: string, fileName: string, kind: InsightDatasetKind): Promise<Set<Section> | Set<Room>> {
+export async function loadDataset(id: string, fileName: string, kind: InsightDatasetKind):
+	Promise<Set<Section> | Set<Room>> {
 	const datasetPath = path.resolve("./data", fileName);
 	let dataset;
 	try {

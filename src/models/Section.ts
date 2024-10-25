@@ -109,11 +109,18 @@ export interface Room {
 	seats: number;
 }
 
-interface GeoResponse {
-	lat?: number;
-	lon?: number;
-	error?: string;
-}
+export interface MetadataEntry {
+	id: string,
+	fileName: number,
+	kind: InsightDatasetKind,
+	numRows: number
+};
+
+// interface GeoResponse {
+// 	lat?: number;
+// 	lon?: number;
+// 	error?: string;
+// }
 
 // 'lat' | 'lon' | 'seats' | 'fullname' | 'shortname' | 'number' | 'name' | 'address' | 'type' | 'furniture' | 'href'
 
