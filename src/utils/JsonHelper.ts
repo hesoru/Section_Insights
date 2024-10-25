@@ -233,30 +233,23 @@ export async function getDatasetInfo(id: string, fileName: string): Promise<Insi
 
 	// get dataset file path
 	try {
+		// TODO: test new implementation using metadata file
 		const metadataPath = path.resolve("./data", fileName);
 		const metadataFile = await fs.readJson(metadataPath);
 		const metadata = JSON.parse(metadataFile) as MetadataEntry[];
+		// find metadata entry with matching id
 		const datasetInfo = metadata.find((entry) => entry.id === id);
 
 		// Return dataset info
 		if (datasetInfo) {
 			return {
 				id: id,
-				kind: datasetInfo?.kind,
-				numRows: datasetInfo?.numRows,
+				kind: datasetInfo.kind,
+				numRows: datasetInfo.numRows,
 			};
 		} else {
 			throw new InsightError("Dataset info not found in metadata file.");
 		}
-	// 	const sections = await loadDataset(id, fileName, kind);
-	// 	const numRows = sections.size;
-	//
-	// 	// Return dataset info
-	// 	return {
-	// 		id: id,
-	// 		kind: kind,
-	// 		numRows: numRows,
-	// 	};
 	} catch (error: any) {
 		throw new InsightError(`Failed to retrieve dataset info for id '${id}': ${error.message}`);
 	}

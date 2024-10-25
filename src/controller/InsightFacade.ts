@@ -122,17 +122,23 @@ export default class InsightFacade implements IInsightFacade {
 			// remove from disk
 			const fileName = this.datasetIds.get(id);
 			const datasetPath = path.resolve("./data", String(fileName));
-			await fs.remove(datasetPath); // txt file?
-			// remove from datasetId array
+			await fs.remove(datasetPath);
+			// remove from datasetId array\
+			const datasetInfo = this.datasetInfo.get(id);
+			if (!datasetInfo) {
+				throw new InsightError("Dataset not found in datasetInfo.")
+			}
+			if (datasetInfo.kind === InsightDatasetKind.Sections) {
+				this.loadedSections.delete(id);
+			} else {
+				this.loadedRooms.delete(id);
+			}
 			this.datasetIds.delete(id);
 			this.datasetInfo.delete(id);
-			this.loadedSections.delete(id);
 
-			//remove from meta
+			// remove from metadata file
 			const metaData: Meta[] = await readJson("./data/meta");
-			const newMeta = metaData.filter((meta) => {
-				return meta.id !== id;
-			});
+			const newMeta = metaData.filter((meta) => meta.id !== id);
 			await fs.outputFile("./data/meta", JSON.stringify(newMeta));
 			// return removed id
 			return id;
@@ -204,7 +210,7 @@ export default class InsightFacade implements IInsightFacade {
 			if (typeof existingResult !== "undefined") {
 				result = result.concat(existingResult);
 			} else {
-				// load dataset from disk
+				// load datasets from disk
 				datasetPromises.push(getDatasetInfo(String(id), fileName));
 			}
 		}
