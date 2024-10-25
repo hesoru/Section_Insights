@@ -1,10 +1,6 @@
-import parse5, {DefaultTreeAdapterMap} from 'parse5';
-import fs from 'fs';
-import JSZip from "jszip";
-import {InsightDataset, InsightError} from "../controller/IInsightFacade";
-import {unzipContent} from "./JsonHelper";
+import parse5 from 'parse5';
+import {InsightError} from "../controller/IInsightFacade";
 import {Building, Room} from "../models/Section";
-import { Document } from 'parse5/dist/tree-adapters/default';
 import * as http from "node:http";
 
 export async function parseIndexString(indexString: string): Promise<Building[]> {
@@ -45,19 +41,20 @@ export function parseBuildingStrings(buildingStrings: string[], buildingsIndex: 
 	}
 }
 
-async function addGeolocationDataToAll(buildingsIndex: Building[]): Promise<Building[]> {
+async function addGeolocationDataToAll(buildingsIndex: Partial<Building>[]): Promise<Building[]> {
 	try {
 		// for each building in buildingsIndex:
-		return await Promise.all(buildingsIndex.map(async (building) => {
+		return await Promise.all(buildingsIndex.map(async (building: Partial<Building>) => {
 			// encode the address in URL format
-			const addressURL = encodeURIComponent(building.address);
+			const address = (building as Building).address;
+			const addressURL = encodeURIComponent(address);
 			try {
 				// add geolocation data to building
 				return await addGeolocationData(building, addressURL);
 			} catch {
 				// TODO: what do we do if we don't receive geolocation data? reject the building?
 				// return building without geolocation data otherwise
-				return building;
+				return building as Building;
 			}
 		}));
 	} catch (error) {
@@ -65,7 +62,7 @@ async function addGeolocationDataToAll(buildingsIndex: Building[]): Promise<Buil
 	}
 }
 
-async function addGeolocationData(building: Building, addressURL: string): Promise<Building> {
+async function addGeolocationData(building: Partial<Building>, addressURL: string): Promise<Building> {
 	return new Promise((resolve, reject) => {
 		const url = `http://cs310.students.cs.ubc.ca:11316/api/v1/project_team154/${addressURL}`;
 		let geoResponse = null;
@@ -87,7 +84,7 @@ async function addGeolocationData(building: Building, addressURL: string): Promi
 						building.lat = geoResponse.lat;
 						building.lon = geoResponse.lon;
 					}
-					resolve(building);  // resolve promise
+					resolve(building as Building);  // resolve promise
 				} catch (error) {
 					reject(error);  // reject promise
 				}
@@ -99,7 +96,7 @@ async function addGeolocationData(building: Building, addressURL: string): Promi
 }
 
 // match building to roomsData based on given buildingString (from roomsData)
-function addBuildingToRooms(buildingsIndex: Building[], buildingString: string, roomsData: Room[]): Room[] {
+function addBuildingToRooms(buildingsIndex: Building[], buildingString: string, roomsData: Partial<Room>[]): Room[] {
 	let foundBuilding = {} as Building;
 	try {
 		// every() behaves like foreach(), except stops iterating when receiving a false value
@@ -120,53 +117,39 @@ function addBuildingToRooms(buildingsIndex: Building[], buildingString: string, 
 		roomsData.forEach((room) => {
 			room.building = foundBuilding;
 		})
-		return roomsData;
+		return roomsData as Room[];
 	} catch (error) {
 		throw new InsightError("Not able to find building in index file that matches building in rooms file: " + error);
 	}
 }
 
 // recursive function to traverse the document tree and extract table rows
-export function findTableBodyNode(node: Element): { nodeName: string; attrs: any[]; childNodes: any; } {
+export function findTableBodyNode(node: any): any {
 	// verify if node is a table node (return tbody node)
-	if (isElementNode(node) && node.nodeName === 'table' && node.childNodes) {
-		// const tableNode = node.childNodes.find((child: any) => child.nodeName === 'tbody');
-		for (const child in node.childNodes) {
-			if (child.nodeName === 'tbody') {
-				return child;
-			}
+	if (node.nodeName === 'table' && node.attrs) {
+		// both building and room tables have this specifier - TODO: is it too specific?
+		const isTable = node.attrs.some((attr: any) => attr.value.includes('views-table cols-5 table'));
+		if (isTable) {
+			return node.childNodes.find((child: any) => child.nodeName === 'tbody');
 		}
-		// node.childNodes.forEach(child => {
-		// 	if (child.nodeName === 'tbody') {
-		// 		return child;
-		// 	}
-		// })
-		// const isTableNode = node.attrs.some(attr => attr.value.includes('views-table cols-5 table'));
-		// if (isTableNode) {
-		// 	return node.childNodes.find(child => child.nodeName === 'tbody');
-		// }
 	}
 
 	// recurse through tree to find table
-	let foundTableBodyNode = null;
 	if (node.childNodes) {
-		for (const child of node.childNodes) {
-			foundTableBodyNode = findTableBodyNode(child);
-			if (foundTableBodyNode) {
-				return foundTableBodyNode;
-			}
-		}
+		node.childNodes.forEach((child: any) => findTableBodyNode(child));
 	}
 
 	// throw error if table not found in tree
 	throw new InsightError("Data table not found in HTML file!")
 }
 
-function extractBuildingsIndex(node: Node): Building[] {
-	const buildingsIndex: Building[] = [];
-	if (node.nodeName === 'tr' && node.childNodes) {
-		const building = {} as Building;
-		node.childNodes.forEach((child: {nodeName: string; attrs: any[]; childNodes: {value: string;}[];}) => {
+function extractBuildingsIndex(tableBodyNode: any): Partial<Building>[] {
+	// extracts fullname, shortname, address, and href from index HTML
+	// buildings will be partially completed (no geolocation)
+	const buildingsIndex: Partial<Building>[] = [];
+	if (tableBodyNode.nodeName === 'tr' && tableBodyNode.childNodes) {
+		const building: Partial<Building> = {};
+		tableBodyNode.childNodes.forEach((child: any) => {
 			if (child.nodeName === 'td') {
 				if (child.attrs?.some((attr: any) => attr.name === 'class'
 					&& attr.value.includes('views-field-field-building-code'))) {
@@ -175,7 +158,7 @@ function extractBuildingsIndex(node: Node): Building[] {
 				if (child.attrs?.some((attr: any) => attr.name === 'class'
 					&& attr.value.includes('views-field-title'))) {
 					building.fullname = child.childNodes[0].childNodes[0].value.trim();
-					building.href = child.childNodes[0].attrs.find(attr => attr.name === 'href').value;
+					building.href = child.childNodes[0].attrs.find((attr:any) => attr.name === 'href').value;
 				}
 				if (child.attrs?.some((attr: any) => attr.name === 'class'
 					&& attr.value.includes('views-field-field-building-address'))) {
@@ -185,32 +168,34 @@ function extractBuildingsIndex(node: Node): Building[] {
 		});
 		buildingsIndex.push(building);
 	}
-	// recurse through tree
-	if (node.childNodes) {
-		node.childNodes.forEach((child: any) => extractBuildingsIndex(child));
+	// recurse through tree to extract building data
+	if (tableBodyNode.childNodes) {
+		tableBodyNode.childNodes.forEach((child: any) => extractBuildingsIndex(child));
 	}
 	return buildingsIndex;
 }
 
-function extractRooms(node: any): Room[] {
-	const rooms: Room[] = [];
+function extractRooms(node: any): Partial<Room>[] {
+	// extracts room number, seats, furniture, and type from each room HTML
+	// rooms will be partially completed (no building)
+	const rooms: Partial<Room>[] = [];
 	if (node.nodeName === 'tr' && node.childNodes) {
-		const room = {} as Room;
-		node.childNodes.forEach(child => {
+		const room: Partial<Room> = {};
+		node.childNodes.forEach((child: any) => {
 			if (child.nodeName === 'td') {
-				if (child.attrs.some(attr => attr.name === 'class'
+				if (child.attrs.some((attr: any) => attr.name === 'class'
 					&& attr.value.includes('views-field-field-room-number'))) {
 					room.number = child.childNodes[0].childNodes[0].value.trim();
 				}
-				if (child.attrs.some(attr => attr.name === 'class'
+				if (child.attrs.some((attr: any) => attr.name === 'class'
 					&& attr.value.includes('views-field-field-room-capacity'))) {
 					room.seats = child.childNodes[0].value.trim();
 				}
-				if (child.attrs.some(attr => attr.name === 'class'
+				if (child.attrs.some((attr: any) => attr.name === 'class'
 					&& attr.value.includes('views-field-field-room-furniture'))) {
 					room.furniture = child.childNodes[0].value.trim();
 				}
-				if (child.attrs.some(attr => attr.name === 'class'
+				if (child.attrs.some((attr: any) => attr.name === 'class'
 					&& attr.value.includes('views-field-field-room-type'))) {
 					room.type = child.childNodes[0].value.trim();
 				}
@@ -218,27 +203,29 @@ function extractRooms(node: any): Room[] {
 		});
 		rooms.push(room);
 	}
-	// recurse through tree
+	// recurse through tree to extract room data
 	if (node.childNodes) {
 		node.childNodes.forEach((child:any) => extractRooms(child));
 	}
 	return rooms;
 }
 
-function extractBuildingString(node): string {
-	let building: string;
+function extractBuildingString(node: any): string {
+	// extracts name of building from room HTML
+	let buildingString: string;
 	if (node.nodeName === 'div' && node.attrs) {
-		const isBuildingInfo = node.attrs.some(attr => attr.name === 'id' && attr.value === 'building-info');
+		const isBuildingInfo = node.attrs.some((attr: any) => attr.name === 'id' && attr.value === 'building-info');
 		if (isBuildingInfo) {
-			node.childNodes.forEach(child => {
+			node.childNodes.forEach((child: any) => {
+				// TODO: too hard-coded?
 				if (child.nodeName === 'h2' && child.childNodes && child.childNodes[0].nodeName === '#text') {
-					building = child.childNodes[0].value.trim();
-					return building;
+					buildingString = child.childNodes[0].value.trim();
+					return buildingString;
 				}
 			});
 		}
 	}
-	throw new InsightError("Building not found in room HTML file.");
+	throw new InsightError("Building name not found in room HTML file.");
 }
 
 
