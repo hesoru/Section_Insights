@@ -3,15 +3,15 @@ import {
 	InsightDatasetKind,
 	InsightError,
 	InsightResult,
-	ResultTooLargeError,
 	NotFoundError,
+	ResultTooLargeError,
 } from "../../src/controller/IInsightFacade";
 import InsightFacade from "../../src/controller/InsightFacade";
-import { clearDisk, getContentFromArchives, loadTestQuery } from "../TestUtil";
+import {clearDisk, getContentFromArchives, loadTestQuery} from "../TestUtil";
 
-import { expect, use } from "chai";
+import {expect, use} from "chai";
 import chaiAsPromised from "chai-as-promised";
-import fs, { readdir } from "fs-extra";
+import fs, {readdir} from "fs-extra";
 import path from "node:path";
 
 use(chaiAsPromised);
@@ -29,11 +29,15 @@ describe("InsightFacade", function () {
 	// Declare datasets used in tests. You should add more datasets like this!
 	let sections: string;
 	let miniAddDataset: string;
+	let miniCampus1: string;
+	let miniCampus2: string;
 
 	before(async function () {
 		// This block runs once and loads the datasets.
 		sections = await getContentFromArchives("pair.zip");
 		miniAddDataset = await getContentFromArchives("miniAddData.zip");
+		miniCampus1 = await getContentFromArchives("miniCampus1.zip");
+		miniCampus2 = await getContentFromArchives("miniCampus2.zip");
 
 		// Just in case there is anything hanging around from a previous run of the test suite
 		await clearDisk();
@@ -90,14 +94,15 @@ describe("InsightFacade", function () {
 			}
 		});
 
-		it("should reject adding with invalid InsightDatasetKind (ie. not Sections)", async function () {
-			try {
-				await facade.addDataset("    ", miniAddDataset, InsightDatasetKind.Rooms);
-				expect.fail("Should have thrown above.");
-			} catch (err) {
-				expect(err).to.be.instanceOf(InsightError);
-			}
-		});
+		// TODO: how to test InsightDatasetKind that isn't sections or rooms?
+		// it("should reject adding with invalid InsightDatasetKind", async function () {
+		// 	try {
+		// 		await facade.addDataset("mini", miniAddDataset, InsightDatasetKind.Sections);
+		// 		expect.fail("Should have thrown above.");
+		// 	} catch (err) {
+		// 		expect(err).to.be.instanceOf(InsightError);
+		// 	}
+		// });
 
 		it("should reject adding same id twice", async function () {
 			const miniData5 = await getContentFromArchives("miniData5.zip");
@@ -151,7 +156,7 @@ describe("InsightFacade", function () {
 			}
 		});
 
-		it("checking persistence add", async function () {
+		it("checking persistence add 2 sections", async function () {
 			try {
 				const result = await facade.addDataset("sections", miniAddDataset, InsightDatasetKind.Sections);
 				expect(result).to.be.an("array");
@@ -188,17 +193,72 @@ describe("InsightFacade", function () {
 			}
 		});
 
-		it("should successfully add valid large dataset, and create file on disk", async function () {
+		it("checking persistence add 2 rooms datasets", async function () {
 			try {
-				const result = await facade.addDataset("miniAdd", miniAddDataset, InsightDatasetKind.Sections);
+				const result = await facade.addDataset("miniCampus1", miniCampus1, InsightDatasetKind.Rooms);
 				expect(result).to.be.an("array");
-				expect(result).to.deep.equal(["miniAdd"]);
+				expect(result).to.deep.equal(["miniCampus1"]);
+				const dataset = await facade.listDatasets();
+				expect(dataset).to.deep.equal([
+					{
+						id: "miniCampus1",
+						kind: InsightDatasetKind.Rooms,
+						numRows: 26,
+					},
+				]);
+				const newFacade = new InsightFacade();
+				const result1 = await newFacade.addDataset("miniCampus2", miniCampus2, InsightDatasetKind.Rooms);
+				expect(result1).to.deep.equal(["miniCampus1", "miniCampus2"]);
+
+				const datasets = await newFacade.listDatasets();
+				expect(datasets).to.have.deep.members([
+					{
+						id: "miniCampus1",
+						kind: InsightDatasetKind.Rooms,
+						numRows: 26,
+					},
+					{
+						id: "miniCampus2",
+						kind: InsightDatasetKind.Rooms,
+						numRows: 6,
+					},
+				]);
 				// read file from disk
 			} catch (err) {
 				expect.fail("Should not have thrown an error" + err);
 			}
 		});
-		it("checking persistence add twice", async function () {
+
+		it("should successfully add valid large Sections dataset, and create file on disk", async function () {
+			try {
+				const result = await facade.addDataset("miniAdd", miniAddDataset, InsightDatasetKind.Sections);
+				expect(result).to.be.an("array");
+				expect(result).to.deep.equal(["miniAdd"]);
+			} catch (err) {
+				expect.fail("Should not have thrown an error" + err);
+			}
+		});
+
+		it("should successfully add valid large Rooms dataset, and create file on disk", async function () {
+			try {
+				const result = await facade.addDataset("miniCampus", miniCampus1, InsightDatasetKind.Rooms);
+				expect(result).to.be.an("array");
+				expect(result).to.deep.equal(["miniCampus"]);
+
+				const dataset = await facade.listDatasets();
+				expect(dataset).to.have.deep.members([
+					{
+						id: "miniCampus",
+						kind: InsightDatasetKind.Rooms,
+						numRows: 26,
+					}
+				]);
+			} catch (err) {
+				expect.fail("Should not have thrown an error" + err);
+			}
+		});
+
+		it("checking persistence add same sections dataset twice", async function () {
 			try {
 				const result = await facade.addDataset("mini", miniAddDataset, InsightDatasetKind.Sections);
 				expect(result).to.be.an("array");

@@ -1,4 +1,11 @@
-import { IInsightFacade, InsightDataset, InsightDatasetKind, InsightError, InsightResult } from "./IInsightFacade";
+import {
+	IInsightFacade,
+	InsightDataset,
+	InsightDatasetKind,
+	InsightError,
+	InsightResult,
+	ResultTooLargeError,
+} from "./IInsightFacade";
 import {
 	checkValidId,
 	extractFileStrings,
@@ -11,16 +18,16 @@ import {
 import fs, { readJson } from "fs-extra";
 import {
 	extractDatasetId,
-	getAllSections,
-	parseRoomsToInsightResult,
-	parseSectionsToInsightResult,
-	queryInsightResults,
+	getAllData,
+	handleFilter,
+	parseToInsightResult,
+	selectColumns,
+	sortResults,
 } from "../utils/QueryHelper";
-import { Meta, Section } from "../models/Section";
+import {Meta, Query, Room, Section} from "../models/Section";
 import { validateQuery } from "../utils/ValidateHelper";
 import path from "node:path";
-import { parseBuildingStrings, parseIndexString } from "../utils/HTMLHelper";
-import { Room } from "../models/Room";
+import {parseBuildingStrings, parseIndexString} from "../utils/HTMLHelper";
 
 /**
  * This is the main programmatic entry point for the project.
@@ -45,23 +52,24 @@ export default class InsightFacade implements IInsightFacade {
 	public async addDataset(id: string, content: string, kind: InsightDatasetKind): Promise<string[]> {
 		await this.initializeFields();
 
-		//1) check kind of dataset
+		// 1) check kind of dataset
 		if (kind !== (InsightDatasetKind.Sections || InsightDatasetKind.Rooms)) {
 			throw new InsightError("Dataset not of valid kind (Sections or Rooms), could not add dataset");
 		}
-		//2) Check validity of id: can not be only white space, can not have underscores, reject if id is already in database
+		// 2) Check validity of id: can not be only white space, can not have underscores, reject if id is already in database
 		try {
 			checkValidId(id, Array.from(this.datasetIds.keys()), false); // adjusted function for map
 		} catch (error) {
 			throw new InsightError("id passed to addDataset invalid" + error); //is this catch block necessary?
 		}
 
-		//3) Unzips content: checks for valid content, must be a base64-encoded string, all valid courses must be contained within courses folder
+		// 3) Unzips content: checks for valid content, must be a base64-encoded string, all valid courses must be contained within courses folder
 		const unzipped = await unzipContent(content);
+
 		const fileStringsPromises = extractFileStrings(unzipped, kind);
 
-		//4) parse to Sections in memory and write files to disk
-		//Adapted from ChatGPT generated response
+		// 4) Write files to disk
+		// Adapted from ChatGPT generated response
 		let fileStrings: string[];
 		const added = new Set<any>();
 		try {
@@ -70,24 +78,21 @@ export default class InsightFacade implements IInsightFacade {
 			if (kind === InsightDatasetKind.Sections) {
 				for (const fileString of fileStrings) {
 					parseJSONtoSections(fileString).forEach((section) => added.add(section));
-					await writeFilesToDisk(fileStrings, this.nextAvailableName, id);
 				}
+				await writeFilesToDisk(fileStrings, null, this.nextAvailableName, id, kind);
 			} else if (kind === InsightDatasetKind.Rooms) {
 				const indexHTML = unzipped.file("index.htm");
 				if (!indexHTML) {
 					throw new InsightError("index.htm not found in dataset");
 				}
-				const indexString = indexHTML.async("string");
-				const buildings = parseIndexString(indexString);
+				const indexString = await indexHTML.async("string");
+				const buildings = await parseIndexString(indexString);
 				const roomsDataset = parseBuildingStrings(fileStrings, buildings);
 				roomsDataset.forEach((room) => added.add(room));
-
-				for (const fileString of fileStrings) {
-					await writeFilesToDisk(fileStrings, this.nextAvailableName, id);
-				}
+				await writeFilesToDisk(null, roomsDataset, this.nextAvailableName, id, kind);
 			}
 		} catch (error) {
-			throw new InsightError("unable to convert all sections to JSON formatted strings" + error);
+			throw new InsightError("Unable to convert all sections to JSON formatted strings" + error);
 		}
 
 		//5) update datasetIds
@@ -106,6 +111,7 @@ export default class InsightFacade implements IInsightFacade {
 		}
 		//Check to make sure name corresponds to position in datasetIds array
 		return Array.from(this.datasetIds.keys());
+		// final output should be array of sections or array of rooms (each room contains Building)
 	}
 
 	public async removeDataset(id: string): Promise<string> {
@@ -116,17 +122,23 @@ export default class InsightFacade implements IInsightFacade {
 			// remove from disk
 			const fileName = this.datasetIds.get(id);
 			const datasetPath = path.resolve("./data", String(fileName));
-			await fs.remove(datasetPath); // txt file?
-			// remove from datasetId array
+			await fs.remove(datasetPath);
+			// remove from datasetId array\
+			const datasetInfo = this.datasetInfo.get(id);
+			if (!datasetInfo) {
+				throw new InsightError("Dataset not found in datasetInfo.")
+			}
+			if (datasetInfo.kind === InsightDatasetKind.Sections) {
+				this.loadedSections.delete(id);
+			} else {
+				this.loadedRooms.delete(id);
+			}
 			this.datasetIds.delete(id);
 			this.datasetInfo.delete(id);
-			this.loadedSections.delete(id);
 
-			//remove from meta
+			// remove from metadata file
 			const metaData: Meta[] = await readJson("./data/meta");
-			const newMeta = metaData.filter((meta) => {
-				return meta.id !== id;
-			});
+			const newMeta = metaData.filter((meta) => meta.id !== id);
 			await fs.outputFile("./data/meta", JSON.stringify(newMeta));
 			// return removed id
 			return id;
@@ -136,8 +148,15 @@ export default class InsightFacade implements IInsightFacade {
 	}
 
 	public async performQuery(query: unknown): Promise<InsightResult[]> {
+		const MAX_SIZE = 5000;
+
 		// 1) validate query
-		const validatedQuery = validateQuery(query);
+		let validatedQuery: Query;
+		try {
+			validatedQuery = validateQuery(query);
+		} catch (error) {
+			throw new InsightError(`Query not a valid format: ` + error);
+		}
 
 		// 2) extract dataset id from validated query, ensure dataset exists
 		const id = extractDatasetId(validatedQuery);
@@ -145,25 +164,37 @@ export default class InsightFacade implements IInsightFacade {
 			throw new InsightError(`Dataset '${id}' does not exist.`);
 		}
 
+		// process query on the dataset
+
 		// 3) start with data for all sections
-		let allResults: Set<InsightResult>;
-		if (this.datasetInfo.get(id)?.kind === InsightDatasetKind.Sections) {
-			const allSections = this.loadedSections.get(id);
-			if (typeof allSections === "undefined") {
-				allResults = await getAllSections(validatedQuery, this.datasetIds);
-			} else {
-				allResults = parseSectionsToInsightResult(allSections, id);
-			}
+		const allSections = this.loadedSections.get(id);
+		let allResults;
+		if (typeof allSections === "undefined") {
+			allResults = await getAllData(validatedQuery, this.datasetIds);
 		} else {
-			const allRooms = this.loadedRooms.get(id);
-			if (typeof allRooms === "undefined") {
-				allResults = await getAllRooms(validatedQuery, this.datasetIds);
-			} else {
-				allResults = parseRoomsToInsightResult(allRooms, id);
-			}
+			allResults = parseToInsightResult(allSections, id);
 		}
 
-		return queryInsightResults(allResults, validatedQuery);
+		// 4) filter results if necessary (WHERE)
+		let filteredResults: InsightResult[];
+		filteredResults = handleFilter(validatedQuery.WHERE, Array.from(allResults));
+
+		// 5) handle results that are too large
+		if (filteredResults.length > MAX_SIZE) {
+			throw new ResultTooLargeError("Query results exceed maximum size (5000 sections).");
+		}
+
+		// 6) select only specified columns (OPTIONS.COLUMNS)
+		filteredResults = selectColumns(filteredResults, validatedQuery);
+
+		// 7) sort results if necessary (OPTIONS.ORDER)
+		let sortedFilteredResults: InsightResult[];
+		if (validatedQuery.OPTIONS.ORDER) {
+			sortedFilteredResults = sortResults(validatedQuery.OPTIONS, filteredResults);
+		} else {
+			sortedFilteredResults = filteredResults;
+		}
+		return sortedFilteredResults;
 	}
 
 	public async listDatasets(): Promise<InsightDataset[]> {
@@ -175,9 +206,11 @@ export default class InsightFacade implements IInsightFacade {
 		for (const id of this.datasetIds.keys()) {
 			const fileName = String(this.datasetIds.get(id));
 			const existingResult = this.datasetInfo.get(id);
+			// if dataset exists
 			if (typeof existingResult !== "undefined") {
 				result = result.concat(existingResult);
 			} else {
+				// load datasets from disk
 				datasetPromises.push(getDatasetInfo(String(id), fileName));
 			}
 		}
@@ -190,6 +223,7 @@ export default class InsightFacade implements IInsightFacade {
 	}
 
 	public async initializeFields(): Promise<void> {
+		// what if 1 added after making new instance?
 		if (this.datasetIds.size === 0) {
 			const parts = await getExistingDatasets();
 			this.datasetIds = parts[0];

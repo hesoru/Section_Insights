@@ -52,7 +52,6 @@ export interface JSONFile {
 export interface Query {
 	WHERE: Body;
 	OPTIONS: Options;
-	TRANSFORMATIONS: Transformations;
 }
 
 /**
@@ -75,23 +74,7 @@ export interface Body {
  */
 export interface Options {
 	COLUMNS: string[];
-	ORDER?: string | Order;
-}
-
-export interface Order {
-	dir: Dir;
-	keys: string[];
-}
-
-export interface Transformations {
-	GROUP: string[];
-	APPLY?: object[]; //is this necessary? what did we do for where?
-}
-
-export interface ApplyRule {
-	applyKey: string;
-	applyToken: ApplyToken;
-	key: MKey | SKey;
+	ORDER?: string;
 }
 
 export interface Meta {
@@ -105,20 +88,40 @@ export interface Meta {
  */
 export type MKey = `${string}_${MField}`; //adapted from ChatGPT generated response
 export type SKey = `${string}_${SField}`; //adapted from ChatGPT generated response
-export type MField = "avg" | "pass" | "fail" | "audit" | "year" | "lat" | "lon" | "seats";
-export type SField =
-	| "dept"
-	| "id"
-	| "instructor"
-	| "title"
-	| "uuid"
-	| "fullname"
-	| "shortname"
-	| "number"
-	| "name"
-	| "address"
-	| "type"
-	| "furniture"
-	| "href";
-export type ApplyToken = "MIN" | "MAX" | "AVG" | "COUNT" | "SUM";
-export type Dir = "UP" | "DOWN";
+export type MField = "avg" | "pass" | "fail" | "audit" | "year";
+export type SField = "dept" | "id" | "instructor" | "title" | "uuid";
+
+export interface Building {
+	fullname: string;
+	shortname: string;
+	address: string;
+	lat?: number;
+	lon?: number;
+	href: string;
+}
+
+export interface Room {
+	building: Building;
+	name: string;
+	number: string;	// not always a number so represented as a string
+	type: string;
+	furniture: string;
+	seats: number;
+}
+
+export interface MetadataEntry {
+	id: string,
+	fileName: number,
+	kind: InsightDatasetKind,
+	numRows: number
+};
+
+// interface GeoResponse {
+// 	lat?: number;
+// 	lon?: number;
+// 	error?: string;
+// }
+
+// 'lat' | 'lon' | 'seats' | 'fullname' | 'shortname' | 'number' | 'name' | 'address' | 'type' | 'furniture' | 'href'
+
+
