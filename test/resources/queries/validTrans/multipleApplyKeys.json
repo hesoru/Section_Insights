@@ -1,0 +1,113 @@
+{
+  "title": "simple query w/ grouping and multiple apply transformations",
+  "input": {
+    "WHERE": {
+      "GT": {
+        "sections_avg": 97
+      }
+    },
+    "OPTIONS": {
+      "COLUMNS": [
+        "sections_pass",
+        "avgAvg",
+        "countSections"
+      ],
+      "ORDER": "avgAvg"
+    },
+    "TRANSFORMATIONS": {
+      "GROUP": [
+        "sections_pass"
+      ],
+      "APPLY": [
+        {
+          "avgAvg": {
+            "AVG": "sections_avg"
+          }
+        },
+        {
+          "countSections": {
+            "COUNT": "sections_id"
+          }
+        }
+      ]
+    }
+  },
+  "errorExpected": false,
+  "expected": [
+    {
+      "sections_pass":4,
+      "avgAvg":97.25,
+      "countSections":1
+    },
+    {
+      "sections_pass":15,
+      "avgAvg":97.47,
+      "countSections":1
+    },
+    {
+      "sections_pass":21,
+      "avgAvg":97.48,
+      "countSections":1
+    },
+    {
+      "sections_pass":11,
+      "avgAvg":97.54,
+      "countSections":3
+    },
+    {
+      "sections_pass":17,
+      "avgAvg":97.9,
+      "countSections":3
+    },
+    {
+      "sections_pass":14,
+      "avgAvg":97.99,
+      "countSections":3
+    },
+    {
+      "sections_pass":1,
+      "avgAvg":98,
+      "countSections":1
+    },
+    {
+      "sections_pass":12,
+      "avgAvg":98.2,
+      "countSections":4
+    },
+    {
+      "sections_pass":22,
+      "avgAvg":98.36,
+      "countSections":1
+    },
+    {
+      "sections_pass":16,
+      "avgAvg":98.47,
+      "countSections":3
+    },
+    {
+      "sections_pass":24,
+      "avgAvg":98.58,
+      "countSections":1
+    },
+    {
+      "sections_pass":10,
+      "avgAvg":98.7,
+      "countSections":1
+    },
+    {
+      "sections_pass":9,
+      "avgAvg":98.75,
+      "countSections":3
+    },
+    {
+      "sections_pass":25,
+      "avgAvg":98.8,
+      "countSections":1
+    },
+    {
+      "sections_pass":82,
+      "avgAvg":98.98,
+      "countSections":1
+    }
+  ]
+}

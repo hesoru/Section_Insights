@@ -106,7 +106,19 @@ export interface Meta {
 export type MKey = `${string}_${MField}`; //adapted from ChatGPT generated response
 export type SKey = `${string}_${SField}`; //adapted from ChatGPT generated response
 export type MField = "avg" | "pass" | "fail" | "audit" | "year" | "lat" | "lon" | "seats";
-export type SField = "dept" | "id" | "instructor" | "title" | "uuid" | "fullname" | "shortname" | "number" | "name" |
-	"address" | "type" | "furniture" | "href";
+export type SField =
+	| "dept"
+	| "id"
+	| "instructor"
+	| "title"
+	| "uuid"
+	| "fullname"
+	| "shortname"
+	| "number"
+	| "name"
+	| "address"
+	| "type"
+	| "furniture"
+	| "href";
 export type ApplyToken = "MIN" | "MAX" | "AVG" | "COUNT" | "SUM";
 export type Dir = "UP" | "DOWN";

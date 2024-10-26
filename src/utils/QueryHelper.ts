@@ -4,7 +4,7 @@ import fs from "fs-extra";
 import path from "node:path";
 import { parseSectionObject } from "./JsonHelper";
 import { Building, Room } from "../models/Room";
-import {sortResults} from "./SortHelper";
+import { sortResults } from "./SortHelper";
 
 /**
  * @returns - Query, validates that the query param conforms to Query structure, if not throws InsightError
@@ -104,8 +104,6 @@ export async function getAllSections(query: Query, datasets: Map<string, number>
 
 	return parseSectionsToInsightResult(allSections, idString);
 }
-
-
 
 /**
  * @returns - string, extracts dataset id from first key found in OPTIONS.COLUMNS

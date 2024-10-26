@@ -1,10 +1,4 @@
-import {
-	IInsightFacade,
-	InsightDataset,
-	InsightDatasetKind,
-	InsightError,
-	InsightResult,
-} from "./IInsightFacade";
+import { IInsightFacade, InsightDataset, InsightDatasetKind, InsightError, InsightResult } from "./IInsightFacade";
 import {
 	checkValidId,
 	extractFileStrings,
