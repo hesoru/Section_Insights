@@ -37,14 +37,12 @@
         },
         {
           "avgSectionAvg": {
-            "AVG": "sections_avg"  // Duplicate key for avg on sections_avg
+            "AVG": "sections_avg"
           }
         }
       ]
     }
   },
-  "errorExpected": false,
-  "expected": {
-    // Insert the expected results here
-  }
+  "errorExpected": true,
+  "expected": "InsightError"
 }
