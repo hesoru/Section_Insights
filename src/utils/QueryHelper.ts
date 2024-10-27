@@ -12,6 +12,7 @@ import { parseSectionObject } from "./JsonHelper";
 import { Building, Room } from "../models/Room";
 import { sortResults } from "./SortHelper";
 import {Query, Body} from "../models/Query";
+import {apply, groupBy} from "./TransformationsHelper";
 
 /**
  * @returns - Query, validates that the query param conforms to Query structure, if not throws InsightError
@@ -248,6 +249,18 @@ export function queryInsightResults(allResults: Set<InsightResult>, validatedQue
 	//4) Filter results according to WHERE
 	let filteredResults: InsightResult[];
 	filteredResults = handleFilter(validatedQuery.WHERE, Array.from(allResults));
+
+	//5) Group results and apply
+	if(validatedQuery.TRANSFORMATIONS) {
+		const groupedResults = groupBy(filteredResults, validatedQuery);
+		if(validatedQuery.TRANSFORMATIONS.APPLY) {
+			for(const group of groupedResults.values()) {
+				const calculation = apply(group, validatedQuery.TRANSFORMATIONS.APPLY);
+				Object.assign(group[0], calculation); //will this add it to group inplace?
+			}
+		}
+		filteredResults = Array.from(groupedResults.values()).map(group => group[0]);
+	}
 
 	// 5) handle results that are too large
 	if (filteredResults.length > MAX_SIZE) {

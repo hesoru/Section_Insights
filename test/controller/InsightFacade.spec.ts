@@ -671,7 +671,7 @@ describe("InsightFacade", function () {
 		it("[validTrans/allApplyKeys.json]", checkQuery);
 		it("[validTrans/duplicateApplyKeys.json]", checkQuery);
 		it("[invalidTrans/duplicateApplyAvg.json]", checkQuery);
-		it("[validTrans/countOnString.json", checkQuery);
+		it("[validTrans/countOnString.json]", checkQuery);
 		it("[invalidTrans/maxOnString.json]", checkQuery);
 		it("[validTrans/noContent.json]", checkQuery);
 

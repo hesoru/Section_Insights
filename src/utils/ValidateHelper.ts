@@ -1,5 +1,5 @@
 import {InsightDatasetKind, InsightError} from "../controller/IInsightFacade";
-import {MKey, Query, SKey} from "../models/Query";
+import {MKey, Options, Query, SKey} from "../models/Query";
 
 /**
  * Questions:
@@ -40,7 +40,7 @@ export function validateQuery(query: unknown, type: InsightDatasetKind): Query {
 		if (query.OPTIONS === null || typeof query.OPTIONS !== "object") {
 			throw new InsightError("invalid query, query contains invalid OPTIONS field");
 		}
-		columnKeys = validateOptions(query.OPTIONS, type);
+		columnKeys = validateOptions(query.OPTIONS, type, "TRANSFORMATIONS" in query);
 	} else {
 		throw new InsightError("invalid query, query does not contain OPTIONS field");
 	}
@@ -143,8 +143,9 @@ export function checkKeys(filter: any): string[] {
  * @returns - validates that OPTIONS portion of query conforms to Options interface, if not throws Insight Error
  * @param options
  * @param type
+ * @param transformation
  */
-export function validateOptions(options: any, type: InsightDatasetKind): Set<string> {
+export function validateOptions(options: any, type: InsightDatasetKind, transformation: boolean): Set<string> {
 	const keys = Object.keys(options);
 	const KEY_LENGTH = 2;
 	if (keys.length === 0 || keys.length > KEY_LENGTH) {
@@ -158,24 +159,45 @@ export function validateOptions(options: any, type: InsightDatasetKind): Set<str
 		throw new InsightError("invalid query, query.OPTIONS.COLUMNS is not an array");
 	}
 	const columnsKeys = new Set<string>();
-	for (const key of options.COLUMNS) {
-		validateKey(key, type);
-		columnsKeys.add(key);
+	if(!transformation) {
+		for (const key of options.COLUMNS) {
+			columnsKeys.add(key);
+		}
+	} else {
+		for (const key of options.COLUMNS) {
+			validateKey(key, type);
+			columnsKeys.add(key);
+		}
 	}
+	validateOrder(options, keys, columnsKeys);
+	return columnsKeys;
+}
 
-	//validate order
-	if (keys[1]) {
-		if (keys[1] !== "ORDER") {
-			throw new InsightError("invalid query, query.OPTIONS does not contain ORDER as 2nd key");
+function validateOrder(options: Options, keys: string[], columnsKeys: Set<string>): void {
+	if (keys[1] === "ORDER") {
+		if (typeof options.ORDER === "object") {
+			const orderKeys = Object.keys(options.ORDER)
+			if (orderKeys[0] === "dir" || orderKeys[1] === "keys") {
+				throw new InsightError("invalid order object found in options");
+			}
+			if (options.ORDER.dir !== "UP" && options.ORDER.dir !== "DOWN") {
+				throw new InsightError("invalid dir found in order object");
+			}
+			if (!Array.isArray(options.ORDER.keys)) {
+				throw new InsightError("invalid keys found in order object, not an array");
+			}
+			for (const key of options.ORDER.keys) {
+				if (!columnsKeys.has(key)) {
+					throw new InsightError("invalid keys found in options");
+				}
+			}
 		}
 		if (!Object.values(options.COLUMNS).includes(options.ORDER)) {
 			throw new InsightError("invalid query, query.ORDER specifies key not in OPTIONS");
 		}
-		{
-			validateKey(options.ORDER, type);
-		}
+	} else {
+		throw new InsightError("invalid options second key is not order")
 	}
-	return columnsKeys;
 }
 
 /**
@@ -288,7 +310,7 @@ function validateTransformation(transformations: any, columnKeys: Set<string>, t
 	const applyKeys = validateApply(transformations.APPLY, type);
 
 	columnKeys.forEach((key) => {
-		if (groupKeys.has(key) && applyKeys.has(key)) {
+		if (!groupKeys.has(key) && !applyKeys.has(key)) {
 			throw new InsightError("all column keys do not correspond to group keys or apply keys");
 		}
 	});
@@ -322,7 +344,7 @@ function validateApply(apply: any, type: InsightDatasetKind): Set<string> {
 }
 
 function validateApplyRule(applyRule: any, type: InsightDatasetKind): string {
-	if (typeof applyRule === "object") {
+	if (typeof applyRule !== "object") {
 		throw new InsightError("invalid apply field in transformations, invalid applyRule found");
 	}
 	const keys = Object.keys(applyRule);

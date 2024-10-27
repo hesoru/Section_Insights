@@ -7,6 +7,7 @@ import {RoomMKey, RoomSKey} from "./Room";
 export interface Query {
     WHERE: Body;
     OPTIONS: Options;
+    TRANSFORMATIONS: Transformations;
 }
 
 /**
@@ -33,9 +34,26 @@ export interface Options {
 }
 
 export interface Order {
-    dir: "UP" | "DOWN";
+    dir: Dir;
     keys: string[];
+}
+
+export interface Transformations {
+    GROUP: string[];
+    APPLY?: ApplyRule[];
+}
+
+export type ApplyRule = Record<string, ApplyTokenObject>;
+
+export interface ApplyTokenObject {
+    MIN?: MKey | SKey;
+    MAX?: MKey | SKey;
+    AVG?: MKey | SKey;
+    COUNT?: MKey | SKey;
+    SUM?: MKey | SKey;
 }
 
 export type MKey = SectionMKey | RoomMKey
 export type SKey = SectionSKey | RoomSKey
+export type ApplyToken = "MIN" | "MAX" | "AVG" | "COUNT" | "SUM";
+export type Dir = "UP" | "DOWN";

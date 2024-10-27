@@ -34,7 +34,7 @@
 // 		});
 // 	});
 //
-// 	describe("applyResult", function () {
+// 	describe("apply", function () {
 // 		beforeEach(async function () {
 // 			await clearDisk();
 // 			//facade = new InsightFacade();
