@@ -7,11 +7,11 @@ import {
 	ResultTooLargeError,
 } from "../../src/controller/IInsightFacade";
 import InsightFacade from "../../src/controller/InsightFacade";
-import {clearDisk, getContentFromArchives, loadTestQuery} from "../TestUtil";
+import { clearDisk, getContentFromArchives, loadTestQuery } from "../TestUtil";
 
-import {expect, use} from "chai";
+import { expect, use } from "chai";
 import chaiAsPromised from "chai-as-promised";
-import fs, {readdir} from "fs-extra";
+import fs, { readdir } from "fs-extra";
 import path from "node:path";
 
 use(chaiAsPromised);
@@ -251,7 +251,7 @@ describe("InsightFacade", function () {
 						id: "miniCampus",
 						kind: InsightDatasetKind.Rooms,
 						numRows: 26,
-					}
+					},
 				]);
 			} catch (err) {
 				expect.fail("Should not have thrown an error" + err);

@@ -51,11 +51,16 @@ export interface Room {
 }
 
 //Why do we have the address in GeoResponse? is it not the return type they specified in the specs?
-interface GeoResponse {
-	address: string;
-	lat?: number;
-	lon?: number;
-	error?: string;
-}
+// interface GeoResponse {
+// 	address: string;
+// 	lat?: number;
+// 	lon?: number;
+// 	error?: string;
+// }
 
 // 'lat' | 'lon' | 'seats' | 'fullname' | 'shortname' | 'number' | 'name' | 'address' | 'type' | 'furniture' | 'href'
+
+export type RoomMKey = `${string}_${RoomMField}`; //adapted from ChatGPT generated response
+export type RoomSKey = `${string}_${RoomSField}`; //adapted from ChatGPT generated response
+export type RoomMField = "lat" | "lon" | "seats";
+export type RoomSField = "fullname" | "shortname" | "number" | "name" | "address" | "type" | "furniture" | "href";

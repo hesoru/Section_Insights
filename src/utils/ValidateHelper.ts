@@ -1,5 +1,5 @@
-import { MKey, Query, SKey } from "../models/Section";
-import { InsightError } from "../controller/IInsightFacade";
+import {InsightDatasetKind, InsightError} from "../controller/IInsightFacade";
+import {MKey, Query, SKey} from "../models/Query";
 
 /**
  * Questions:
@@ -16,8 +16,9 @@ import { InsightError } from "../controller/IInsightFacade";
 /**
  * @returns - Query, validates that the query param conforms to Query structure, if not throws InsightError
  * @param query
+ * @param type
  */
-export function validateQuery(query: unknown): Query {
+export function validateQuery(query: unknown, type: InsightDatasetKind): Query {
 	//1) check that query is an object
 	if (typeof query !== "object" || query === null) {
 		throw new InsightError("invalid query, query is not a non-null object");
@@ -28,7 +29,7 @@ export function validateQuery(query: unknown): Query {
 		if (query.WHERE === null || typeof query.WHERE !== "object") {
 			throw new InsightError("invalid query, query contains null WHERE field");
 		}
-		validateBody(query.WHERE);
+		validateBody(query.WHERE, type);
 	} else {
 		throw new InsightError("invalid query, query does not contain WHERE field");
 	}
@@ -36,21 +37,19 @@ export function validateQuery(query: unknown): Query {
 	//3) check OPTION fields
 	let columnKeys;
 	if ("OPTIONS" in query) {
-		//is the OPTIONS field allowed to be null? I don't think so
 		if (query.OPTIONS === null || typeof query.OPTIONS !== "object") {
 			throw new InsightError("invalid query, query contains invalid OPTIONS field");
 		}
-		columnKeys = validateOptions(query.OPTIONS);
+		columnKeys = validateOptions(query.OPTIONS, type);
 	} else {
 		throw new InsightError("invalid query, query does not contain OPTIONS field");
-		//this is okay right
 	}
 
 	if ("TRANSFORMATIONS" in query) {
 		if (query.TRANSFORMATIONS === null || typeof query.TRANSFORMATIONS !== "object") {
 			throw new InsightError("invalid query, query contains invalid TRANSFORMATIONS field");
 		}
-		validateTransformation(query.TRANSFORMATIONS, columnKeys);
+		validateTransformation(query.TRANSFORMATIONS, columnKeys, type);
 	}
 	return query as Query;
 }
@@ -58,17 +57,18 @@ export function validateQuery(query: unknown): Query {
 /**
  * @returns - void, if filter does not conform to query.WHERE structure throws InsightError
  * @param filter
+ * @param type
  */
-export function validateBody(filter: any): void {
+export function validateBody(filter: any, type: InsightDatasetKind): void {
 	const keys = checkKeys(filter);
 	const validateArray = (key: string, value: any): void => {
 		if (!Array.isArray(value) || value.length === 0) {
 			throw new InsightError(`invalid query, query.WHERE.${key} is invalid`);
 		}
-		value.forEach(validateBody);
+		value.forEach((subFilter) => validateBody(subFilter, type));
 	};
 	if (keys[0] === "GT" || keys[0] === "LT" || keys[0] === "IS" || keys[0] === "EQ") {
-		validateLogicComparator(keys[0], filter);
+		validateLogicComparator(keys[0], filter, type);
 	} else {
 		switch (keys[0]) {
 			case "OR":
@@ -78,7 +78,7 @@ export function validateBody(filter: any): void {
 				validateArray("AND", filter.AND);
 				break;
 			case "NOT":
-				validateBody(filter.NOT);
+				validateBody(filter.NOT, type);
 				break;
 			default:
 				if (keys.length !== 0) {
@@ -93,13 +93,14 @@ export function validateBody(filter: any): void {
  * @returns void, checks that the key is an object, if not throws InsightError.
  * @param key
  * @param value
+ * @param keyType
  * @param type
  */
-export function validateObject(key: string, value: any, type: string): void {
+export function validateObject(key: string, value: any, keyType: string, type: InsightDatasetKind): void {
 	if (value === null || typeof value !== "object") {
 		throw new InsightError(`invalid query, query.WHERE.${key} is invalid`);
 	}
-	validateComparator(value, type);
+	validateComparator(value, keyType, type);
 }
 
 /**
@@ -107,20 +108,21 @@ export function validateObject(key: string, value: any, type: string): void {
  * if not valid throws InsightError
  * @param key
  * @param filter
+ * @param type
  */
-export function validateLogicComparator(key: string, filter: any): void {
+export function validateLogicComparator(key: string, filter: any, type: InsightDatasetKind): void {
 	switch (key) {
 		case "GT":
-			validateObject("GT", filter.GT, "Mkey");
+			validateObject("GT", filter.GT, "Mkey", type);
 			break;
 		case "LT":
-			validateObject("LT", filter.LT, "Mkey");
+			validateObject("LT", filter.LT, "Mkey", type);
 			break;
 		case "EQ":
-			validateObject("EQ", filter.EQ, "Mkey");
+			validateObject("EQ", filter.EQ, "Mkey", type);
 			break;
 		case "IS":
-			validateObject("IS", filter.IS, "SKey");
+			validateObject("IS", filter.IS, "SKey", type);
 			break;
 	}
 }
@@ -140,8 +142,9 @@ export function checkKeys(filter: any): string[] {
 /**
  * @returns - validates that OPTIONS portion of query conforms to Options interface, if not throws Insight Error
  * @param options
+ * @param type
  */
-export function validateOptions(options: any): Set<string> {
+export function validateOptions(options: any, type: InsightDatasetKind): Set<string> {
 	const keys = Object.keys(options);
 	const KEY_LENGTH = 2;
 	if (keys.length === 0 || keys.length > KEY_LENGTH) {
@@ -156,7 +159,7 @@ export function validateOptions(options: any): Set<string> {
 	}
 	const columnsKeys = new Set<string>();
 	for (const key of options.COLUMNS) {
-		validateKey(key);
+		validateKey(key, type);
 		columnsKeys.add(key);
 	}
 
@@ -169,7 +172,7 @@ export function validateOptions(options: any): Set<string> {
 			throw new InsightError("invalid query, query.ORDER specifies key not in OPTIONS");
 		}
 		{
-			validateKey(options.ORDER);
+			validateKey(options.ORDER, type);
 		}
 	}
 	return columnsKeys;
@@ -179,8 +182,9 @@ export function validateOptions(options: any): Set<string> {
  * @returns - void, validates the value found in SCompparator or MComparator, if invalid throws InsightError
  * @param comparator
  * @param field
+ * @param type
  */
-function validateComparator(comparator: [MKey, number] | [SKey, number], field: string): void {
+function validateComparator(comparator: [MKey, number] | [SKey, number], field: string, type: InsightDatasetKind): void {
 	const keys = Object.keys(comparator);
 	const values = Object.values(comparator);
 	if (keys.length !== 1 || values.length !== 1) {
@@ -188,13 +192,11 @@ function validateComparator(comparator: [MKey, number] | [SKey, number], field: 
 	}
 
 	if (field === "Mkey") {
-		if (typeof values[0] !== "number" || !isMKey(keys[0])) {
+		if (typeof values[0] !== "number" || !isMKey(keys[0], type)) {
 			throw new InsightError("invalid Mkey in comparator");
 		}
-	}
-
-	if (field === "SKey") {
-		if (typeof values[0] !== "string" || !isSKey(keys[0])) {
+	} else {
+		if (typeof values[0] !== "string" || !isSKey(keys[0], type)) {
 			throw new InsightError("invalid Skey in comparator");
 		}
 	}
@@ -203,12 +205,13 @@ function validateComparator(comparator: [MKey, number] | [SKey, number], field: 
 /**
  * @returns - validates the a given key is either a valid MKey or a valid SKey, if not throws InsightError
  * @param key
+ * @param type
  */
-function validateKey(key: any): void {
+function validateKey(key: any, type: InsightDatasetKind): void {
 	if (typeof key !== "string") {
 		throw new InsightError("invalid query, key is not a string");
 	}
-	if (!isMKey(key) && !isSKey(key)) {
+	if (!isMKey(key, type) && !isSKey(key, type)) {
 		throw new InsightError("invalid query, key is not an Mkey or Skey");
 	}
 }
@@ -216,8 +219,9 @@ function validateKey(key: any): void {
 /**
  * @returns - validates the structure of a given MKey, checks that the field is a valid MField, if not throws InsightError
  * @param key
+ * @param type
  */
-function isMKey(key: string): boolean {
+function isMKey(key: string, type: InsightDatasetKind): boolean {
 	if (!key.includes("_")) {
 		return false;
 	}
@@ -226,15 +230,20 @@ function isMKey(key: string): boolean {
 	if (!validId.test(parts[0]) || parts[0].trim().length === 0) {
 		return false;
 	}
-	const validMFields = ["avg", "pass", "fail", "audit", "year", "lat", "lon", "seats"];
-	return validMFields.includes(parts[1]);
+	const validSectionMFields = ["avg", "pass", "fail", "audit", "year"];
+	const validRoomMFields = ["lat", "lon", "seats"]
+	if(type === InsightDatasetKind.Sections) {
+		return validSectionMFields.includes(parts[1]);
+	}
+	return validRoomMFields.includes(parts[1]);
 }
 
 /**
  * @returns - validates the structure of a given SKey, checks that the field is a valid SField, if not throws InsightError
  * @param key
+ * @param type
  */
-function isSKey(key: string): boolean {
+function isSKey(key: string, type: InsightDatasetKind): boolean {
 	if (!key.includes("_")) {
 		return false;
 	}
@@ -243,12 +252,14 @@ function isSKey(key: string): boolean {
 	if (!validId.test(parts[0]) || parts[0].trim().length === 0) {
 		return false;
 	}
-	const validSFields = [
+	const validSectionSFields = [
 		"dept",
 		"id",
 		"instructor",
 		"title",
 		"uuid",
+	];
+	const validRoomSFields = [
 		"fullname",
 		"shortname",
 		"number",
@@ -257,11 +268,14 @@ function isSKey(key: string): boolean {
 		"type",
 		"furniture",
 		"href",
-	];
-	return validSFields.includes(parts[1]);
+	]
+	if(type === InsightDatasetKind.Sections) {
+		return validSectionSFields.includes(parts[1]);
+	}
+	return validRoomSFields.includes(parts[1]);
 }
 
-function validateTransformation(transformations: any, columnKeys: Set<string>): void {
+function validateTransformation(transformations: any, columnKeys: Set<string>, type: InsightDatasetKind): void {
 	const keys = Object.keys(transformations);
 	const keyLength = 2;
 	if (keys.length !== keyLength) {
@@ -270,8 +284,8 @@ function validateTransformation(transformations: any, columnKeys: Set<string>): 
 	if (keys[0] !== "GROUP" || keys[1] !== "APPLY") {
 		throw new InsightError("invalid transformation, keys are not named GROUP and APPLY");
 	}
-	const groupKeys = validateGroup(transformations.GROUP);
-	const applyKeys = validateApply(transformations.APPLY);
+	const groupKeys = validateGroup(transformations.GROUP, type);
+	const applyKeys = validateApply(transformations.APPLY, type);
 
 	columnKeys.forEach((key) => {
 		if (groupKeys.has(key) && applyKeys.has(key)) {
@@ -280,25 +294,25 @@ function validateTransformation(transformations: any, columnKeys: Set<string>): 
 	});
 }
 
-function validateGroup(group: any): Set<string> {
+function validateGroup(group: any, type: InsightDatasetKind): Set<string> {
 	if (!Array.isArray(group)) {
 		throw new InsightError("invalid group field within transformations, not an array");
 	}
 	const groupKeys = new Set<string>();
 	for (const key of group) {
-		validateKey(key);
+		validateKey(key, type);
 		groupKeys.add(key);
 	}
 	return groupKeys;
 }
 //Is an empty apply block okay?
-function validateApply(apply: any): Set<string> {
+function validateApply(apply: any, type: InsightDatasetKind): Set<string> {
 	if (!Array.isArray(apply)) {
 		throw new InsightError("invalid apply field in transformations");
 	}
 	const usedApplyKeys = new Set<string>();
 	for (const applyRule of apply) {
-		const newApplyKey = validateApplyRule(applyRule);
+		const newApplyKey = validateApplyRule(applyRule, type);
 		if (usedApplyKeys.has(newApplyKey)) {
 			throw new InsightError("apply key in transformations not unique");
 		}
@@ -307,7 +321,7 @@ function validateApply(apply: any): Set<string> {
 	return usedApplyKeys;
 }
 
-function validateApplyRule(applyRule: any): string {
+function validateApplyRule(applyRule: any, type: InsightDatasetKind): string {
 	if (typeof applyRule === "object") {
 		throw new InsightError("invalid apply field in transformations, invalid applyRule found");
 	}
@@ -335,6 +349,6 @@ function validateApplyRule(applyRule: any): string {
 	if (applyKeyObjectValues.length !== 1) {
 		throw new InsightError("invalid apply field in transformations, invalid applyKeyObjectValues");
 	}
-	validateKey(applyKeyObjectValues[0]);
+	validateKey(applyKeyObjectValues[0], type);
 	return applyKey;
 }

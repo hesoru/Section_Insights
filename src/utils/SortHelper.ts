@@ -1,5 +1,5 @@
 import { InsightError, InsightResult } from "../controller/IInsightFacade";
-import { Options } from "../models/Section";
+import { Options } from "../models/Query";
 
 /**
  * @returns - InsightResult[], takes already filtered and selected results and sorts them according to options.ORDER

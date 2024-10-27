@@ -46,75 +46,20 @@ export interface JSONFile {
 	Section?: string;
 }
 
-/**
- * Interface to represent a Query, structure of inputted query must be previously validated by validateQuery()
- */
-export interface Query {
-	WHERE: Body;
-	OPTIONS: Options;
-}
-
-/**
- * Interface to represent the WHERE portion of a Query, must be present in every valid query. Specifies which sections
- * are included in InsightResult[]
- */
-export interface Body {
-	AND?: Body[];
-	OR?: Body[];
-	GT?: [MKey, number];
-	LT?: [MKey, number];
-	EQ?: [MKey, number];
-	IS?: [SKey, string];
-	NOT?: Body;
-}
-
-/**
- * Interface to represent the OPTIONS portion of a query, may be present or absent from Query. Specifies which sections
- * are included in the InsightResult[] and in what order
- */
-export interface Options {
-	COLUMNS: string[];
-	ORDER?: string;
-}
-
 export interface Meta {
 	id: string;
 	fileName: number;
 	kind: InsightDatasetKind;
+	numRows: number;
 }
 
 /**
  * Types to represent specific fields in Body interface in accordance with InsightFacade EBNF
  */
-export type MKey = `${string}_${MField}`; //adapted from ChatGPT generated response
-export type SKey = `${string}_${SField}`; //adapted from ChatGPT generated response
-export type MField = "avg" | "pass" | "fail" | "audit" | "year";
-export type SField = "dept" | "id" | "instructor" | "title" | "uuid";
-
-export interface Building {
-	fullname: string;
-	shortname: string;
-	address: string;
-	lat?: number;
-	lon?: number;
-	href: string;
-}
-
-export interface Room {
-	building: Building;
-	name: string;
-	number: string;	// not always a number so represented as a string
-	type: string;
-	furniture: string;
-	seats: number;
-}
-
-export interface MetadataEntry {
-	id: string,
-	fileName: number,
-	kind: InsightDatasetKind,
-	numRows: number
-};
+export type SectionMKey = `${string}_${SectionMField}`; //adapted from ChatGPT generated response
+export type SectionSKey = `${string}_${SectionSField}`; //adapted from ChatGPT generated response
+export type SectionMField = "avg" | "pass" | "fail" | "audit" | "year";
+export type SectionSField = "dept" | "id" | "instructor" | "title" | "uuid";
 
 // interface GeoResponse {
 // 	lat?: number;
@@ -123,5 +68,3 @@ export interface MetadataEntry {
 // }
 
 // 'lat' | 'lon' | 'seats' | 'fullname' | 'shortname' | 'number' | 'name' | 'address' | 'type' | 'furniture' | 'href'
-
-

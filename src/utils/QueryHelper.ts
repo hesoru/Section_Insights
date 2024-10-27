@@ -1,10 +1,17 @@
-import { InsightError, InsightResult, NotFoundError, ResultTooLargeError } from "../controller/IInsightFacade";
-import { Query, Section, Body } from "../models/Section";
+import {
+	InsightDatasetKind,
+	InsightError,
+	InsightResult,
+	NotFoundError,
+	ResultTooLargeError,
+} from "../controller/IInsightFacade";
+import {Section} from "../models/Section";
 import fs from "fs-extra";
 import path from "node:path";
 import { parseSectionObject } from "./JsonHelper";
 import { Building, Room } from "../models/Room";
 import { sortResults } from "./SortHelper";
+import {Query, Body} from "../models/Query";
 
 /**
  * @returns - Query, validates that the query param conforms to Query structure, if not throws InsightError
@@ -97,22 +104,36 @@ export function handleNegation(filter: any, data: InsightResult[]): InsightResul
 	return data.filter((section) => !notData.includes(section));
 }
 
-export async function getAllSections(query: Query, datasets: Map<string, number>): Promise<Set<InsightResult>> {
+export async function getAllData(
+	query: Query,
+	datasets: Map<string, number>,
+	kind: InsightDatasetKind
+): Promise<Set<InsightResult>> {
 	const idString = extractDatasetId(query);
 	const fileName = String(datasets.get(idString));
-	const allSections = await loadDatasets(idString, fileName);
+	const dataset = await loadDataset(idString, fileName, kind);
 
-	return parseSectionsToInsightResult(allSections, idString);
+	if (kind === InsightDatasetKind.Sections) {
+		return parseSectionsToInsightResult(dataset as Set<Section>, idString);
+	} else {
+		return parseRoomsToInsightResult(dataset as Set<Room>, idString);
+	}
 }
 
 /**
  * @returns - string, extracts dataset id from first key found in OPTIONS.COLUMNS
  * @param query
  */
-export function extractDatasetId(query: Query): string {
-	const keys: string[] = query.OPTIONS.COLUMNS;
-	const keyParts = keys[0].split("_");
-	return keyParts[0];
+export function extractDatasetId(query: any): string {
+	if(query.OPTIONS) {
+		const options = query.OPTIONS;
+		if(options.COLUMNS) {
+			const keys: string[] = query.OPTIONS.COLUMNS;
+			const keyParts = keys[0].split("_");
+			return keyParts[0];
+		}
+	}
+	throw new InsightError("invalid query structure could not extract dataset ID");
 }
 
 /**
@@ -120,8 +141,13 @@ export function extractDatasetId(query: Query): string {
  * If dataset with name data/fileName can not be found throws NotFoundError
  * @param fileName
  * @param id
+ * @param kind
  */
-export async function loadDatasets(id: string, fileName: string): Promise<Set<Section>> {
+export async function loadDataset(
+	id: string,
+	fileName: string,
+	kind: InsightDatasetKind
+): Promise<Set<Section> | Set<Room>> {
 	const datasetPath = path.resolve("./data", fileName);
 	let dataset;
 	try {
@@ -129,14 +155,26 @@ export async function loadDatasets(id: string, fileName: string): Promise<Set<Se
 	} catch (error) {
 		throw new NotFoundError(`Could not find dataset with - id=${id};` + error);
 	}
-	const parsedSections = new Set<Section>();
-	for (const file of dataset.files) {
-		for (const section of file.result) {
-			const newSection = parseSectionObject(section);
-			parsedSections.add(newSection);
+
+	if (kind === InsightDatasetKind.Sections) {
+		const parsedSections = new Set<Section>();
+		for (const file of dataset.files) {
+			for (const section of file.result) {
+				const newSection = parseSectionObject(section);
+				parsedSections.add(newSection);
+			}
 		}
+		return parsedSections;
+	} else {
+		const parsedRooms = new Set<Room>();
+		for (const file of dataset.files) {
+			for (const room of file.result) {
+				const newRoom = JSON.parse(room);
+				parsedRooms.add(newRoom);
+			}
+		}
+		return parsedRooms;
 	}
-	return parsedSections;
 }
 
 /**

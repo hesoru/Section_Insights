@@ -1,8 +1,9 @@
-import {InsightDataset, InsightDatasetKind, InsightError, NotFoundError} from "../controller/IInsightFacade";
-import {JSONFile, MetadataEntry, Room, Section} from "../models/Section";
-import fs, {readJson} from "fs-extra";
+import { InsightDataset, InsightDatasetKind, InsightError, NotFoundError } from "../controller/IInsightFacade";
+import {JSONFile, Meta, Section} from "../models/Section";
+import fs, { readJson } from "fs-extra";
 import path from "node:path";
 import JSZip from "jszip";
+import {Room} from "../models/Room";
 
 /**
  * @returns - true if id is a valid dataset id and has not already been used in the database
@@ -96,55 +97,52 @@ export function parseJSONtoSections(file: string): Set<Section> {
 }
 
 /**
- * @param fileStrings - Files contained within an added Dataset, ASSUME files is a list of JSON formatted strings
- * @param roomsDataset
- * @param name
- * @param id
- * @param kind
  * @returns - Sections[], separates file into its individual sections passing each section to parseSectionObject and adding the returned object to the array
  * Will throw an InsightDatasetError if file is not a JSON formatted string
+ * @param outputObject
+ * @param name
  */
-export async function writeFilesToDisk(fileStrings: string[] | null, roomsDataset: Room[] | null,
-									   name: number, id: string, kind: InsightDatasetKind): Promise<number> {
-	let outputObject;
-	let datasetSize;
-	if (kind === InsightDatasetKind.Sections) {
-		if (!fileStrings) {
-			throw new InsightError("Section dataset file strings missing!");
-		}
-		const acc: Section[] = []; //this might cause problems down the line
-		for (const file of fileStrings) {
-			const JSONObject = JSON.parse(file);
-			acc.push(JSONObject);
-		}
-		outputObject = {datasetID: id, files: acc};
-		datasetSize = outputObject.files.length;
-	} else {
-		if (!roomsDataset) {
-			throw new InsightError("Rooms dataset missing!");
-		}
-		outputObject = {datasetID: id, files: roomsDataset};
-		datasetSize = outputObject.files.length;
-	}
+export async function writeObjectToDisk(outputObject: object, name: number): Promise<void> {
 	const idPath = path.resolve("./data", String(name));
 	try {
 		const space = 2;
-		await fs.outputFile(idPath, JSON.stringify(outputObject, null, space)); //How can I add the space argument?
+		await fs.outputFile(idPath, JSON.stringify(outputObject, null, space));
 	} catch (error) {
 		throw new InsightError("failed to write files to disk" + name + error);
 	}
-
-	return await writeMetadataFile(name, id, kind, datasetSize);
 }
 
-export async function writeMetadataFile(name: number, id: string, kind: InsightDatasetKind, datasetSize: number):
+export async function writeSectionsToDisk(fileStrings: string[], name: number, id: string, datasetSize: number):
 	Promise<number> {
+	const acc: Section[] = [];
+	for (const file of fileStrings) {
+		const JSONObject = JSON.parse(file);
+		acc.push(JSONObject);
+	}
+	const outputObject = { datasetID: id, files: acc };
+	await writeObjectToDisk(outputObject, name);
+	return await writeMetadataFile(name, id, InsightDatasetKind.Sections, datasetSize);
+}
+
+export async function writeRoomsToDisk(roomsDataset: Room[], name: number, id: string): Promise<number> {
+	const outputObject = { datasetID: id, files: roomsDataset };
+	const datasetSize = outputObject.files.length;
+	await writeObjectToDisk(outputObject, name);
+	return await writeMetadataFile(name, id, InsightDatasetKind.Rooms, datasetSize);
+}
+
+export async function writeMetadataFile(
+	name: number,
+	id: string,
+	kind: InsightDatasetKind,
+	datasetSize: number
+): Promise<number> {
 	// handle meta:
 	const fileMeta = {
 		id: id,
 		fileName: name,
 		kind: kind,
-		numRows: datasetSize
+		numRows: datasetSize,
 	};
 	const metaPath = path.resolve("./data", "meta");
 	let dataMeta;
@@ -224,20 +222,14 @@ export async function unzipContent(content: string): Promise<JSZip> {
 /**
  * @returns - Promise<InsightDataset>, gets the dataset info for each dataset in the database, if loadDatasets fails throws InsightError
  * @param id
- * @param fileName
- * @param kind
  */
-export async function getDatasetInfo(id: string, fileName: string): Promise<InsightDataset> {
-	// shouldn't have to validate id in listDataset()
-	// checkValidId(id, datasetIds, true); // 3rd parameter true
-
+export async function getDatasetInfo(id: string): Promise<InsightDataset> {
 	// get dataset file path
 	try {
 		// TODO: test new implementation using metadata file
-		const metadataPath = path.resolve("./data", fileName);
-		const metadataFile = await fs.readJson(metadataPath);
-		const metadata = JSON.parse(metadataFile) as MetadataEntry[];
-		// find metadata entry with matching id
+		const metadataPath = path.resolve("./data", "meta");
+		const metafile = await fs.readJson(metadataPath);
+		const metadata = metafile as Meta[];
 		const datasetInfo = metadata.find((entry) => entry.id === id);
 
 		// Return dataset info
@@ -278,4 +270,18 @@ export async function getExistingDatasets(): Promise<[Map<string, number>, numbe
 	}
 	nextName++;
 	return [result, nextName];
+}
+
+export async function addSectionsDataset(
+	fileStrings: string[],
+	nextAvailableName: number,
+	id: string
+): Promise<Set<Section>> {
+	const added = new Set<Section>();
+	for (const fileString of fileStrings) {
+		parseJSONtoSections(fileString).forEach((section) => added.add(section));
+	}
+
+	await writeSectionsToDisk(fileStrings, nextAvailableName, id, added.size);
+	return added;
 }
