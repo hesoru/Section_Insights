@@ -5,14 +5,14 @@ import {
 	NotFoundError,
 	ResultTooLargeError,
 } from "../controller/IInsightFacade";
-import {Section} from "../models/Section";
+import { Section } from "../models/Section";
 import fs from "fs-extra";
 import path from "node:path";
 import { parseSectionObject } from "./JsonHelper";
 import { Building, Room } from "../models/Room";
 import { sortResults } from "./SortHelper";
-import {Query, Body} from "../models/Query";
-import {apply, groupBy} from "./TransformationsHelper";
+import { Query, Body } from "../models/Query";
+import { apply, groupBy } from "./TransformationsHelper";
 
 /**
  * @returns - Query, validates that the query param conforms to Query structure, if not throws InsightError
@@ -126,9 +126,9 @@ export async function getAllData(
  * @param query
  */
 export function extractDatasetId(query: any): string {
-	if(query.OPTIONS) {
+	if (query.OPTIONS) {
 		const options = query.OPTIONS;
-		if(options.COLUMNS) {
+		if (options.COLUMNS) {
 			const keys: string[] = query.OPTIONS.COLUMNS;
 			const keyParts = keys[0].split("_");
 			return keyParts[0];
@@ -251,15 +251,15 @@ export function queryInsightResults(allResults: Set<InsightResult>, validatedQue
 	filteredResults = handleFilter(validatedQuery.WHERE, Array.from(allResults));
 
 	//5) Group results and apply
-	if(validatedQuery.TRANSFORMATIONS) {
+	if (validatedQuery.TRANSFORMATIONS) {
 		const groupedResults = groupBy(filteredResults, validatedQuery);
-		if(validatedQuery.TRANSFORMATIONS.APPLY) {
-			for(const group of groupedResults.values()) {
+		if (validatedQuery.TRANSFORMATIONS.APPLY) {
+			for (const group of groupedResults.values()) {
 				const calculation = apply(group, validatedQuery.TRANSFORMATIONS.APPLY);
 				Object.assign(group[0], calculation); //will this add it to group inplace?
 			}
 		}
-		filteredResults = Array.from(groupedResults.values()).map(group => group[0]);
+		filteredResults = Array.from(groupedResults.values()).map((group) => group[0]);
 	}
 
 	// 5) handle results that are too large

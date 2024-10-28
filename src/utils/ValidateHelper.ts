@@ -1,5 +1,5 @@
-import {InsightDatasetKind, InsightError} from "../controller/IInsightFacade";
-import {MKey, Options, Query, SKey} from "../models/Query";
+import { InsightDatasetKind, InsightError } from "../controller/IInsightFacade";
+import { MKey, Options, Query, SKey } from "../models/Query";
 
 /**
  * Questions:
@@ -159,31 +159,34 @@ export function validateOptions(options: any, type: InsightDatasetKind, transfor
 		throw new InsightError("invalid query, query.OPTIONS.COLUMNS is not an array");
 	}
 	const columnsKeys = new Set<string>();
-	if(!transformation) {
-		for (const key of options.COLUMNS) {
-			columnsKeys.add(key);
-		}
-	} else {
+	if (!transformation) {
 		for (const key of options.COLUMNS) {
 			validateKey(key, type);
 			columnsKeys.add(key);
 		}
+	} else {
+		for (const key of options.COLUMNS) {
+			columnsKeys.add(key);
+		}
 	}
-	validateOrder(options, keys, columnsKeys);
+	if (keys.length === KEY_LENGTH) {
+		validateOrder(options, keys, columnsKeys);
+	}
+
 	return columnsKeys;
 }
 
 function validateOrder(options: Options, keys: string[], columnsKeys: Set<string>): void {
 	if (keys[1] === "ORDER") {
 		if (typeof options.ORDER === "object") {
-			const orderKeys = Object.keys(options.ORDER)
-			if (orderKeys[0] === "dir" || orderKeys[1] === "keys") {
+			const orderKeys = Object.keys(options.ORDER);
+			if (orderKeys[0] !== "dir" || orderKeys[1] !== "keys") {
 				throw new InsightError("invalid order object found in options");
 			}
 			if (options.ORDER.dir !== "UP" && options.ORDER.dir !== "DOWN") {
 				throw new InsightError("invalid dir found in order object");
 			}
-			if (!Array.isArray(options.ORDER.keys)) {
+			if (!Array.isArray(options.ORDER.keys) || options.ORDER.keys.length === 0) {
 				throw new InsightError("invalid keys found in order object, not an array");
 			}
 			for (const key of options.ORDER.keys) {
@@ -191,12 +194,15 @@ function validateOrder(options: Options, keys: string[], columnsKeys: Set<string
 					throw new InsightError("invalid keys found in options");
 				}
 			}
-		}
-		if (!Object.values(options.COLUMNS).includes(options.ORDER)) {
-			throw new InsightError("invalid query, query.ORDER specifies key not in OPTIONS");
+		} else {
+			if (typeof options.ORDER === "string") {
+				if (!columnsKeys.has(options.ORDER)) {
+					throw new InsightError("invalid query, query.ORDER specifies key not in OPTIONS");
+				}
+			}
 		}
 	} else {
-		throw new InsightError("invalid options second key is not order")
+		throw new InsightError("invalid options second key is not order");
 	}
 }
 
@@ -206,7 +212,11 @@ function validateOrder(options: Options, keys: string[], columnsKeys: Set<string
  * @param field
  * @param type
  */
-function validateComparator(comparator: [MKey, number] | [SKey, number], field: string, type: InsightDatasetKind): void {
+function validateComparator(
+	comparator: [MKey, number] | [SKey, number],
+	field: string,
+	type: InsightDatasetKind
+): void {
 	const keys = Object.keys(comparator);
 	const values = Object.values(comparator);
 	if (keys.length !== 1 || values.length !== 1) {
@@ -253,8 +263,8 @@ function isMKey(key: string, type: InsightDatasetKind): boolean {
 		return false;
 	}
 	const validSectionMFields = ["avg", "pass", "fail", "audit", "year"];
-	const validRoomMFields = ["lat", "lon", "seats"]
-	if(type === InsightDatasetKind.Sections) {
+	const validRoomMFields = ["lat", "lon", "seats"];
+	if (type === InsightDatasetKind.Sections) {
 		return validSectionMFields.includes(parts[1]);
 	}
 	return validRoomMFields.includes(parts[1]);
@@ -274,24 +284,9 @@ function isSKey(key: string, type: InsightDatasetKind): boolean {
 	if (!validId.test(parts[0]) || parts[0].trim().length === 0) {
 		return false;
 	}
-	const validSectionSFields = [
-		"dept",
-		"id",
-		"instructor",
-		"title",
-		"uuid",
-	];
-	const validRoomSFields = [
-		"fullname",
-		"shortname",
-		"number",
-		"name",
-		"address",
-		"type",
-		"furniture",
-		"href",
-	]
-	if(type === InsightDatasetKind.Sections) {
+	const validSectionSFields = ["dept", "id", "instructor", "title", "uuid"];
+	const validRoomSFields = ["fullname", "shortname", "number", "name", "address", "type", "furniture", "href"];
+	if (type === InsightDatasetKind.Sections) {
 		return validSectionSFields.includes(parts[1]);
 	}
 	return validRoomSFields.includes(parts[1]);

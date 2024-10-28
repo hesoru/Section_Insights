@@ -19,7 +19,7 @@ import { Meta, Section } from "../models/Section";
 import { validateQuery } from "../utils/ValidateHelper";
 import path from "node:path";
 import { addRoomsDataset } from "../utils/HTMLHelper";
-import {Room} from "../models/Room";
+import { Room } from "../models/Room";
 
 /**
  * This is the main programmatic entry point for the project.
@@ -45,7 +45,7 @@ export default class InsightFacade implements IInsightFacade {
 		await this.initializeFields();
 
 		// 1) check kind of dataset
-		if (kind !== (InsightDatasetKind.Sections || InsightDatasetKind.Rooms)) {
+		if (kind !== InsightDatasetKind.Sections && kind !== InsightDatasetKind.Rooms) {
 			throw new InsightError("Dataset not of valid kind (Sections or Rooms), could not add dataset");
 		}
 		// 2) Check validity of id: can not be only white space, can not have underscores, reject if id is already in database
@@ -108,7 +108,6 @@ export default class InsightFacade implements IInsightFacade {
 			}
 			this.datasetIds.delete(id);
 
-
 			// remove from metadata file
 			const metaData: Meta[] = await readJson("./data/meta");
 			const newMeta = metaData.filter((meta) => meta.id !== id);
@@ -121,7 +120,6 @@ export default class InsightFacade implements IInsightFacade {
 	}
 
 	public async performQuery(query: unknown): Promise<InsightResult[]> {
-
 		// 2) extract dataset id from validated query, ensure dataset exists
 		const id = extractDatasetId(query);
 		if (!this.datasetIds.has(id)) {
