@@ -1,8 +1,19 @@
-import { InsightError, InsightResult, NotFoundError } from "../controller/IInsightFacade";
-import { Query, Section, Body, Options } from "../models/Section";
+import {
+	InsightDataset,
+	InsightDatasetKind,
+	InsightError,
+	InsightResult,
+	NotFoundError,
+	ResultTooLargeError,
+} from "../controller/IInsightFacade";
+import { Section } from "../models/Section";
 import fs from "fs-extra";
 import path from "node:path";
 import { parseSectionObject } from "./JsonHelper";
+import { Room } from "../models/Room";
+import { sortResults } from "./SortHelper";
+import { Query, Body } from "../models/Query";
+import { apply, groupBy } from "./TransformationsHelper";
 
 /**
  * @returns - Query, validates that the query param conforms to Query structure, if not throws InsightError
@@ -95,69 +106,37 @@ export function handleNegation(filter: any, data: InsightResult[]): InsightResul
 	return data.filter((section) => !notData.includes(section));
 }
 
-// export function handleNotFilter(filter: any, data: InsightResult[]): InsightResult[] {
-// 	let mkey;
-// 	let
-// 	switch (filter.NOT.keys()[0]) {
-// 		case "IS":
-//
-// 			break;
-// 		case "GT":
-// 			const mKey = Object.keys(filter.GT)[0];
-// 			const value = Object.values(filter.GT)[0];
-// 			return data.filter((section) => section[mKey] <= (value as number));
-// 		case "LT":
-//
-// 	}
-// }
-
-export async function getAllSections(query: Query, datasets: Map<string, number>): Promise<Set<InsightResult>> {
+export async function getAllData(
+	query: Query,
+	datasets: Map<string, number>,
+	kind: InsightDatasetKind
+): Promise<Set<InsightResult>> {
 	const idString = extractDatasetId(query);
 	const fileName = String(datasets.get(idString));
-	const allSections = await loadDatasets(idString, fileName);
+	const dataset = await loadDataset(idString, fileName, kind);
 
-	return parseToInsightResult(allSections, idString);
-}
-
-/**
- * @returns - InsightResult[], takes already filtered and selected results and sorts them according to options.ORDER
- * if options.ORDER exists, if not throws an error as sort Results should not have been called. If types of values
- * between 2 sections.ORDER differs throw InsightError
- * @param options
- * @param results
- */
-export function sortResults(options: Options, results: InsightResult[]): InsightResult[] {
-	return results.sort((a, b) => {
-		if (!options.ORDER) {
-			throw new InsightError("invalid options passed to sortResults");
-		}
-
-		const aValue = a[options.ORDER];
-		const bValue = b[options.ORDER];
-
-		if (typeof aValue === "string" && typeof bValue === "string") {
-			// string comparison (case-insensitive)
-			return aValue.localeCompare(bValue, undefined, { sensitivity: "base" });
-		}
-
-		if (typeof aValue === "number" && typeof bValue === "number") {
-			// numeric comparison
-			return aValue - bValue;
-		}
-
-		// types differ
-		throw new InsightError("Comparison column contains strings and numbers together!");
-	});
+	if (kind === InsightDatasetKind.Sections) {
+		return parseSectionsToInsightResult(dataset as Set<Section>, idString);
+	} else {
+		//return parseRoomsToInsightResult(dataset as Set<Room>, idString);
+		return new Set();
+	}
 }
 
 /**
  * @returns - string, extracts dataset id from first key found in OPTIONS.COLUMNS
  * @param query
  */
-export function extractDatasetId(query: Query): string {
-	const keys: string[] = query.OPTIONS.COLUMNS;
-	const keyParts = keys[0].split("_");
-	return keyParts[0];
+export function extractDatasetId(query: any): string {
+	if (query.OPTIONS) {
+		const options = query.OPTIONS;
+		if (options.COLUMNS) {
+			const keys: string[] = query.OPTIONS.COLUMNS;
+			const keyParts = keys[0].split("_");
+			return keyParts[0];
+		}
+	}
+	throw new InsightError("invalid query structure could not extract dataset ID");
 }
 
 /**
@@ -165,8 +144,13 @@ export function extractDatasetId(query: Query): string {
  * If dataset with name data/fileName can not be found throws NotFoundError
  * @param fileName
  * @param id
+ * @param kind
  */
-export async function loadDatasets(id: string, fileName: string): Promise<Set<Section>> {
+export async function loadDataset(
+	id: string,
+	fileName: string,
+	kind: InsightDatasetKind
+): Promise<Set<Section> | Set<Room>> {
 	const datasetPath = path.resolve("./data", fileName);
 	let dataset;
 	try {
@@ -174,14 +158,26 @@ export async function loadDatasets(id: string, fileName: string): Promise<Set<Se
 	} catch (error) {
 		throw new NotFoundError(`Could not find dataset with - id=${id};` + error);
 	}
-	const parsedSections = new Set<Section>();
-	for (const file of dataset.files) {
-		for (const section of file.result) {
-			const newSection = parseSectionObject(section);
-			parsedSections.add(newSection);
+
+	if (kind === InsightDatasetKind.Sections) {
+		const parsedSections = new Set<Section>();
+		for (const file of dataset.files) {
+			for (const section of file.result) {
+				const newSection = parseSectionObject(section);
+				parsedSections.add(newSection);
+			}
 		}
+		return parsedSections;
+	} else {
+		const parsedRooms = new Set<Room>();
+		for (const file of dataset.files) {
+			for (const room of file.result) {
+				const newRoom = JSON.parse(room);
+				parsedRooms.add(newRoom);
+			}
+		}
+		return parsedRooms;
 	}
-	return parsedSections;
 }
 
 /**
@@ -201,7 +197,7 @@ export function selectColumns(filteredResults: InsightResult[], validatedQuery: 
 	});
 }
 
-export function parseToInsightResult(allSections: Set<Section>, idString: string): Set<InsightResult> {
+export function parseSectionsToInsightResult(allSections: Set<Section>, idString: string): Set<InsightResult> {
 	const columns = new Set<string>([
 		"uuid",
 		"id",
@@ -218,10 +214,95 @@ export function parseToInsightResult(allSections: Set<Section>, idString: string
 	for (const section of allSections) {
 		const sectionResult: InsightResult = {};
 		for (const item of columns) {
-			//iterate through indicies
 			sectionResult[`${idString}_${item}`] = section[item as keyof Section];
 		}
 		allResults.add(sectionResult);
 	}
 	return allResults;
+}
+
+export function parseRoomsToInsightResult(): Set<InsightResult> {
+	//allRooms: Set<Room>, idString: string
+	// 	const roomColumns = new Set<string>(["name", "number", "type", "furniture", "seats"]);
+	// 	const buildingColumns = new Set<string>(["fullname", "shortname", "address", "lat", "lon", "href"]);
+	// 	const allResults = new Set<InsightResult>();
+	// 	for (const room of allRooms) {
+	// 		const roomResult: InsightResult = {};
+	// 		for (const item of roomColumns) {
+	// 			const value = room[item as keyof Room];
+	// 			if (typeof value === "string" || typeof value === "number") {
+	// 				roomResult[`${idString}_${item}`] = value;
+	// 			}
+	// 			//this should always be the case, but I had to put the explicit type guard in because typescript was complaining about the building field.
+	// 		}
+	// 		for (const item of buildingColumns) {
+	// 			const value = room.building[item as keyof Building];
+	// 			if (value) {
+	// 				//since lat or lon will be undefined
+	// 				roomResult[`${idString}_${item}`] = value;
+	// 			}
+	// 		}
+	// 		allResults.add(roomResult);
+	// 	}
+	// return allResults;
+	return new Set<InsightResult>();
+}
+
+export function queryInsightResults(allResults: Set<InsightResult>, validatedQuery: Query): InsightResult[] {
+	const MAX_SIZE = 5000;
+	//4) Filter results according to WHERE
+	let filteredResults: InsightResult[];
+	filteredResults = handleFilter(validatedQuery.WHERE, Array.from(allResults));
+
+	//5) Group results and apply
+	if (validatedQuery.TRANSFORMATIONS) {
+		const groupedResults = groupBy(filteredResults, validatedQuery);
+		if (validatedQuery.TRANSFORMATIONS.APPLY) {
+			for (const group of groupedResults.values()) {
+				const calculation = apply(group, validatedQuery.TRANSFORMATIONS.APPLY);
+				Object.assign(group[0], calculation); //will this add it to group inplace?
+			}
+		}
+		filteredResults = Array.from(groupedResults.values()).map((group) => group[0]);
+	}
+
+	// 5) handle results that are too large
+	if (filteredResults.length > MAX_SIZE) {
+		throw new ResultTooLargeError("Query results exceed maximum size (5000 sections).");
+	}
+
+	// 6) select only specified columns (OPTIONS.COLUMNS)
+	filteredResults = selectColumns(filteredResults, validatedQuery);
+
+	// 7) sort results if necessary (OPTIONS.ORDER)
+	let sortedFilteredResults: InsightResult[];
+	if (validatedQuery.OPTIONS.ORDER) {
+		sortedFilteredResults = sortResults(validatedQuery.OPTIONS, filteredResults);
+	} else {
+		sortedFilteredResults = filteredResults;
+	}
+	return sortedFilteredResults;
+}
+
+export async function loadMeta(): Promise<Map<string, InsightDataset>> {
+	const datasetPath = path.resolve("./data", "meta");
+	let dataset;
+	try {
+		dataset = await fs.readJson(datasetPath);
+	} catch (error) {
+		throw new NotFoundError(`Could not find dataset meta` + error);
+	}
+	const datasetInfo: Map<string, InsightDataset> = new Map<string, InsightDataset>();
+	for (const data of dataset) {
+		const id = data.id;
+		const kind = data.kind;
+		const numRows = data.numRows;
+		const meta = {
+			id: id,
+			kind: kind,
+			numRows: numRows,
+		};
+		datasetInfo.set(id, meta);
+	}
+	return datasetInfo;
 }

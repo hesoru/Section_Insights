@@ -1,0 +1,33 @@
+{
+  "title": "SELECT dept, avg WHERE avg > 97",
+  "input": {
+    "WHERE": {
+      "AND": [
+        {
+          "GT": {
+            "sections_audit": 1
+          }
+        },
+        {
+          "IS": {
+            "sections_dept": "math"
+          }
+        }
+      ]
+    },
+    "OPTIONS": {
+      "COLUMNS": [
+        "sections_id",
+        "sections_avg"
+      ],
+      "ORDER": {
+        "dir": "DOOOWNF",
+        "keys": [
+          "sections_avg"
+        ]
+      }
+    }
+  },
+  "errorExpected": true,
+  "expected": "InsightError"
+}

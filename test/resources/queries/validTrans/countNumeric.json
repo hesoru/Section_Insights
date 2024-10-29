@@ -1,0 +1,355 @@
+{
+  "title": "count on numeric key",
+  "input": {
+    "WHERE": {
+      "LT": {
+        "sections_avg": 50
+      }
+    },
+    "OPTIONS": {
+      "COLUMNS": [
+        "sections_dept",
+        "sections_instructor",
+        "sections_year",
+        "sections_title",
+        "avgGrade",
+        "countFail",
+        "minPass"
+      ]
+    },
+    "TRANSFORMATIONS": {
+      "GROUP": [
+        "sections_dept",
+        "sections_instructor",
+        "sections_year",
+        "sections_title"
+      ],
+      "APPLY": [
+        {
+          "avgGrade": {
+            "AVG": "sections_avg"
+          }
+        },
+        {
+          "countFail": {
+            "COUNT": "sections_fail"
+          }
+        },
+        {
+          "minPass": {
+            "MIN": "sections_pass"
+          }
+        }
+      ]
+    }
+  },
+  "errorExpected": false,
+  "expected": [
+    {
+      "sections_dept":"busi",
+      "sections_instructor":"",
+      "sections_year":2016,
+      "sections_title":"found re apprai",
+      "avgGrade":4,
+      "countFail":1,
+      "minPass":0
+    },
+    {
+      "sections_dept":"busi",
+      "sections_instructor":"",
+      "sections_year":1900,
+      "sections_title":"found re apprai",
+      "avgGrade":4,
+      "countFail":1,
+      "minPass":0
+    },
+    {
+      "sections_dept":"busi",
+      "sections_instructor":"",
+      "sections_year":2010,
+      "sections_title":"stat&comp ap val",
+      "avgGrade":49.47,
+      "countFail":1,
+      "minPass":60
+    },
+    {
+      "sections_dept":"busi",
+      "sections_instructor":"",
+      "sections_year":1900,
+      "sections_title":"stat&comp ap val",
+      "avgGrade":49.47,
+      "countFail":1,
+      "minPass":60
+    },
+    {
+      "sections_dept":"busi",
+      "sections_instructor":"",
+      "sections_year":2013,
+      "sections_title":"resdnt prp study",
+      "avgGrade":45.91,
+      "countFail":2,
+      "minPass":6
+    },
+    {
+      "sections_dept":"busi",
+      "sections_instructor":"",
+      "sections_year":1900,
+      "sections_title":"resdnt prp study",
+      "avgGrade":42.64,
+      "countFail":1,
+      "minPass":6
+    },
+    {
+      "sections_dept":"busi",
+      "sections_instructor":"",
+      "sections_year":2007,
+      "sections_title":"cpt aid ms pr as",
+      "avgGrade":46.5,
+      "countFail":1,
+      "minPass":4
+    },
+    {
+      "sections_dept":"busi",
+      "sections_instructor":"",
+      "sections_year":2013,
+      "sections_title":"re crit analysis",
+      "avgGrade":46.95,
+      "countFail":1,
+      "minPass":14
+    },
+    {
+      "sections_dept":"chbe",
+      "sections_instructor":"gyenge, elod lajos",
+      "sections_year":2011,
+      "sections_title":"electrochem eng",
+      "avgGrade":42,
+      "countFail":1,
+      "minPass":4
+    },
+    {
+      "sections_dept":"chbe",
+      "sections_instructor":"",
+      "sections_year":1900,
+      "sections_title":"electrochem eng",
+      "avgGrade":44.88,
+      "countFail":1,
+      "minPass":5
+    },
+    {
+      "sections_dept":"chem",
+      "sections_instructor":"bussiere, guillaume;monga, vishakha;rogers, christine;stoodley, robin",
+      "sections_year":2015,
+      "sections_title":"chem integ lab i",
+      "avgGrade":42.5,
+      "countFail":1,
+      "minPass":1
+    },
+    {
+      "sections_dept":"civl",
+      "sections_instructor":"",
+      "sections_year":2010,
+      "sections_title":"engr econ anlys",
+      "avgGrade":33,
+      "countFail":1,
+      "minPass":1
+    },
+    {
+      "sections_dept":"civl",
+      "sections_instructor":"",
+      "sections_year":2011,
+      "sections_title":"wtr treat&wst mg",
+      "avgGrade":49.25,
+      "countFail":1,
+      "minPass":7
+    },
+    {
+      "sections_dept":"comm",
+      "sections_instructor":"sinclair, scott",
+      "sections_year":2009,
+      "sections_title":"financial acctng",
+      "avgGrade":46.71,
+      "countFail":1,
+      "minPass":3
+    },
+    {
+      "sections_dept":"comm",
+      "sections_instructor":"",
+      "sections_year":1900,
+      "sections_title":"financial acctng",
+      "avgGrade":49.07,
+      "countFail":1,
+      "minPass":6
+    },
+    {
+      "sections_dept":"educ",
+      "sections_instructor":"james, kedrick",
+      "sections_year":2015,
+      "sections_title":"language & curr",
+      "avgGrade":39.03,
+      "countFail":1,
+      "minPass":39
+    },
+    {
+      "sections_dept":"educ",
+      "sections_instructor":"",
+      "sections_year":1900,
+      "sections_title":"language & curr",
+      "avgGrade":39.03,
+      "countFail":1,
+      "minPass":39
+    },
+    {
+      "sections_dept":"fopr",
+      "sections_instructor":"bendickson, dennis",
+      "sections_year":2013,
+      "sections_title":"sustnbt&frst ops",
+      "avgGrade":4.5,
+      "countFail":1,
+      "minPass":0
+    },
+    {
+      "sections_dept":"frst",
+      "sections_instructor":"",
+      "sections_year":1900,
+      "sections_title":"forest ecology",
+      "avgGrade":0,
+      "countFail":1,
+      "minPass":0
+    },
+    {
+      "sections_dept":"frst",
+      "sections_instructor":"watts, susan",
+      "sections_year":2013,
+      "sections_title":"intr biometrics",
+      "avgGrade":46.59,
+      "countFail":1,
+      "minPass":11
+    },
+    {
+      "sections_dept":"frst",
+      "sections_instructor":"watts, susan",
+      "sections_year":2007,
+      "sections_title":"intr biometrics",
+      "avgGrade":49.14,
+      "countFail":1,
+      "minPass":5
+    },
+    {
+      "sections_dept":"hist",
+      "sections_instructor":"gossen, david",
+      "sections_year":2009,
+      "sections_title":"hist 1500 - 20 c",
+      "avgGrade":41.58,
+      "countFail":2,
+      "minPass":1
+    },
+    {
+      "sections_dept":"hist",
+      "sections_instructor":"",
+      "sections_year":1900,
+      "sections_title":"hist 1500 - 20 c",
+      "avgGrade":46.73,
+      "countFail":2,
+      "minPass":9
+    },
+    {
+      "sections_dept":"hist",
+      "sections_instructor":"gossen, david",
+      "sections_year":2013,
+      "sections_title":"hist 1500 - 20 c",
+      "avgGrade":46.33,
+      "countFail":1,
+      "minPass":9
+    },
+    {
+      "sections_dept":"lfs",
+      "sections_instructor":"",
+      "sections_year":2009,
+      "sections_title":"in land food com",
+      "avgGrade":0,
+      "countFail":1,
+      "minPass":0
+    },
+    {
+      "sections_dept":"lfs",
+      "sections_instructor":"",
+      "sections_year":1900,
+      "sections_title":"in land food com",
+      "avgGrade":0,
+      "countFail":1,
+      "minPass":0
+    },
+    {
+      "sections_dept":"lled",
+      "sections_instructor":"walsh marr, jennifer",
+      "sections_year":2014,
+      "sections_title":"intro acad writ",
+      "avgGrade":48.9,
+      "countFail":1,
+      "minPass":6
+    },
+    {
+      "sections_dept":"lled",
+      "sections_instructor":"ferreira, alfredo",
+      "sections_year":2014,
+      "sections_title":"intro acad writ",
+      "avgGrade":49.73,
+      "countFail":1,
+      "minPass":9
+    },
+    {
+      "sections_dept":"lled",
+      "sections_instructor":"shaw, amber",
+      "sections_year":2014,
+      "sections_title":"intro acad writ",
+      "avgGrade":49.86,
+      "countFail":1,
+      "minPass":9
+    },
+    {
+      "sections_dept":"lled",
+      "sections_instructor":"shaw, amber",
+      "sections_year":2015,
+      "sections_title":"intro acad writ",
+      "avgGrade":47.55,
+      "countFail":2,
+      "minPass":8
+    },
+    {
+      "sections_dept":"math",
+      "sections_instructor":"",
+      "sections_year":2008,
+      "sections_title":"dif calc phys ap",
+      "avgGrade":48.23,
+      "countFail":2,
+      "minPass":14
+    },
+    {
+      "sections_dept":"phil",
+      "sections_instructor":"",
+      "sections_year":2008,
+      "sections_title":"log & crit think",
+      "avgGrade":33.2,
+      "countFail":1,
+      "minPass":5
+    },
+    {
+      "sections_dept":"psyc",
+      "sections_instructor":"",
+      "sections_year":2008,
+      "sections_title":"health psycholgy",
+      "avgGrade":43.33,
+      "countFail":1,
+      "minPass":2
+    },
+    {
+      "sections_dept":"wood",
+      "sections_instructor":"",
+      "sections_year":1900,
+      "sections_title":"prpty,ident&uses",
+      "avgGrade":1,
+      "countFail":1,
+      "minPass":0
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "title": "count on numeric key",
+  "input": {
+    "WHERE": {
+      "LT": {
+        "sections_avg": 0
+      }
+    },
+    "OPTIONS": {
+      "COLUMNS": [
+        "sections_dept",
+        "sections_instructor",
+        "sections_year",
+        "avgGrade",
+        "countTitle",
+        "minPass"
+      ]
+    },
+    "TRANSFORMATIONS": {
+      "GROUP": [
+        "sections_dept",
+        "sections_instructor",
+        "sections_year"
+      ],
+      "APPLY": [
+        {
+          "avgGrade": {
+            "AVG": "sections_avg"
+          }
+        },
+        {
+          "countTitle": {
+            "COUNT": "sections_title"
+          }
+        },
+        {
+          "minPass": {
+            "MIN": "sections_pass"
+          }
+        }
+      ]
+    }
+  },
+  "errorExpected": false,
+  "expected": []
+}

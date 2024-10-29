@@ -3,8 +3,8 @@ import {
 	InsightDatasetKind,
 	InsightError,
 	InsightResult,
-	ResultTooLargeError,
 	NotFoundError,
+	ResultTooLargeError,
 } from "../../src/controller/IInsightFacade";
 import InsightFacade from "../../src/controller/InsightFacade";
 import { clearDisk, getContentFromArchives, loadTestQuery } from "../TestUtil";
@@ -13,6 +13,7 @@ import { expect, use } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import fs, { readdir } from "fs-extra";
 import path from "node:path";
+import { Order } from "../../src/models/Query";
 
 use(chaiAsPromised);
 
@@ -29,11 +30,15 @@ describe("InsightFacade", function () {
 	// Declare datasets used in tests. You should add more datasets like this!
 	let sections: string;
 	let miniAddDataset: string;
+	//let miniCampus1: string;
+	//let miniCampus2: string;
 
 	before(async function () {
 		// This block runs once and loads the datasets.
 		sections = await getContentFromArchives("pair.zip");
 		miniAddDataset = await getContentFromArchives("miniAddData.zip");
+		//miniCampus1 = await getContentFromArchives("miniCampus1.zip");
+		//miniCampus2 = await getContentFromArchives("miniCampus2.zip");
 
 		// Just in case there is anything hanging around from a previous run of the test suite
 		await clearDisk();
@@ -90,14 +95,15 @@ describe("InsightFacade", function () {
 			}
 		});
 
-		it("should reject adding with invalid InsightDatasetKind (ie. not Sections)", async function () {
-			try {
-				await facade.addDataset("    ", miniAddDataset, InsightDatasetKind.Rooms);
-				expect.fail("Should have thrown above.");
-			} catch (err) {
-				expect(err).to.be.instanceOf(InsightError);
-			}
-		});
+		// TODO: how to test InsightDatasetKind that isn't sections or rooms?
+		// it("should reject adding with invalid InsightDatasetKind", async function () {
+		// 	try {
+		// 		await facade.addDataset("mini", miniAddDataset, InsightDatasetKind.Sections);
+		// 		expect.fail("Should have thrown above.");
+		// 	} catch (err) {
+		// 		expect(err).to.be.instanceOf(InsightError);
+		// 	}
+		// });
 
 		it("should reject adding same id twice", async function () {
 			const miniData5 = await getContentFromArchives("miniData5.zip");
@@ -151,7 +157,7 @@ describe("InsightFacade", function () {
 			}
 		});
 
-		it("checking persistence add", async function () {
+		it("checking persistence add 2 sections", async function () {
 			try {
 				const result = await facade.addDataset("sections", miniAddDataset, InsightDatasetKind.Sections);
 				expect(result).to.be.an("array");
@@ -188,17 +194,122 @@ describe("InsightFacade", function () {
 			}
 		});
 
-		it("should successfully add valid large dataset, and create file on disk", async function () {
+		// it("checking persistence add 2 rooms datasets", async function () {
+		// 	try {
+		// 		const result = await facade.addDataset("miniCampus1", miniCampus1, InsightDatasetKind.Rooms);
+		// 		expect(result).to.be.an("array");
+		// 		expect(result).to.deep.equal(["miniCampus1"]);
+		// 		const dataset = await facade.listDatasets();
+		// 		expect(dataset).to.deep.equal([
+		// 			{
+		// 				id: "miniCampus1",
+		// 				kind: InsightDatasetKind.Rooms,
+		// 				numRows: 26,
+		// 			},
+		// 		]);
+		// 		const newFacade = new InsightFacade();
+		// 		const result1 = await newFacade.addDataset("miniCampus2", miniCampus2, InsightDatasetKind.Rooms);
+		// 		expect(result1).to.deep.equal(["miniCampus1", "miniCampus2"]);
+		//
+		// 		const datasets = await newFacade.listDatasets();
+		// 		expect(datasets).to.have.deep.members([
+		// 			{
+		// 				id: "miniCampus1",
+		// 				kind: InsightDatasetKind.Rooms,
+		// 				numRows: 26,
+		// 			},
+		// 			{
+		// 				id: "miniCampus2",
+		// 				kind: InsightDatasetKind.Rooms,
+		// 				numRows: 6,
+		// 			},
+		// 		]);
+		// 		// read file from disk
+		// 	} catch (err) {
+		// 		expect.fail("Should not have thrown an error" + err);
+		// 	}
+		// });
+
+		it("should successfully add valid large Sections dataset, and create file on disk", async function () {
 			try {
 				const result = await facade.addDataset("miniAdd", miniAddDataset, InsightDatasetKind.Sections);
 				expect(result).to.be.an("array");
 				expect(result).to.deep.equal(["miniAdd"]);
+			} catch (err) {
+				expect.fail("Should not have thrown an error" + err);
+			}
+		});
+
+		it("checking persistence for add followed by a query", async function () {
+			try {
+				const result = await facade.addDataset("sections", sections, InsightDatasetKind.Sections);
+				expect(result).to.be.an("array");
+				expect(result).to.deep.equal(["sections"]);
+				const dataset = await facade.listDatasets();
+				expect(dataset).to.deep.equal([
+					{
+						id: "sections",
+						kind: InsightDatasetKind.Sections,
+						numRows: 64612,
+					},
+				]);
+				const newFacade = new InsightFacade();
+				const miniData5 = await getContentFromArchives("miniData5.zip");
+				const result1 = await newFacade.addDataset("mini5", miniData5, InsightDatasetKind.Sections);
+				expect(result1).to.deep.equal(["sections", "mini5"]);
+				const datasets = await newFacade.listDatasets();
+				expect(datasets).to.have.deep.members([
+					{
+						id: "sections",
+						kind: InsightDatasetKind.Sections,
+						numRows: 64612,
+					},
+					{
+						id: "mini5",
+						kind: InsightDatasetKind.Sections,
+						numRows: 6,
+					},
+				]);
+
+				const query = {
+					WHERE: {
+						GT: {
+							sections_avg: 97,
+						},
+					},
+					OPTIONS: {
+						COLUMNS: ["sections_dept", "sections_avg"],
+						ORDER: "sections_avg",
+					},
+				};
+
+				await newFacade.performQuery(query);
 				// read file from disk
 			} catch (err) {
 				expect.fail("Should not have thrown an error" + err);
 			}
 		});
-		it("checking persistence add twice", async function () {
+
+		// it("should successfully add valid large Rooms dataset, and create file on disk", async function () {
+		// 	try {
+		// 		const result = await facade.addDataset("miniCampus", miniCampus1, InsightDatasetKind.Rooms);
+		// 		expect(result).to.be.an("array");
+		// 		expect(result).to.deep.equal(["miniCampus"]);
+		//
+		// 		const dataset = await facade.listDatasets();
+		// 		expect(dataset).to.have.deep.members([
+		// 			{
+		// 				id: "miniCampus",
+		// 				kind: InsightDatasetKind.Rooms,
+		// 				numRows: 26,
+		// 			},
+		// 		]);
+		// 	} catch (err) {
+		// 		expect.fail("Should not have thrown an error" + err);
+		// 	}
+		// });
+
+		it("checking persistence add same sections dataset twice", async function () {
 			try {
 				const result = await facade.addDataset("mini", miniAddDataset, InsightDatasetKind.Sections);
 				expect(result).to.be.an("array");
@@ -498,12 +609,61 @@ describe("InsightFacade", function () {
 				//console.log(result)
 				expect(result.length).to.equal(expectedLength);
 				expect(result).to.have.deep.members(expected);
-				const validInput = input as { OPTIONS: { ORDER?: string } };
+				//try {
+				// for (const member of result) {
+				// 	let match = 0;
+				// 	for (const item of expected) {
+				// 		if (JSON.stringify(item) === JSON.stringify(member)) {
+				// 			match = 1;
+				// 			break;
+				// 		}
+				// 	}
+				// 	if (match === 0) {
+				// 		console.log(member);
+				// 	}
+				// }
+				// console.log("expected now....");
+				// for (const member of expected) {
+				// 	let match = 0;
+				// 	for (const item of result) {
+				// 		if (JSON.stringify(item) === JSON.stringify(member)) {
+				// 			match = 1;
+				// 			break;
+				// 		}
+				// 	}
+				// 	if (match === 0) {
+				// 		console.log(member);
+				// 	}
+				// }
+				//} catch (er) {
+				//console.log(er);
+				//}
+				const validInput = input as { OPTIONS: { ORDER?: string | Order } };
 				if (validInput.OPTIONS.ORDER) {
-					const field = validInput.OPTIONS.ORDER;
+					if (typeof validInput.OPTIONS.ORDER === "string") {
+						const field = validInput.OPTIONS.ORDER;
+						for (let i = 1; i < result.length; i++) {
+							if (result[i][field] < result[i - 1][field]) {
+								expect.fail("not in correct order");
+							}
+						}
+					}
+				}
+				if (typeof validInput.OPTIONS.ORDER === "object") {
+					const comp: (a: any, b: any) => boolean =
+						validInput.OPTIONS.ORDER.dir === "UP"
+							? (a: any, b: any): boolean => a < b
+							: (a: any, b: any): boolean => a > b;
+
 					for (let i = 1; i < result.length; i++) {
-						if (result[i][field] < result[i - 1][field]) {
-							expect.fail("not in correct order");
+						for (const key of validInput.OPTIONS.ORDER.keys) {
+							if (comp(result[i][key], result[i - 1][key])) {
+								expect.fail("results are not in the correct order");
+							} else if (result[i][key] === result[i - 1][key]) {
+								//do nothing
+							} else {
+								break;
+							}
 						}
 					}
 				}
@@ -596,5 +756,37 @@ describe("InsightFacade", function () {
 		it("[valid/allFilters.json]", checkQuery);
 		it("[valid/year1900(Valid).json]", checkQuery);
 		//it("[valid/nestedNot.json]", checkQuery);
+
+		//Queries with Transformations
+		it("[validTrans/simpleGDeptAMax.json]", checkQuery);
+		it("[validTrans/simpleGDeptASum.json]", checkQuery);
+		it("[validTrans/simpleGPassAavg.json]", checkQuery);
+		it("[validTrans/twoGroupFields.json]", checkQuery);
+		it("[validTrans/manyGroupFields.json]", checkQuery);
+		it("[invalidTrans/deptColNOTGroup.json]", checkQuery);
+		it("[invalidTrans/emptyGroupArray.json]", checkQuery);
+		it("[invalidTrans/noGroup.json]", checkQuery);
+		it("[invalidTrans/nonExistantGroupKey.json]", checkQuery);
+		it("[validTrans/multipleApplyKeys.json]", checkQuery);
+		//it("[validTrans/allApplyKeys.json]", checkQuery);
+		it("[validTrans/duplicateApplyKeys.json]", checkQuery);
+		it("[invalidTrans/duplicateApplyAvg.json]", checkQuery);
+		it("[validTrans/countOnString.json]", checkQuery);
+		it("[invalidTrans/maxOnString.json]", checkQuery);
+		it("[validTrans/noContent.json]", checkQuery);
+
+		//Queries with Sorting
+		it("[validSort/sortUp.json]", checkQuery);
+		it("[validSort/sortDown.json]", checkQuery);
+		it("[validSort/multipleKeysUp.json]", checkQuery);
+		it("[validSort/multipleKeysDown.json]", checkQuery);
+		it("[invalidSort/badDir.json]", checkQuery);
+		it("[invalidSort/badKey.json]", checkQuery);
+		it("[invalidSort/notInColumns.json]", checkQuery);
+		it("[invalidSort/emptyKeys.json]", checkQuery);
+		it("[validSort/duplicateKey.json]", checkQuery);
+
+		//Rooms Queries
+		//it("[validRooms/complex.json]", checkQuery);
 	});
 });
