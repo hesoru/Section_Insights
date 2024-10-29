@@ -13,7 +13,6 @@ import { expect, use } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import fs, { readdir } from "fs-extra";
 import path from "node:path";
-import { Order } from "../../src/models/Query";
 
 use(chaiAsPromised);
 
@@ -638,7 +637,16 @@ describe("InsightFacade", function () {
 				//} catch (er) {
 				//console.log(er);
 				//}
-				const validInput = input as { OPTIONS: { ORDER?: string | Order } };
+				const validInput = input as {
+					OPTIONS: {
+						ORDER?:
+							| string
+							| {
+									dir: "UP" | "DOWN";
+									keys: string[];
+							  };
+					};
+				};
 				if (validInput.OPTIONS.ORDER) {
 					if (typeof validInput.OPTIONS.ORDER === "string") {
 						const field = validInput.OPTIONS.ORDER;
