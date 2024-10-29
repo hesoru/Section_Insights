@@ -52,7 +52,6 @@ export function apply(group: InsightResult[], applyRules: ApplyRule[]): InsightR
 
 export function applyNumericOperation(keyValues: number[], applyToken: ApplyToken): number {
 	const dec = 2;
-	let average;
 
 	switch (applyToken) {
 		case "MAX":
@@ -60,10 +59,7 @@ export function applyNumericOperation(keyValues: number[], applyToken: ApplyToke
 		case "MIN":
 			return Math.min(...keyValues);
 		case "AVG":
-			const scale = Math.pow(10, dec);
-			average = keyValues.reduce((a: number, b: number) => a + b, 0);
-			const rawAverage = average/keyValues.length;
-			return Math.round(rawAverage * scale) / scale;
+			return +(keyValues.reduce((a: number, b: number) => a + b, 0) / keyValues.length).toFixed(dec);
 		case "SUM":
 			return +keyValues.reduce((a: number, b: number) => a + b, 0).toFixed(dec);
 		default:

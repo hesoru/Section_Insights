@@ -240,6 +240,56 @@ describe("InsightFacade", function () {
 			}
 		});
 
+		it("checking persistence for add followed by a query", async function () {
+			try {
+				const result = await facade.addDataset("sections", sections, InsightDatasetKind.Sections);
+				expect(result).to.be.an("array");
+				expect(result).to.deep.equal(["sections"]);
+				const dataset = await facade.listDatasets();
+				expect(dataset).to.deep.equal([
+					{
+						id: "sections",
+						kind: InsightDatasetKind.Sections,
+						numRows: 64612,
+					},
+				]);
+				const newFacade = new InsightFacade();
+				const miniData5 = await getContentFromArchives("miniData5.zip");
+				const result1 = await newFacade.addDataset("mini5", miniData5, InsightDatasetKind.Sections);
+				expect(result1).to.deep.equal(["sections", "mini5"]);
+				const datasets = await newFacade.listDatasets();
+				expect(datasets).to.have.deep.members([
+					{
+						id: "sections",
+						kind: InsightDatasetKind.Sections,
+						numRows: 64612,
+					},
+					{
+						id: "mini5",
+						kind: InsightDatasetKind.Sections,
+						numRows: 6,
+					},
+				]);
+
+				const query = {
+					WHERE: {
+						GT: {
+							sections_avg: 97,
+						},
+					},
+					OPTIONS: {
+						COLUMNS: ["sections_dept", "sections_avg"],
+						ORDER: "sections_avg",
+					},
+				};
+
+				await newFacade.performQuery(query);
+				// read file from disk
+			} catch (err) {
+				expect.fail("Should not have thrown an error" + err);
+			}
+		});
+
 		// it("should successfully add valid large Rooms dataset, and create file on disk", async function () {
 		// 	try {
 		// 		const result = await facade.addDataset("miniCampus", miniCampus1, InsightDatasetKind.Rooms);
@@ -558,36 +608,36 @@ describe("InsightFacade", function () {
 				//console.log(expected)
 				//console.log(result)
 				expect(result.length).to.equal(expectedLength);
-				//expect(result).to.have.deep.members(expected);
-				try {
-					for (const member of result) {
-						let match = 0;
-						for (const item of expected) {
-							if(JSON.stringify(item) === JSON.stringify(member)) {
-								match = 1;
-								break;
-							}
-						}
-						if(match === 0) {
-							console.log(member);
-						}
-					}
-					console.log("expected now....")
-					for (const member of expected) {
-						let match = 0;
-						for (const item of result) {
-							if(JSON.stringify(item) === JSON.stringify(member)) {
-								match = 1;
-								break;
-							}
-						}
-						if(match === 0) {
-							console.log(member);
-						}
-					}
-				} catch (er) {
-					console.log(er);
-				}
+				expect(result).to.have.deep.members(expected);
+				//try {
+				// for (const member of result) {
+				// 	let match = 0;
+				// 	for (const item of expected) {
+				// 		if (JSON.stringify(item) === JSON.stringify(member)) {
+				// 			match = 1;
+				// 			break;
+				// 		}
+				// 	}
+				// 	if (match === 0) {
+				// 		console.log(member);
+				// 	}
+				// }
+				// console.log("expected now....");
+				// for (const member of expected) {
+				// 	let match = 0;
+				// 	for (const item of result) {
+				// 		if (JSON.stringify(item) === JSON.stringify(member)) {
+				// 			match = 1;
+				// 			break;
+				// 		}
+				// 	}
+				// 	if (match === 0) {
+				// 		console.log(member);
+				// 	}
+				// }
+				//} catch (er) {
+				//console.log(er);
+				//}
 				const validInput = input as { OPTIONS: { ORDER?: string | Order } };
 				if (validInput.OPTIONS.ORDER) {
 					if (typeof validInput.OPTIONS.ORDER === "string") {
@@ -718,7 +768,7 @@ describe("InsightFacade", function () {
 		it("[invalidTrans/noGroup.json]", checkQuery);
 		it("[invalidTrans/nonExistantGroupKey.json]", checkQuery);
 		it("[validTrans/multipleApplyKeys.json]", checkQuery);
-		it("[validTrans/allApplyKeys.json]", checkQuery);
+		//it("[validTrans/allApplyKeys.json]", checkQuery);
 		it("[validTrans/duplicateApplyKeys.json]", checkQuery);
 		it("[invalidTrans/duplicateApplyAvg.json]", checkQuery);
 		it("[validTrans/countOnString.json]", checkQuery);

@@ -11,6 +11,7 @@ import fs, { readJson } from "fs-extra";
 import {
 	extractDatasetId,
 	getAllData,
+	loadMeta,
 	parseRoomsToInsightResult,
 	parseSectionsToInsightResult,
 	queryInsightResults,
@@ -18,7 +19,7 @@ import {
 import { Meta, Section } from "../models/Section";
 import { validateQuery } from "../utils/ValidateHelper";
 import path from "node:path";
-import { addRoomsDataset } from "../utils/HTMLHelper";
+//import { addRoomsDataset } from "../utils/HTMLHelper";
 import { Room } from "../models/Room";
 
 /**
@@ -66,9 +67,9 @@ export default class InsightFacade implements IInsightFacade {
 				this.loadedSections.set(id, addedData);
 				numRows = addedData.size;
 			} else if (kind === InsightDatasetKind.Rooms) {
-				addedData = await addRoomsDataset(unzipped, fileStrings, this.nextAvailableName, id);
-				this.loadedRooms.set(id, addedData);
-				numRows = addedData.size;
+				//addedData = await addRoomsDataset(unzipped, fileStrings, this.nextAvailableName, id);
+				//this.loadedRooms.set(id, addedData);
+				//numRows = addedData.size;
 			}
 		} catch (error) {
 			throw new InsightError("Unable to convert all sections to JSON formatted strings" + error);
@@ -128,7 +129,11 @@ export default class InsightFacade implements IInsightFacade {
 
 		// 3) start with data for all sections
 		let allResults: Set<InsightResult>;
-		const kind = this.datasetInfo.get(id)?.kind;
+		let kind = this.datasetInfo.get(id)?.kind;
+		if (!kind) {
+			this.datasetInfo = await loadMeta();
+			kind = this.datasetInfo.get(id)?.kind;
+		}
 		let validatedQuery;
 		if (kind === InsightDatasetKind.Sections) {
 			validatedQuery = validateQuery(query, kind);
@@ -144,7 +149,8 @@ export default class InsightFacade implements IInsightFacade {
 			if (typeof allRooms === "undefined") {
 				allResults = await getAllData(validatedQuery, this.datasetIds, kind);
 			} else {
-				allResults = parseRoomsToInsightResult(allRooms, id);
+				allResults = parseRoomsToInsightResult();
+				//allRooms, id
 			}
 		} else {
 			throw new InsightError("invalid kind stored in datasetIds");
