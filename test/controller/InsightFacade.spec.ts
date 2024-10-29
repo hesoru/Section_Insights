@@ -40,7 +40,7 @@ describe("InsightFacade", function () {
 		miniCampus2 = await getContentFromArchives("miniCampus2.zip");
 
 		// Just in case there is anything hanging around from a previous run of the test suite
-		await clearDisk();
+		await clearDisk(); // TODO: shouldn't this come before?
 	});
 
 	describe("AddDataset", function () {

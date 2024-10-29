@@ -41,16 +41,15 @@ export function parseBuildingStrings(buildingStrings: string[], buildingsIndex: 
 	}
 }
 
-async function addGeolocationDataToAll(buildingsIndex: Partial<Building>[]): Promise<Building[]> {
+export async function addGeolocationDataToAll(buildingsIndex: Partial<Building>[]): Promise<Building[]> {
 	try {
 		// for each building in buildingsIndex:
 		return await Promise.all(buildingsIndex.map(async (building: Partial<Building>) => {
 			// encode the address in URL format
 			const address = (building as Building).address;
-			const addressURL = encodeURIComponent(address);
 			try {
 				// add geolocation data to building
-				return await addGeolocationData(building, addressURL);
+				return await addGeolocationData(building, address);
 			} catch {
 				// TODO: what do we do if we don't receive geolocation data? reject the building?
 				// return building without geolocation data otherwise
@@ -62,8 +61,9 @@ async function addGeolocationDataToAll(buildingsIndex: Partial<Building>[]): Pro
 	}
 }
 
-async function addGeolocationData(building: Partial<Building>, addressURL: string): Promise<Building> {
+export async function addGeolocationData(building: Partial<Building>, address: string): Promise<Building> {
 	return new Promise((resolve, reject) => {
+		const addressURL = encodeURIComponent(address);
 		const url = `http://cs310.students.cs.ubc.ca:11316/api/v1/project_team154/${addressURL}`;
 		let geoResponse = null;
 
@@ -96,7 +96,8 @@ async function addGeolocationData(building: Partial<Building>, addressURL: strin
 }
 
 // match building to roomsData based on given buildingString (from roomsData)
-function addBuildingToRooms(buildingsIndex: Building[], buildingString: string, roomsData: Partial<Room>[]): Room[] {
+export function addBuildingToRooms(buildingsIndex: Building[], buildingString: string, roomsData: Partial<Room>[]):
+	Room[] {
 	let foundBuilding = {} as Building;
 	try {
 		// every() behaves like foreach(), except stops iterating when receiving a false value
@@ -143,7 +144,7 @@ export function findTableBodyNode(node: any): any {
 	throw new InsightError("Data table not found in HTML file!")
 }
 
-function extractBuildingsIndex(tableBodyNode: any): Partial<Building>[] {
+export function extractBuildingsIndex(tableBodyNode: any): Partial<Building>[] {
 	// extracts fullname, shortname, address, and href from index HTML
 	// buildings will be partially completed (no geolocation)
 	const buildingsIndex: Partial<Building>[] = [];
@@ -175,7 +176,7 @@ function extractBuildingsIndex(tableBodyNode: any): Partial<Building>[] {
 	return buildingsIndex;
 }
 
-function extractRooms(node: any): Partial<Room>[] {
+export function extractRooms(node: any): Partial<Room>[] {
 	// extracts room number, seats, furniture, and type from each room HTML
 	// rooms will be partially completed (no building)
 	const rooms: Partial<Room>[] = [];
@@ -210,7 +211,7 @@ function extractRooms(node: any): Partial<Room>[] {
 	return rooms;
 }
 
-function extractBuildingString(node: any): string {
+export function extractBuildingString(node: any): string {
 	// extracts name of building from room HTML
 	let buildingString: string;
 	if (node.nodeName === 'div' && node.attrs) {
