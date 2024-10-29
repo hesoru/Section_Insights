@@ -1,0 +1,92 @@
+{
+  "title": "simple query w/ grouping and avg apply",
+  "input": {
+    "WHERE": {
+      "GT": {
+        "sections_avg": 97
+      }
+    },
+    "OPTIONS": {
+      "COLUMNS": [
+        "sections_pass",
+        "avgAvg"
+      ],
+      "ORDER": "avgAvg"
+    },
+    "TRANSFORMATIONS": {
+      "GROUP": [
+        "sections_pass"
+      ],
+      "APPLY": [
+        {
+          "avgAvg": {
+            "AVG": "sections_avg"
+          }
+        }
+      ]
+    }
+  },
+    "errorExpected": false,
+    "expected": [
+        {
+          "sections_pass":4,
+          "avgAvg":97.25
+        },
+        {
+          "sections_pass":15,
+          "avgAvg":97.47
+        },
+        {
+          "sections_pass":21,
+          "avgAvg":97.48
+        },
+        {
+          "sections_pass":11,
+          "avgAvg":97.54
+        },
+        {
+          "sections_pass":17,
+          "avgAvg":97.9
+        },
+        {
+          "sections_pass":14,
+          "avgAvg":97.99
+        },
+        {
+          "sections_pass":1,
+          "avgAvg":98
+        },
+        {
+          "sections_pass":12,
+          "avgAvg":98.2
+        },
+        {
+          "sections_pass":22,
+          "avgAvg":98.36
+        },
+        {
+          "sections_pass":16,
+          "avgAvg":98.47
+        },
+        {
+          "sections_pass":24,
+          "avgAvg":98.58
+        },
+        {
+          "sections_pass":10,
+          "avgAvg":98.7
+        },
+        {
+          "sections_pass":9,
+          "avgAvg":98.75
+        },
+        {
+          "sections_pass":25,
+          "avgAvg":98.8
+        },
+        {
+          "sections_pass":82,
+          "avgAvg":98.98
+        }
+      ]
+    }

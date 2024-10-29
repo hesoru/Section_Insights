@@ -1,0 +1,30 @@
+{
+  "title": "simple query w/ grouping and max apply",
+  "input": {
+    "WHERE": {
+      "GT": {
+        "sections_avg": 97
+      }
+    },
+    "OPTIONS": {
+      "COLUMNS": [
+        "sections_dept",
+        "sumAvg"
+      ],
+      "ORDER": "sumAvg"
+    },
+    "TRANSFORMATIONS": {
+      "GROUP": [
+        "sections_dept"
+      ],
+      "APPLY": [
+        {
+          "sumAvg": {
+            "SUM": "sections_avg"
+          }
+        }
+      ]
+    }
+  },
+    "errorExpected": false,
+    "expected": [{"sections_dept":"educ","sumAvg":97.5},{"sections_dept":"crwr","sumAvg":196},{"sections_dept":"eece","sumAvg":197.5},{"sections_dept":"spph","sumAvg":197.96},{"sections_dept":"cnps","sumAvg":294.13},{"sections_dept":"math","sumAvg":783.2},{"sections_dept":"nurs","sumAvg":1177.72},{"sections_dept":"epse","sumAvg":1862.24}]}

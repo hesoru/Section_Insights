@@ -7,11 +7,11 @@ import {
 	ResultTooLargeError,
 } from "../../src/controller/IInsightFacade";
 import InsightFacade from "../../src/controller/InsightFacade";
-import {clearDisk, getContentFromArchives, loadTestQuery} from "../TestUtil";
+import { clearDisk, getContentFromArchives, loadTestQuery } from "../TestUtil";
 
-import {expect, use} from "chai";
+import { expect, use } from "chai";
 import chaiAsPromised from "chai-as-promised";
-import fs, {readdir} from "fs-extra";
+import fs, { readdir } from "fs-extra";
 import path from "node:path";
 
 use(chaiAsPromised);
@@ -251,7 +251,7 @@ describe("InsightFacade", function () {
 						id: "miniCampus",
 						kind: InsightDatasetKind.Rooms,
 						numRows: 26,
-					}
+					},
 				]);
 			} catch (err) {
 				expect.fail("Should not have thrown an error" + err);
@@ -656,5 +656,34 @@ describe("InsightFacade", function () {
 		it("[valid/allFilters.json]", checkQuery);
 		it("[valid/year1900(Valid).json]", checkQuery);
 		//it("[valid/nestedNot.json]", checkQuery);
+
+		//Queries with Transformations
+		it("[validTrans/simpleGDeptAMax.json]", checkQuery);
+		it("[validTrans/simpleGDeptASum.json]", checkQuery);
+		it("[validTrans/simpleGPassAavg.json]", checkQuery);
+		it("[validTrans/twoGroupFields.json]", checkQuery);
+		it("[validTrans/manyGroupFields.json]", checkQuery);
+		it("[invalidTrans/deptColNOTGroup.json]", checkQuery);
+		it("[invalidTrans/emptyGroupArray.json]", checkQuery);
+		it("[invalidTrans/noGroup.json]", checkQuery);
+		it("[invalidTrans/nonExistantGroupKey.json]", checkQuery);
+		it("[validTrans/multipleApplyKeys.json]", checkQuery);
+		it("[validTrans/allApplyKeys.json]", checkQuery);
+		it("[validTrans/duplicateApplyKeys.json]", checkQuery);
+		it("[invalidTrans/duplicateApplyAvg.json]", checkQuery);
+		it("[validTrans/countOnString.json]", checkQuery);
+		it("[invalidTrans/maxOnString.json]", checkQuery);
+		it("[validTrans/noContent.json]", checkQuery);
+
+		//Queries with Sorting
+		it("[validSort/sortUp.json]", checkQuery);
+		it("[validSort/sortDown.json]", checkQuery);
+		it("[validSort/multipleKeysUp.json]", checkQuery);
+		it("[validSort/multipleKeysDown.json]", checkQuery);
+		it("[invalidSort/badDir.json]", checkQuery);
+		it("[invalidSort/badKey.json]", checkQuery);
+		it("[invalidSort/notInColumns.json]", checkQuery);
+		it("[invalidSort/emptyKeys.json]", checkQuery);
+		it("[validSort/duplicateKey.json]", checkQuery);
 	});
 });

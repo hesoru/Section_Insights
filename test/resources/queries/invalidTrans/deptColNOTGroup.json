@@ -1,0 +1,32 @@
+{
+  "title": "invalid dept is a in columns but not group or apply",
+  "input": {
+    "WHERE": {
+      "GT": {
+        "sections_avg": 97
+      }
+    },
+    "OPTIONS": {
+      "COLUMNS": [
+        "sections_pass",
+        "sections_dept",
+        "avgAvg"
+      ],
+      "ORDER": "avgAvg"
+    },
+    "TRANSFORMATIONS": {
+      "GROUP": [
+        "sections_pass"
+      ],
+      "APPLY": [
+        {
+          "avgAvg": {
+            "AVG": "sections_avg"
+          }
+        }
+      ]
+    }
+  },
+  "errorExpected": true,
+  "expected": "InsightError"
+}
