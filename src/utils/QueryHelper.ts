@@ -10,7 +10,7 @@ import { Section } from "../models/Section";
 import fs from "fs-extra";
 import path from "node:path";
 import { parseSectionObject } from "./JsonHelper";
-import { Room } from "../models/Room";
+import {Building, Room} from "../models/Room";
 import { sortResults } from "./SortHelper";
 import { Query, Body } from "../models/Query";
 import { apply, groupBy } from "./TransformationsHelper";
@@ -118,8 +118,7 @@ export async function getAllData(
 	if (kind === InsightDatasetKind.Sections) {
 		return parseSectionsToInsightResult(dataset as Set<Section>, idString);
 	} else {
-		//return parseRoomsToInsightResult(dataset as Set<Room>, idString);
-		return new Set();
+		return parseRoomsToInsightResult(dataset as Set<Room>, idString);
 	}
 }
 
@@ -221,31 +220,30 @@ export function parseSectionsToInsightResult(allSections: Set<Section>, idString
 	return allResults;
 }
 
-export function parseRoomsToInsightResult(): Set<InsightResult> {
-	//allRooms: Set<Room>, idString: string
-	// 	const roomColumns = new Set<string>(["name", "number", "type", "furniture", "seats"]);
-	// 	const buildingColumns = new Set<string>(["fullname", "shortname", "address", "lat", "lon", "href"]);
-	// 	const allResults = new Set<InsightResult>();
-	// 	for (const room of allRooms) {
-	// 		const roomResult: InsightResult = {};
-	// 		for (const item of roomColumns) {
-	// 			const value = room[item as keyof Room];
-	// 			if (typeof value === "string" || typeof value === "number") {
-	// 				roomResult[`${idString}_${item}`] = value;
-	// 			}
-	// 			//this should always be the case, but I had to put the explicit type guard in because typescript was complaining about the building field.
-	// 		}
-	// 		for (const item of buildingColumns) {
-	// 			const value = room.building[item as keyof Building];
-	// 			if (value) {
-	// 				//since lat or lon will be undefined
-	// 				roomResult[`${idString}_${item}`] = value;
-	// 			}
-	// 		}
-	// 		allResults.add(roomResult);
-	// 	}
-	// return allResults;
-	return new Set<InsightResult>();
+export function parseRoomsToInsightResult(allRooms: Set<Room>, idString: string): Set<InsightResult> {
+
+		const roomColumns = new Set<string>(["name", "number", "type", "furniture", "seats"]);
+		const buildingColumns = new Set<string>(["fullname", "shortname", "address", "lat", "lon", "href"]);
+		const allResults = new Set<InsightResult>();
+		for (const room of allRooms) {
+			const roomResult: InsightResult = {};
+			for (const item of roomColumns) {
+				const value = room[item as keyof Room];
+				if (typeof value === "string" || typeof value === "number") {
+					roomResult[`${idString}_${item}`] = value;
+				}
+				//this should always be the case, but I had to put the explicit type guard in because typescript was complaining about the building field.
+			}
+			for (const item of buildingColumns) {
+				const value = room.building[item as keyof Building];
+				if (value) {
+					//since lat or lon will be undefined
+					roomResult[`${idString}_${item}`] = value;
+				}
+			}
+			allResults.add(roomResult);
+		}
+	return allResults;
 }
 
 export function queryInsightResults(allResults: Set<InsightResult>, validatedQuery: Query): InsightResult[] {
