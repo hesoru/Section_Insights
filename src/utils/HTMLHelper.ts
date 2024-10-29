@@ -12,8 +12,8 @@ export async function parseIndexString(indexString: string): Promise<Building[]>
 		// find buildings table in document and extract buildings from it
 		const tableBodyNode = findTableBodyNode(document);
 
-		let buildingsIndex: Partial<Building>[] = []
-        buildingsIndex = extractBuildingsIndex(tableBodyNode, buildingsIndex);
+		let buildingsIndex: Partial<Building>[] = [];
+		buildingsIndex = extractBuildingsIndex(tableBodyNode, buildingsIndex);
 		// add geolocation data to all buildings
 		return await addGeolocationDataToAll(buildingsIndex);
 	} catch (error) {
@@ -27,11 +27,13 @@ export function parseBuildingStrings(buildingStrings: string[], buildingsIndex: 
 		// for each rooms HTML file:
 		buildingStrings.forEach((file) => {
 			// parse rooms HTML into document (node tree)
+
 			const document = parse5.parse(file);
 			const buildingString = extractBuildingString(document);
 			// find rooms table in document and extract rooms from it
 			const tableBodyNode = findTableBodyNode(document);
-			const roomsData = extractRooms(tableBodyNode);
+			let roomsData: Partial<Room>[] = [];
+			roomsData = extractRooms(tableBodyNode, roomsData);
 			// match building string to building in index
 			const buildingRooms = addBuildingToRooms(buildingsIndex, buildingString, roomsData);
 			// push rooms for each building to roomsDataset
@@ -41,7 +43,7 @@ export function parseBuildingStrings(buildingStrings: string[], buildingsIndex: 
 		});
 		return roomsDataset;
 	} catch (error) {
-		throw new InsightError("Failed to extract rooms from building file: " + error);
+		throw new InsightError("failed to parse building strings" + error);
 	}
 }
 
@@ -138,21 +140,19 @@ export function findTableBodyNode(node: any): any {
 		// both building and room tables have this specifier - TODO: is it too specific?
 		const isTable = node.attrs.some((attr: any) => attr.value.includes("views-table cols-5 table"));
 		if (isTable) {
-            return node.childNodes.find((child: any) => child.nodeName === "tbody");
+			return node.childNodes.find((child: any) => child.nodeName === "tbody");
 		}
 	}
 
 	// recurse through tree to find table
 	if (node.childNodes) {
-
-		for(const child of node.childNodes) {
-            const result = findTableBodyNode(child);
-            if(result) {
-                return result;
-            }
-        }
+		for (const child of node.childNodes) {
+			const result = findTableBodyNode(child);
+			if (result) {
+				return result;
+			}
+		}
 	}
-
 	// throw error if table not found in tree
 	//throw new InsightError("Data table not found in HTML file!");
 }
@@ -193,16 +193,15 @@ function extractBuildingsIndex(tableBodyNode: any, buildingsIndex: Partial<Build
 	return buildingsIndex;
 }
 
-function extractRooms(node: any): Partial<Room>[] {
+function extractRooms(node: any, rooms: Partial<Room>[]): Partial<Room>[] {
 	// extracts room number, seats, furniture, and type from each room HTML
 	// rooms will be partially completed (no building)
-	const rooms: Partial<Room>[] = [];
 	if (node.nodeName === "tr" && node.childNodes) {
 		rooms.push(extractChildRooms(node));
 	}
 	// recurse through tree to extract room data
 	if (node.childNodes) {
-		node.childNodes.forEach((child: any) => extractRooms(child));
+		node.childNodes.forEach((child: any) => extractRooms(child, rooms));
 	}
 	return rooms;
 }
@@ -214,7 +213,7 @@ function extractChildRooms(node: any): Partial<Room> {
 			if (
 				child.attrs.some((attr: any) => attr.name === "class" && attr.value.includes("views-field-field-room-number"))
 			) {
-				room.number = child.childNodes[0].childNodes[0].value.trim();
+				room.number = child.childNodes[1].childNodes[0].value.trim();
 			}
 			if (
 				child.attrs.some((attr: any) => attr.name === "class" && attr.value.includes("views-field-field-room-capacity"))
@@ -240,20 +239,40 @@ function extractChildRooms(node: any): Partial<Room> {
 
 function extractBuildingString(node: any): string {
 	// extracts name of building from room HTML
-	let buildingString: string;
+	const buildingString = findBuildingInfo(node);
+	if (buildingString) {
+		return buildingString;
+	}
+
+	throw new InsightError("Building name not found in room HTML file.");
+}
+
+function findBuildingInfo(node: any): any {
+	let buildingString: string | null = null;
 	if (node.nodeName === "div" && node.attrs) {
 		const isBuildingInfo = node.attrs.some((attr: any) => attr.name === "id" && attr.value === "building-info");
 		if (isBuildingInfo) {
 			node.childNodes.forEach((child: any) => {
 				// TODO: too hard-coded?
-				if (child.nodeName === "h2" && child.childNodes && child.childNodes[0].nodeName === "#text") {
-					buildingString = child.childNodes[0].value.trim();
+				if (child.nodeName === "h2" && child.childNodes && child.childNodes[0].nodeName === "span") {
+					if (child.childNodes[0].childNodes) {
+						buildingString = child.childNodes[0].childNodes[0].value.trim();
+					}
+
 					return buildingString;
 				}
 			});
 		}
 	}
-	throw new InsightError("Building name not found in room HTML file.");
+	if (node.childNodes) {
+		for (const child of node.childNodes) {
+			const result = findBuildingInfo(child);
+			if (result) {
+				return result;
+			}
+		}
+	}
+	return buildingString;
 }
 
 export async function addRoomsDataset(

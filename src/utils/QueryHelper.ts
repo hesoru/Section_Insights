@@ -10,7 +10,7 @@ import { Section } from "../models/Section";
 import fs from "fs-extra";
 import path from "node:path";
 import { parseSectionObject } from "./JsonHelper";
-import {Building, Room} from "../models/Room";
+import { Building, Room } from "../models/Room";
 import { sortResults } from "./SortHelper";
 import { Query, Body } from "../models/Query";
 import { apply, groupBy } from "./TransformationsHelper";
@@ -221,28 +221,27 @@ export function parseSectionsToInsightResult(allSections: Set<Section>, idString
 }
 
 export function parseRoomsToInsightResult(allRooms: Set<Room>, idString: string): Set<InsightResult> {
-
-		const roomColumns = new Set<string>(["name", "number", "type", "furniture", "seats"]);
-		const buildingColumns = new Set<string>(["fullname", "shortname", "address", "lat", "lon", "href"]);
-		const allResults = new Set<InsightResult>();
-		for (const room of allRooms) {
-			const roomResult: InsightResult = {};
-			for (const item of roomColumns) {
-				const value = room[item as keyof Room];
-				if (typeof value === "string" || typeof value === "number") {
-					roomResult[`${idString}_${item}`] = value;
-				}
-				//this should always be the case, but I had to put the explicit type guard in because typescript was complaining about the building field.
+	const roomColumns = new Set<string>(["name", "number", "type", "furniture", "seats"]);
+	const buildingColumns = new Set<string>(["fullname", "shortname", "address", "lat", "lon", "href"]);
+	const allResults = new Set<InsightResult>();
+	for (const room of allRooms) {
+		const roomResult: InsightResult = {};
+		for (const item of roomColumns) {
+			const value = room[item as keyof Room];
+			if (typeof value === "string" || typeof value === "number") {
+				roomResult[`${idString}_${item}`] = value;
 			}
-			for (const item of buildingColumns) {
-				const value = room.building[item as keyof Building];
-				if (value) {
-					//since lat or lon will be undefined
-					roomResult[`${idString}_${item}`] = value;
-				}
-			}
-			allResults.add(roomResult);
+			//this should always be the case, but I had to put the explicit type guard in because typescript was complaining about the building field.
 		}
+		for (const item of buildingColumns) {
+			const value = room.building[item as keyof Building];
+			if (value) {
+				//since lat or lon will be undefined
+				roomResult[`${idString}_${item}`] = value;
+			}
+		}
+		allResults.add(roomResult);
+	}
 	return allResults;
 }
 

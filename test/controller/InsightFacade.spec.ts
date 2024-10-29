@@ -289,24 +289,24 @@ describe("InsightFacade", function () {
 			}
 		});
 
-		// it("should successfully add valid large Rooms dataset, and create file on disk", async function () {
-		// 	try {
-		// 		const result = await facade.addDataset("miniCampus", miniCampus1, InsightDatasetKind.Rooms);
-		// 		expect(result).to.be.an("array");
-		// 		expect(result).to.deep.equal(["miniCampus"]);
-		//
-		// 		const dataset = await facade.listDatasets();
-		// 		expect(dataset).to.have.deep.members([
-		// 			{
-		// 				id: "miniCampus",
-		// 				kind: InsightDatasetKind.Rooms,
-		// 				numRows: 26,
-		// 			},
-		// 		]);
-		// 	} catch (err) {
-		// 		expect.fail("Should not have thrown an error" + err);
-		// 	}
-		// });
+		it("should successfully add valid large Rooms dataset, and create file on disk", async function () {
+			try {
+				const result = await facade.addDataset("miniCampus", miniCampus1, InsightDatasetKind.Rooms);
+				expect(result).to.be.an("array");
+				expect(result).to.deep.equal(["miniCampus"]);
+
+				const dataset = await facade.listDatasets();
+				expect(dataset).to.have.deep.members([
+					{
+						id: "miniCampus",
+						kind: InsightDatasetKind.Rooms,
+						numRows: 26,
+					},
+				]);
+			} catch (err) {
+				expect.fail("Should not have thrown an error" + err);
+			}
+		});
 
 		it("checking persistence add same sections dataset twice", async function () {
 			try {
@@ -712,6 +712,7 @@ describe("InsightFacade", function () {
 			// Will *fail* if there is a problem reading ANY dataset.
 			const loadDatasetPromises: Promise<string[]>[] = [
 				facade.addDataset("sections", sections, InsightDatasetKind.Sections),
+				facade.addDataset("rooms", rooms, InsightDatasetKind.Rooms),
 			];
 
 			try {
@@ -776,7 +777,7 @@ describe("InsightFacade", function () {
 		it("[invalidTrans/noGroup.json]", checkQuery);
 		it("[invalidTrans/nonExistantGroupKey.json]", checkQuery);
 		it("[validTrans/multipleApplyKeys.json]", checkQuery);
-		//it("[validTrans/allApplyKeys.json]", checkQuery);
+		it("[validTrans/allApplyKeys.json]", checkQuery);
 		it("[validTrans/duplicateApplyKeys.json]", checkQuery);
 		it("[invalidTrans/duplicateApplyAvg.json]", checkQuery);
 		it("[validTrans/countOnString.json]", checkQuery);
@@ -795,6 +796,6 @@ describe("InsightFacade", function () {
 		it("[validSort/duplicateKey.json]", checkQuery);
 
 		//Rooms Queries
-		//it("[validRooms/complex.json]", checkQuery);
+		it("[validRooms/complex.json]", checkQuery);
 	});
 });
