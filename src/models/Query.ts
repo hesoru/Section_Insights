@@ -1,13 +1,13 @@
-import {SectionMKey, SectionSKey} from "./Section";
-import {RoomMKey, RoomSKey} from "./Room";
+import { SectionMKey, SectionSKey } from "./Section";
+import { RoomMKey, RoomSKey } from "./Room";
 
 /**
  * Interface to represent a Query, structure of inputted query must be previously validated by validateQuery()
  */
 export interface Query {
-    WHERE: Body;
-    OPTIONS: Options;
-    TRANSFORMATIONS: Transformations;
+	WHERE: Body;
+	OPTIONS: Options;
+	TRANSFORMATIONS: Transformations;
 }
 
 /**
@@ -15,13 +15,13 @@ export interface Query {
  * are included in InsightResult[]
  */
 export interface Body {
-    AND?: Body[];
-    OR?: Body[];
-    GT?: [MKey, number];
-    LT?: [MKey, number];
-    EQ?: [MKey, number];
-    IS?: [SKey, string];
-    NOT?: Body;
+	AND?: Body[];
+	OR?: Body[];
+	GT?: [MKey, number];
+	LT?: [MKey, number];
+	EQ?: [MKey, number];
+	IS?: [SKey, string];
+	NOT?: Body;
 }
 
 /**
@@ -29,31 +29,31 @@ export interface Body {
  * are included in the InsightResult[] and in what order
  */
 export interface Options {
-    COLUMNS: string[];
-    ORDER?: string | Order;
+	COLUMNS: string[];
+	ORDER?: string | Order;
 }
 
 export interface Order {
-    dir: Dir;
-    keys: string[];
+	dir: Dir;
+	keys: string[];
 }
 
 export interface Transformations {
-    GROUP: string[];
-    APPLY?: ApplyRule[];
+	GROUP: string[];
+	APPLY?: ApplyRule[];
 }
 
 export type ApplyRule = Record<string, ApplyTokenObject>;
 
 export interface ApplyTokenObject {
-    MIN?: MKey | SKey;
-    MAX?: MKey | SKey;
-    AVG?: MKey | SKey;
-    COUNT?: MKey | SKey;
-    SUM?: MKey | SKey;
+	MIN?: MKey | SKey;
+	MAX?: MKey | SKey;
+	AVG?: MKey | SKey;
+	COUNT?: MKey | SKey;
+	SUM?: MKey | SKey;
 }
 
-export type MKey = SectionMKey | RoomMKey
-export type SKey = SectionSKey | RoomSKey
+export type MKey = SectionMKey | RoomMKey;
+export type SKey = SectionSKey | RoomSKey;
 export type ApplyToken = "MIN" | "MAX" | "AVG" | "COUNT" | "SUM";
 export type Dir = "UP" | "DOWN";

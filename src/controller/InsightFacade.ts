@@ -11,6 +11,7 @@ import fs, { readJson } from "fs-extra";
 import {
 	extractDatasetId,
 	getAllData,
+	loadMeta,
 	parseRoomsToInsightResult,
 	parseSectionsToInsightResult,
 	queryInsightResults,
@@ -18,8 +19,8 @@ import {
 import { Meta, Section } from "../models/Section";
 import { validateQuery } from "../utils/ValidateHelper";
 import path from "node:path";
-import { addRoomsDataset } from "../utils/HTMLHelper";
-import {Room} from "../models/Room";
+//import { addRoomsDataset } from "../utils/HTMLHelper";
+import { Room } from "../models/Room";
 
 /**
  * This is the main programmatic entry point for the project.
@@ -45,7 +46,7 @@ export default class InsightFacade implements IInsightFacade {
 		await this.initializeFields();
 
 		// 1) check kind of dataset
-		if (kind !== (InsightDatasetKind.Sections || InsightDatasetKind.Rooms)) {
+		if (kind !== InsightDatasetKind.Sections && kind !== InsightDatasetKind.Rooms) {
 			throw new InsightError("Dataset not of valid kind (Sections or Rooms), could not add dataset");
 		}
 		// 2) Check validity of id: can not be only white space, can not have underscores, reject if id is already in database
@@ -66,9 +67,9 @@ export default class InsightFacade implements IInsightFacade {
 				this.loadedSections.set(id, addedData);
 				numRows = addedData.size;
 			} else if (kind === InsightDatasetKind.Rooms) {
-				addedData = await addRoomsDataset(unzipped, fileStrings, this.nextAvailableName, id);
-				this.loadedRooms.set(id, addedData);
-				numRows = addedData.size;
+				//addedData = await addRoomsDataset(unzipped, fileStrings, this.nextAvailableName, id);
+				//this.loadedRooms.set(id, addedData);
+				//numRows = addedData.size;
 			}
 		} catch (error) {
 			throw new InsightError("Unable to convert all sections to JSON formatted strings" + error);
@@ -108,7 +109,6 @@ export default class InsightFacade implements IInsightFacade {
 			}
 			this.datasetIds.delete(id);
 
-
 			// remove from metadata file
 			const metaData: Meta[] = await readJson("./data/meta");
 			const newMeta = metaData.filter((meta) => meta.id !== id);
@@ -121,7 +121,6 @@ export default class InsightFacade implements IInsightFacade {
 	}
 
 	public async performQuery(query: unknown): Promise<InsightResult[]> {
-
 		// 2) extract dataset id from validated query, ensure dataset exists
 		const id = extractDatasetId(query);
 		if (!this.datasetIds.has(id)) {
@@ -130,7 +129,11 @@ export default class InsightFacade implements IInsightFacade {
 
 		// 3) start with data for all sections
 		let allResults: Set<InsightResult>;
-		const kind = this.datasetInfo.get(id)?.kind;
+		let kind = this.datasetInfo.get(id)?.kind;
+		if (!kind) {
+			this.datasetInfo = await loadMeta();
+			kind = this.datasetInfo.get(id)?.kind;
+		}
 		let validatedQuery;
 		if (kind === InsightDatasetKind.Sections) {
 			validatedQuery = validateQuery(query, kind);
@@ -146,7 +149,8 @@ export default class InsightFacade implements IInsightFacade {
 			if (typeof allRooms === "undefined") {
 				allResults = await getAllData(validatedQuery, this.datasetIds, kind);
 			} else {
-				allResults = parseRoomsToInsightResult(allRooms, id);
+				allResults = parseRoomsToInsightResult();
+				//allRooms, id
 			}
 		} else {
 			throw new InsightError("invalid kind stored in datasetIds");

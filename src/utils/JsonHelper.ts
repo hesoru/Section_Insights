@@ -1,9 +1,9 @@
 import { InsightDataset, InsightDatasetKind, InsightError, NotFoundError } from "../controller/IInsightFacade";
-import {JSONFile, Meta, Section} from "../models/Section";
+import { JSONFile, Meta, Section } from "../models/Section";
 import fs, { readJson } from "fs-extra";
 import path from "node:path";
 import JSZip from "jszip";
-import {Room} from "../models/Room";
+import { Room } from "../models/Room";
 
 /**
  * @returns - true if id is a valid dataset id and has not already been used in the database
@@ -112,8 +112,12 @@ export async function writeObjectToDisk(outputObject: object, name: number): Pro
 	}
 }
 
-export async function writeSectionsToDisk(fileStrings: string[], name: number, id: string, datasetSize: number):
-	Promise<number> {
+export async function writeSectionsToDisk(
+	fileStrings: string[],
+	name: number,
+	id: string,
+	datasetSize: number
+): Promise<number> {
 	const acc: Section[] = [];
 	for (const file of fileStrings) {
 		const JSONObject = JSON.parse(file);

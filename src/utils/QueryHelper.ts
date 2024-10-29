@@ -1,18 +1,19 @@
 import {
+	InsightDataset,
 	InsightDatasetKind,
 	InsightError,
 	InsightResult,
 	NotFoundError,
 	ResultTooLargeError,
 } from "../controller/IInsightFacade";
-import {Section} from "../models/Section";
+import { Section } from "../models/Section";
 import fs from "fs-extra";
 import path from "node:path";
 import { parseSectionObject } from "./JsonHelper";
-import { Building, Room } from "../models/Room";
+import { Room } from "../models/Room";
 import { sortResults } from "./SortHelper";
-import {Query, Body} from "../models/Query";
-import {apply, groupBy} from "./TransformationsHelper";
+import { Query, Body } from "../models/Query";
+import { apply, groupBy } from "./TransformationsHelper";
 
 /**
  * @returns - Query, validates that the query param conforms to Query structure, if not throws InsightError
@@ -117,7 +118,8 @@ export async function getAllData(
 	if (kind === InsightDatasetKind.Sections) {
 		return parseSectionsToInsightResult(dataset as Set<Section>, idString);
 	} else {
-		return parseRoomsToInsightResult(dataset as Set<Room>, idString);
+		//return parseRoomsToInsightResult(dataset as Set<Room>, idString);
+		return new Set();
 	}
 }
 
@@ -126,9 +128,9 @@ export async function getAllData(
  * @param query
  */
 export function extractDatasetId(query: any): string {
-	if(query.OPTIONS) {
+	if (query.OPTIONS) {
 		const options = query.OPTIONS;
-		if(options.COLUMNS) {
+		if (options.COLUMNS) {
 			const keys: string[] = query.OPTIONS.COLUMNS;
 			const keyParts = keys[0].split("_");
 			return keyParts[0];
@@ -219,29 +221,31 @@ export function parseSectionsToInsightResult(allSections: Set<Section>, idString
 	return allResults;
 }
 
-export function parseRoomsToInsightResult(allRooms: Set<Room>, idString: string): Set<InsightResult> {
-	const roomColumns = new Set<string>(["name", "number", "type", "furniture", "seats"]);
-	const buildingColumns = new Set<string>(["fullname", "shortname", "address", "lat", "lon", "href"]);
-	const allResults = new Set<InsightResult>();
-	for (const room of allRooms) {
-		const roomResult: InsightResult = {};
-		for (const item of roomColumns) {
-			const value = room[item as keyof Room];
-			if (typeof value === "string" || typeof value === "number") {
-				roomResult[`${idString}_${item}`] = value;
-			}
-			//this should always be the case, but I had to put the explicit type guard in because typescript was complaining about the building field.
-		}
-		for (const item of buildingColumns) {
-			const value = room.building[item as keyof Building];
-			if (value) {
-				//since lat or lon will be undefined
-				roomResult[`${idString}_${item}`] = value;
-			}
-		}
-		allResults.add(roomResult);
-	}
-	return allResults;
+export function parseRoomsToInsightResult(): Set<InsightResult> {
+	//allRooms: Set<Room>, idString: string
+	// 	const roomColumns = new Set<string>(["name", "number", "type", "furniture", "seats"]);
+	// 	const buildingColumns = new Set<string>(["fullname", "shortname", "address", "lat", "lon", "href"]);
+	// 	const allResults = new Set<InsightResult>();
+	// 	for (const room of allRooms) {
+	// 		const roomResult: InsightResult = {};
+	// 		for (const item of roomColumns) {
+	// 			const value = room[item as keyof Room];
+	// 			if (typeof value === "string" || typeof value === "number") {
+	// 				roomResult[`${idString}_${item}`] = value;
+	// 			}
+	// 			//this should always be the case, but I had to put the explicit type guard in because typescript was complaining about the building field.
+	// 		}
+	// 		for (const item of buildingColumns) {
+	// 			const value = room.building[item as keyof Building];
+	// 			if (value) {
+	// 				//since lat or lon will be undefined
+	// 				roomResult[`${idString}_${item}`] = value;
+	// 			}
+	// 		}
+	// 		allResults.add(roomResult);
+	// 	}
+	// return allResults;
+	return new Set<InsightResult>();
 }
 
 export function queryInsightResults(allResults: Set<InsightResult>, validatedQuery: Query): InsightResult[] {
@@ -251,15 +255,15 @@ export function queryInsightResults(allResults: Set<InsightResult>, validatedQue
 	filteredResults = handleFilter(validatedQuery.WHERE, Array.from(allResults));
 
 	//5) Group results and apply
-	if(validatedQuery.TRANSFORMATIONS) {
+	if (validatedQuery.TRANSFORMATIONS) {
 		const groupedResults = groupBy(filteredResults, validatedQuery);
-		if(validatedQuery.TRANSFORMATIONS.APPLY) {
-			for(const group of groupedResults.values()) {
+		if (validatedQuery.TRANSFORMATIONS.APPLY) {
+			for (const group of groupedResults.values()) {
 				const calculation = apply(group, validatedQuery.TRANSFORMATIONS.APPLY);
 				Object.assign(group[0], calculation); //will this add it to group inplace?
 			}
 		}
-		filteredResults = Array.from(groupedResults.values()).map(group => group[0]);
+		filteredResults = Array.from(groupedResults.values()).map((group) => group[0]);
 	}
 
 	// 5) handle results that are too large
@@ -278,4 +282,27 @@ export function queryInsightResults(allResults: Set<InsightResult>, validatedQue
 		sortedFilteredResults = filteredResults;
 	}
 	return sortedFilteredResults;
+}
+
+export async function loadMeta(): Promise<Map<string, InsightDataset>> {
+	const datasetPath = path.resolve("./data", "meta");
+	let dataset;
+	try {
+		dataset = await fs.readJson(datasetPath);
+	} catch (error) {
+		throw new NotFoundError(`Could not find dataset meta` + error);
+	}
+	const datasetInfo: Map<string, InsightDataset> = new Map<string, InsightDataset>();
+	for (const data of dataset) {
+		const id = data.id;
+		const kind = data.kind;
+		const numRows = data.numRows;
+		const meta = {
+			id: id,
+			kind: kind,
+			numRows: numRows,
+		};
+		datasetInfo.set(id, meta);
+	}
+	return datasetInfo;
 }
