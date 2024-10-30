@@ -81,7 +81,6 @@ async function addGeolocationDataToAll(buildingsIndex: Partial<Building>[]): Pro
 					// add geolocation data to building
 					return await addGeolocationData(building, addressURL);
 				} catch {
-					// TODO: what do we do if we don't receive geolocation data? reject the building? YES!
 					// return building without geolocation data otherwise
 					// return building as Building;
 					return null;

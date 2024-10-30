@@ -109,9 +109,10 @@ export function handleNegation(filter: any, data: InsightResult[]): InsightResul
 export async function getAllData(
 	query: Query,
 	datasets: Map<string, number>,
-	kind: InsightDatasetKind
+	kind: InsightDatasetKind,
+	datasetIds: Map<string, number>
 ): Promise<Set<InsightResult>> {
-	const idString = extractDatasetId(query);
+	const idString = extractDatasetId(query, datasetIds);
 	const fileName = String(datasets.get(idString));
 	const dataset = await loadDataset(idString, fileName, kind);
 
@@ -125,14 +126,18 @@ export async function getAllData(
 /**
  * @returns - string, extracts dataset id from first key found in OPTIONS.COLUMNS
  * @param query
+ * @param datasetIds
  */
-export function extractDatasetId(query: any): string {
+export function extractDatasetId(query: any, datasetIds: Map<string, number>): string {
 	if (query.OPTIONS) {
 		const options = query.OPTIONS;
 		if (options.COLUMNS) {
-			const keys: string[] = query.OPTIONS.COLUMNS;
-			const keyParts = keys[0].split("_");
-			return keyParts[0];
+			for (const key of options.COLUMNS) {
+				const keyParts = key.split("_");
+				if (datasetIds.has(keyParts[0])) {
+					return keyParts[0];
+				}
+			}
 		}
 	}
 	throw new InsightError("invalid query structure could not extract dataset ID");

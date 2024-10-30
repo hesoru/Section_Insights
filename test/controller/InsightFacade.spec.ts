@@ -820,5 +820,14 @@ describe("InsightFacade", function () {
 		it("[validRooms/complex.json]", checkQuery);
 		it("[validRooms/AND.IS.GT.json]", checkQuery);
 		it("[validRooms/NOTfilter.json]", checkQuery);
+		it("[validRooms/allFilters.json]", checkQuery);
+		it("[validRooms/3apply.json]", checkQuery);
+		it("[validRooms/max1.json]", checkQuery);
+		it("[validRooms/max2.json]", checkQuery);
+		it("[invalidRooms/avgFullname.json]", checkQuery);
+		it("[invalidRooms/avgHref.json]", checkQuery);
+		it("[invalidRooms/maxFurniture.json]", checkQuery);
+		it("[invalidRooms/minAddress.json]", checkQuery);
+		it("[invalidRooms/minType.json]", checkQuery);
 	});
 });
