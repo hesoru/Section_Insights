@@ -12,7 +12,7 @@ import path from "node:path";
 import { parseSectionObject } from "./JsonHelper";
 import { Building, Room } from "../models/Room";
 import { sortResults } from "./SortHelper";
-import { Query, Body } from "../models/Query";
+import { Body, Query } from "../models/Query";
 import { apply, groupBy } from "./TransformationsHelper";
 
 /**
@@ -190,6 +190,9 @@ export function selectColumns(filteredResults: InsightResult[], validatedQuery: 
 		const result: any = {};
 		const columns = validatedQuery.OPTIONS.COLUMNS;
 		for (const column of columns) {
+			if (section[column] === undefined) {
+				throw new InsightError("could not find column in columns");
+			}
 			result[column] = section[column];
 		}
 		return result;
@@ -268,9 +271,6 @@ export function queryInsightResults(allResults: Set<InsightResult>, validatedQue
 		throw new ResultTooLargeError("Query results exceed maximum size (5000 sections).");
 	}
 
-	// 6) select only specified columns (OPTIONS.COLUMNS)
-	filteredResults = selectColumns(filteredResults, validatedQuery);
-
 	// 7) sort results if necessary (OPTIONS.ORDER)
 	let sortedFilteredResults: InsightResult[];
 	if (validatedQuery.OPTIONS.ORDER) {
@@ -278,7 +278,9 @@ export function queryInsightResults(allResults: Set<InsightResult>, validatedQue
 	} else {
 		sortedFilteredResults = filteredResults;
 	}
-	return sortedFilteredResults;
+
+	// 6) select only specified columns (OPTIONS.COLUMNS)
+	return selectColumns(sortedFilteredResults, validatedQuery);
 }
 
 export async function loadMeta(): Promise<Map<string, InsightDataset>> {

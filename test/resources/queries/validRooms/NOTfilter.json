@@ -13,7 +13,7 @@
         "rooms_lat",
         "rooms_lon"
       ],
-      "ORDER": "rooms_href"
+      "ORDER": "rooms_lat"
     }
   },
   "errorExpected": false,

@@ -242,7 +242,7 @@ describe("InsightFacade", function () {
 		});
 
 		it("checking persistence for add followed by a query", async function () {
-			this.timeout(10000);
+			//this.timeout(10000);
 			try {
 				const result = await facade.addDataset("sections", sections, InsightDatasetKind.Sections);
 				expect(result).to.be.an("array");
@@ -312,7 +312,7 @@ describe("InsightFacade", function () {
 		});
 
 		it("should successfully add valid large Rooms dataset, and create file on disk", async function () {
-			this.timeout(10000);
+			//this.timeout(10000);
 			try {
 				const result = await facade.addDataset("rooms", rooms, InsightDatasetKind.Rooms);
 				expect(result).to.be.an("array");
@@ -730,16 +730,14 @@ describe("InsightFacade", function () {
 		}
 
 		before(async function () {
+			//this.timeout(10000);
+			await clearDisk();
 			facade = new InsightFacade();
 			// Add the datasets to InsightFacade once.
 			// Will *fail* if there is a problem reading ANY dataset.
-			const loadDatasetPromises: Promise<string[]>[] = [
-				facade.addDataset("sections", sections, InsightDatasetKind.Sections),
-				facade.addDataset("rooms", rooms, InsightDatasetKind.Rooms),
-			];
-
 			try {
-				await Promise.all(loadDatasetPromises);
+				await facade.addDataset("rooms", rooms, InsightDatasetKind.Rooms);
+				await facade.addDataset("sections", sections, InsightDatasetKind.Sections);
 			} catch (err) {
 				throw new Error(`In PerformQuery Before hook, dataset(s) failed to be added. \n${err}`);
 			}

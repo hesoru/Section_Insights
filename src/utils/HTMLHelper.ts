@@ -5,8 +5,12 @@ import * as http from "node:http";
 import JSZip from "jszip";
 import { writeRoomsToDisk } from "./JsonHelper";
 
-export async function addRoomsDataset(unzipped: JSZip, fileStrings: string[], nextAvailableName: number, id: string):
-	Promise<Set<Room>> {
+export async function addRoomsDataset(
+	unzipped: JSZip,
+	fileStrings: string[],
+	nextAvailableName: number,
+	id: string
+): Promise<Set<Room>> {
 	const added = new Set<Room>();
 	const indexHTML = unzipped.file("index.htm");
 	if (!indexHTML) {
@@ -68,7 +72,7 @@ export function parseBuildingStrings(buildingStrings: string[], buildingsIndex: 
 async function addGeolocationDataToAll(buildingsIndex: Partial<Building>[]): Promise<Building[]> {
 	try {
 		// for each building in buildingsIndex:
-		const buildingsIndexGeolocation =  await Promise.all(
+		const buildingsIndexGeolocation = await Promise.all(
 			buildingsIndex.map(async (building: Partial<Building>) => {
 				// encode the address in URL format
 				const address = (building as Building).address;
@@ -85,7 +89,7 @@ async function addGeolocationDataToAll(buildingsIndex: Partial<Building>[]): Pro
 				}
 			})
 		);
-		return buildingsIndexGeolocation.filter((building) => (building !== null)) as Building[];
+		return buildingsIndexGeolocation.filter((building) => building !== null) as Building[];
 	} catch (error) {
 		throw new InsightError("Adding geolocation data failed: " + error);
 	}
@@ -130,7 +134,7 @@ async function addGeolocationData(building: Partial<Building>, addressURL: strin
 
 // match building to roomsData based on given buildingString (from roomsData)
 function addBuildingToRooms(buildingsIndex: Building[], buildingName: string, roomsData: Partial<Room>[]): Room[] {
-	let foundBuilding: (Building | null) = null;
+	let foundBuilding: Building | null = null;
 	try {
 		// every() behaves like foreach(), except stops iterating when receiving a false value
 		buildingsIndex.every((building) => {
@@ -187,16 +191,22 @@ function extractBuildingsIndex(tableBodyNode: any, buildingsIndex: Partial<Build
 		const building: Partial<Building> = {};
 		tableBodyNode.childNodes.forEach((child: any) => {
 			if (child.nodeName === "td") {
-				if (child.attrs?.some((attr: any) => attr.name === "class"
-						&& attr.value.includes("views-field-field-building-code"))) {
+				if (
+					child.attrs?.some(
+						(attr: any) => attr.name === "class" && attr.value.includes("views-field-field-building-code")
+					)
+				) {
 					building.shortname = child.childNodes[0].value.trim();
 				}
 				if (child.attrs?.some((attr: any) => attr.name === "class" && attr.value.includes("views-field-title"))) {
 					building.fullname = child.childNodes[1].childNodes[0].value.trim(); //problem is here, can not access child of a child, does not exist, changed to index 1 but might need to change to name === 'a'
 					building.href = child.childNodes[1].attrs.find((attr: any) => attr.name === "href").value;
 				}
-				if (child.attrs?.some((attr: any) => attr.name === "class"
-						&& attr.value.includes("views-field-field-building-address"))) {
+				if (
+					child.attrs?.some(
+						(attr: any) => attr.name === "class" && attr.value.includes("views-field-field-building-address")
+					)
+				) {
 					building.address = child.childNodes[0].value.trim();
 				}
 			}
@@ -229,12 +239,15 @@ function extractChildRooms(node: any): Partial<Room> {
 	const room: Partial<Room> = {};
 	node.childNodes.forEach((child: any) => {
 		if (child.nodeName === "td") {
-			if (child.attrs.some((attr: any) => attr.name === "class"
-				&& attr.value.includes("views-field-field-room-number"))) {
+			if (
+				child.attrs.some((attr: any) => attr.name === "class" && attr.value.includes("views-field-field-room-number"))
+			) {
 				room.number = child.childNodes[1].childNodes[0].value.trim();
 			}
-			if (child.attrs.some((attr: any) => attr.name === "class" && attr.value.includes("views-field-field-room-capacity"))) {
-				room.seats = child.childNodes[0].value.trim();
+			if (
+				child.attrs.some((attr: any) => attr.name === "class" && attr.value.includes("views-field-field-room-capacity"))
+			) {
+				room.seats = Number(child.childNodes[0].value.trim());
 			}
 			if (
 				child.attrs.some(
@@ -269,7 +282,6 @@ function findBuildingInfo(node: any): any {
 		const isBuildingInfo = node.attrs.some((attr: any) => attr.name === "id" && attr.value === "building-info");
 		if (isBuildingInfo) {
 			node.childNodes.forEach((child: any) => {
-				// TODO: too hard-coded?
 				if (child.nodeName === "h2" && child.childNodes && child.childNodes[0].nodeName === "span") {
 					if (child.childNodes[0].childNodes) {
 						buildingString = child.childNodes[0].childNodes[0].value.trim();
