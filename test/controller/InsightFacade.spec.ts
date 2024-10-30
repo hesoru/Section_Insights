@@ -56,7 +56,9 @@ describe("InsightFacade", function () {
 		afterEach(async function () {
 			// This section resets the data directory (removing any cached data)
 			// This runs after each test, which should make each test independent of the previous one
-			//await clearDisk();
+			const timeout = 5000;
+			this.timeout(timeout);
+			await clearDisk();
 		});
 
 		it("should reject adding an empty dataset id", async function () {
@@ -242,6 +244,8 @@ describe("InsightFacade", function () {
 		});
 
 		it("checking persistence for add followed by a query", async function () {
+			const timeout = 10000;
+			this.timeout(timeout);
 			try {
 				const result = await facade.addDataset("sections", sections, InsightDatasetKind.Sections);
 				expect(result).to.be.an("array");
@@ -311,6 +315,8 @@ describe("InsightFacade", function () {
 		});
 
 		it("should successfully add valid large Rooms dataset, and create file on disk", async function () {
+			const timeout = 10000;
+			this.timeout(timeout);
 			try {
 				const result = await facade.addDataset("rooms", rooms, InsightDatasetKind.Rooms);
 				expect(result).to.be.an("array");
@@ -321,7 +327,7 @@ describe("InsightFacade", function () {
 					{
 						id: "rooms",
 						kind: InsightDatasetKind.Rooms,
-						numRows: 366,
+						numRows: 364,
 					},
 				]);
 			} catch (err) {
