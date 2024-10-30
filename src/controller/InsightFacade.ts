@@ -21,6 +21,7 @@ import { validateQuery } from "../utils/ValidateHelper";
 import path from "node:path";
 //import { addRoomsDataset } from "../utils/HTMLHelper";
 import { Room } from "../models/Room";
+import { addRoomsDataset } from "../utils/HTMLHelper";
 
 /**
  * This is the main programmatic entry point for the project.
@@ -67,9 +68,9 @@ export default class InsightFacade implements IInsightFacade {
 				this.loadedSections.set(id, addedData);
 				numRows = addedData.size;
 			} else if (kind === InsightDatasetKind.Rooms) {
-				//addedData = await addRoomsDataset(unzipped, fileStrings, this.nextAvailableName, id);
-				//this.loadedRooms.set(id, addedData);
-				//numRows = addedData.size;
+				addedData = await addRoomsDataset(unzipped, fileStrings, this.nextAvailableName, id);
+				this.loadedRooms.set(id, addedData);
+				numRows = addedData.size;
 			}
 		} catch (error) {
 			throw new InsightError("Unable to convert all sections to JSON formatted strings" + error);
@@ -149,8 +150,7 @@ export default class InsightFacade implements IInsightFacade {
 			if (typeof allRooms === "undefined") {
 				allResults = await getAllData(validatedQuery, this.datasetIds, kind);
 			} else {
-				allResults = parseRoomsToInsightResult();
-				//allRooms, id
+				allResults = parseRoomsToInsightResult(allRooms, id);
 			}
 		} else {
 			throw new InsightError("invalid kind stored in datasetIds");

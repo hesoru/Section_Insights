@@ -1,0 +1,66 @@
+{
+  "title": "SELECT dept, avg WHERE avg > 97",
+  "input": {
+    "WHERE": {
+      "NOT": {
+        "LT": {
+          "rooms_lat": 49.2692
+        }
+      }
+    },
+    "OPTIONS": {
+      "COLUMNS": [
+        "rooms_lat",
+        "rooms_lon"
+      ],
+      "ORDER": "rooms_lat"
+    }
+  },
+  "errorExpected": false,
+  "expected": [
+      {
+        "rooms_lat":49.26958,
+        "rooms_lon":-123.25741
+      },
+      {
+        "rooms_lat":49.26958,
+        "rooms_lon":-123.25741
+      },
+      {
+        "rooms_lat":49.26958,
+        "rooms_lon":-123.25741
+      },
+      {
+        "rooms_lat":49.26958,
+        "rooms_lon":-123.25741
+      },
+      {
+        "rooms_lat":49.2699,
+        "rooms_lon":-123.25318
+      },
+      {
+        "rooms_lat":49.2699,
+        "rooms_lon":-123.25318
+      },
+      {
+        "rooms_lat":49.2699,
+        "rooms_lon":-123.25318
+      },
+      {
+        "rooms_lat":49.2699,
+        "rooms_lon":-123.25318
+      },
+      {
+        "rooms_lat":49.2699,
+        "rooms_lon":-123.25318
+      },
+      {
+        "rooms_lat":49.27106,
+        "rooms_lon":-123.25042
+      },
+      {
+        "rooms_lat":49.27106,
+        "rooms_lon":-123.25042
+      }
+    ]
+}
