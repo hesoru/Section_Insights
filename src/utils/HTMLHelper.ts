@@ -5,6 +5,21 @@ import * as http from "node:http";
 import JSZip from "jszip";
 import { writeRoomsToDisk } from "./JsonHelper";
 
+export async function addRoomsDataset(unzipped: JSZip, fileStrings: string[], nextAvailableName: number, id: string):
+	Promise<Set<Room>> {
+	const added = new Set<Room>();
+	const indexHTML = unzipped.file("index.htm");
+	if (!indexHTML) {
+		throw new InsightError("index.htm not found in dataset");
+	}
+	const indexString = await indexHTML.async("string");
+	const buildings = await parseIndexString(indexString);
+	const roomsDataset = parseBuildingStrings(fileStrings, buildings);
+	roomsDataset.forEach((room) => added.add(room));
+	await writeRoomsToDisk(roomsDataset, nextAvailableName, id);
+	return added;
+}
+
 export async function parseIndexString(indexString: string): Promise<Building[]> {
 	try {
 		// parse index HTML into document (node tree)
@@ -29,7 +44,7 @@ export function parseBuildingStrings(buildingStrings: string[], buildingsIndex: 
 			// parse rooms HTML into document (node tree)
 
 			const document = parse5.parse(file);
-			const buildingString = extractBuildingString(document);
+			const buildingString = extractBuildingName(document);
 			// find rooms table in document and extract rooms from it
 			const tableBodyNode = findTableBodyNode(document);
 			if (tableBodyNode) {
@@ -43,6 +58,7 @@ export function parseBuildingStrings(buildingStrings: string[], buildingsIndex: 
 				});
 			} //else building has no rooms to be added
 		});
+		// roomsDataset.filter((room) => (room.building.fullname !== null));
 		return roomsDataset;
 	} catch (error) {
 		throw new InsightError("failed to parse building strings" + error);
@@ -65,6 +81,7 @@ async function addGeolocationDataToAll(buildingsIndex: Partial<Building>[]): Pro
 					// return building without geolocation data otherwise
 					// return building as Building;
 					return null;
+					// throw new InsightError("GEOLOCATION FAIL");
 				}
 			})
 		);
@@ -112,16 +129,14 @@ async function addGeolocationData(building: Partial<Building>, addressURL: strin
 }
 
 // match building to roomsData based on given buildingString (from roomsData)
-function addBuildingToRooms(buildingsIndex: Building[], buildingString: string, roomsData: Partial<Room>[]): Room[] {
-	let foundBuilding = {} as Building;
+function addBuildingToRooms(buildingsIndex: Building[], buildingName: string, roomsData: Partial<Room>[]): Room[] {
+	let foundBuilding: (Building | null) = null;
 	try {
 		// every() behaves like foreach(), except stops iterating when receiving a false value
 		buildingsIndex.every((building) => {
-			if (building.fullname === buildingString) {
+			if (building.fullname === buildingName) {
 				foundBuilding = building;
-				if (foundBuilding) {
-					return false;
-				}
+				return false;
 			}
 			return true;
 		});
@@ -131,7 +146,7 @@ function addBuildingToRooms(buildingsIndex: Building[], buildingString: string, 
 		}
 		// else add building to every room in roomsData
 		roomsData.forEach((room) => {
-			room.building = foundBuilding;
+			room.building = foundBuilding!;
 		});
 		return roomsData as Room[];
 	} catch (error) {
@@ -238,7 +253,7 @@ function extractChildRooms(node: any): Partial<Room> {
 	return room;
 }
 
-function extractBuildingString(node: any): string {
+function extractBuildingName(node: any): string {
 	// extracts name of building from room HTML
 	const buildingString = findBuildingInfo(node);
 	if (buildingString) {
@@ -274,23 +289,4 @@ function findBuildingInfo(node: any): any {
 		}
 	}
 	return buildingString;
-}
-
-export async function addRoomsDataset(
-	unzipped: JSZip,
-	fileStrings: string[],
-	nextAvailableName: number,
-	id: string
-): Promise<Set<Room>> {
-	const added = new Set<Room>();
-	const indexHTML = unzipped.file("index.htm");
-	if (!indexHTML) {
-		throw new InsightError("index.htm not found in dataset");
-	}
-	const indexString = await indexHTML.async("string");
-	const buildings = await parseIndexString(indexString);
-	const roomsDataset = parseBuildingStrings(fileStrings, buildings);
-	roomsDataset.forEach((room) => added.add(room));
-	await writeRoomsToDisk(roomsDataset, nextAvailableName, id);
-	return added;
 }

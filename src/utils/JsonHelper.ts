@@ -198,6 +198,8 @@ export function extractFileStrings(unzipped: JSZip, kind: InsightDatasetKind): P
 		fileStringsPromises.push(file.async("string"));
 	});
 
+	// const fileStrings = await Promise.all(fileStringsPromises); TODO: where is the promise resolved?
+
 	if (fileStringsPromises.length === 0) {
 		throw new InsightError("file does not contain at least one valid section or building");
 	}
