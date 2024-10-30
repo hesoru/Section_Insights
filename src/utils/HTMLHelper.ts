@@ -32,14 +32,16 @@ export function parseBuildingStrings(buildingStrings: string[], buildingsIndex: 
 			const buildingString = extractBuildingString(document);
 			// find rooms table in document and extract rooms from it
 			const tableBodyNode = findTableBodyNode(document);
-			let roomsData: Partial<Room>[] = [];
-			roomsData = extractRooms(tableBodyNode, roomsData);
-			// match building string to building in index
-			const buildingRooms = addBuildingToRooms(buildingsIndex, buildingString, roomsData);
-			// push rooms for each building to roomsDataset
-			buildingRooms.forEach((room) => {
-				roomsDataset.push(room);
-			});
+			if (tableBodyNode) {
+				let roomsData: Partial<Room>[] = [];
+				roomsData = extractRooms(tableBodyNode, roomsData);
+				// match building string to building in index
+				const buildingRooms = addBuildingToRooms(buildingsIndex, buildingString, roomsData);
+				// push rooms for each building to roomsDataset
+				buildingRooms.forEach((room) => {
+					roomsDataset.push(room);
+				});
+			} //else building has no rooms to be added
 		});
 		return roomsDataset;
 	} catch (error) {
@@ -136,11 +138,13 @@ function addBuildingToRooms(buildingsIndex: Building[], buildingString: string, 
 // recursive function to traverse the document tree and extract table rows
 export function findTableBodyNode(node: any): any {
 	// verify if node is a table node (return tbody node)
+	let tableBody: any = null;
 	if (node.nodeName === "table" && node.attrs) {
 		// both building and room tables have this specifier - TODO: is it too specific?
 		const isTable = node.attrs.some((attr: any) => attr.value.includes("views-table cols-5 table"));
 		if (isTable) {
-			return node.childNodes.find((child: any) => child.nodeName === "tbody");
+			tableBody = node.childNodes.find((child: any) => child.nodeName === "tbody");
+			return tableBody;
 		}
 	}
 
@@ -153,7 +157,7 @@ export function findTableBodyNode(node: any): any {
 			}
 		}
 	}
-	// throw error if table not found in tree
+	return tableBody;
 	//throw new InsightError("Data table not found in HTML file!");
 }
 
@@ -196,9 +200,11 @@ function extractBuildingsIndex(tableBodyNode: any, buildingsIndex: Partial<Build
 function extractRooms(node: any, rooms: Partial<Room>[]): Partial<Room>[] {
 	// extracts room number, seats, furniture, and type from each room HTML
 	// rooms will be partially completed (no building)
+
 	if (node.nodeName === "tr" && node.childNodes) {
 		rooms.push(extractChildRooms(node));
 	}
+
 	// recurse through tree to extract room data
 	if (node.childNodes) {
 		node.childNodes.forEach((child: any) => extractRooms(child, rooms));
