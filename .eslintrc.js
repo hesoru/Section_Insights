@@ -18,6 +18,7 @@ module.exports = {
 	overrides: [
 		{
 			files: ["**/*.spec.ts"],
+			excludedFiles: ["testUtils/**/*.ts"],
 			rules: {
 				"descriptive/max-lines": "off",
 				// describe functions exceed this limit easily

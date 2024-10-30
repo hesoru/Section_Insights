@@ -7,11 +7,11 @@ import {
 	ResultTooLargeError,
 } from "../../src/controller/IInsightFacade";
 import InsightFacade from "../../src/controller/InsightFacade";
-import {clearDisk, getContentFromArchives, loadTestQuery} from "../TestUtil";
+import { clearDisk, getContentFromArchives, loadTestQuery } from "../TestUtil";
 
-import {expect, use} from "chai";
+import { expect, use } from "chai";
 import chaiAsPromised from "chai-as-promised";
-import fs, {readdir} from "fs-extra";
+import fs, { readdir } from "fs-extra";
 import path from "node:path";
 
 use(chaiAsPromised);
@@ -31,6 +31,7 @@ describe("InsightFacade", function () {
 	let miniAddDataset: string;
 	let miniCampus1: string;
 	let miniCampus2: string;
+	let rooms: string;
 
 	before(async function () {
 		// This block runs once and loads the datasets.
@@ -38,9 +39,10 @@ describe("InsightFacade", function () {
 		miniAddDataset = await getContentFromArchives("miniAddData.zip");
 		miniCampus1 = await getContentFromArchives("miniCampus1.zip");
 		miniCampus2 = await getContentFromArchives("miniCampus2.zip");
+		rooms = await getContentFromArchives("campus.zip");
 
 		// Just in case there is anything hanging around from a previous run of the test suite
-		await clearDisk();
+		await clearDisk(); // TODO: shouldn't this come before?
 	});
 
 	describe("AddDataset", function () {
@@ -54,7 +56,9 @@ describe("InsightFacade", function () {
 		afterEach(async function () {
 			// This section resets the data directory (removing any cached data)
 			// This runs after each test, which should make each test independent of the previous one
-			//await clearDisk();
+			const timeout = 5000;
+			this.timeout(timeout);
+			await clearDisk();
 		});
 
 		it("should reject adding an empty dataset id", async function () {
@@ -239,7 +243,59 @@ describe("InsightFacade", function () {
 			}
 		});
 
-		it("should successfully add valid large Rooms dataset, and create file on disk", async function () {
+		it("checking persistence for add followed by a query", async function () {
+			const timeout = 10000;
+			this.timeout(timeout);
+			try {
+				const result = await facade.addDataset("sections", sections, InsightDatasetKind.Sections);
+				expect(result).to.be.an("array");
+				expect(result).to.deep.equal(["sections"]);
+				const dataset = await facade.listDatasets();
+				expect(dataset).to.deep.equal([
+					{
+						id: "sections",
+						kind: InsightDatasetKind.Sections,
+						numRows: 64612,
+					},
+				]);
+				const newFacade = new InsightFacade();
+				const miniData5 = await getContentFromArchives("miniData5.zip");
+				const result1 = await newFacade.addDataset("mini5", miniData5, InsightDatasetKind.Sections);
+				expect(result1).to.deep.equal(["sections", "mini5"]);
+				const datasets = await newFacade.listDatasets();
+				expect(datasets).to.have.deep.members([
+					{
+						id: "sections",
+						kind: InsightDatasetKind.Sections,
+						numRows: 64612,
+					},
+					{
+						id: "mini5",
+						kind: InsightDatasetKind.Sections,
+						numRows: 6,
+					},
+				]);
+
+				const query = {
+					WHERE: {
+						GT: {
+							sections_avg: 97,
+						},
+					},
+					OPTIONS: {
+						COLUMNS: ["sections_dept", "sections_avg"],
+						ORDER: "sections_avg",
+					},
+				};
+
+				await newFacade.performQuery(query);
+				// read file from disk
+			} catch (err) {
+				expect.fail("Should not have thrown an error" + err);
+			}
+		});
+
+		it("should successfully add valid Rooms dataset, and create file on disk", async function () {
 			try {
 				const result = await facade.addDataset("miniCampus", miniCampus1, InsightDatasetKind.Rooms);
 				expect(result).to.be.an("array");
@@ -251,7 +307,28 @@ describe("InsightFacade", function () {
 						id: "miniCampus",
 						kind: InsightDatasetKind.Rooms,
 						numRows: 26,
-					}
+					},
+				]);
+			} catch (err) {
+				expect.fail("Should not have thrown an error" + err);
+			}
+		});
+
+		it("should successfully add valid large Rooms dataset, and create file on disk", async function () {
+			const timeout = 10000;
+			this.timeout(timeout);
+			try {
+				const result = await facade.addDataset("rooms", rooms, InsightDatasetKind.Rooms);
+				expect(result).to.be.an("array");
+				expect(result).to.deep.equal(["rooms"]);
+
+				const dataset = await facade.listDatasets();
+				expect(dataset).to.have.deep.members([
+					{
+						id: "rooms",
+						kind: InsightDatasetKind.Rooms,
+						numRows: 364,
+					},
 				]);
 			} catch (err) {
 				expect.fail("Should not have thrown an error" + err);
@@ -558,12 +635,70 @@ describe("InsightFacade", function () {
 				//console.log(result)
 				expect(result.length).to.equal(expectedLength);
 				expect(result).to.have.deep.members(expected);
-				const validInput = input as { OPTIONS: { ORDER?: string } };
+				//try {
+				// for (const member of result) {
+				// 	let match = 0;
+				// 	for (const item of expected) {
+				// 		if (JSON.stringify(item) === JSON.stringify(member)) {
+				// 			match = 1;
+				// 			break;
+				// 		}
+				// 	}
+				// 	if (match === 0) {
+				// 		console.log(member);
+				// 	}
+				// }
+				// console.log("expected now....");
+				// for (const member of expected) {
+				// 	let match = 0;
+				// 	for (const item of result) {
+				// 		if (JSON.stringify(item) === JSON.stringify(member)) {
+				// 			match = 1;
+				// 			break;
+				// 		}
+				// 	}
+				// 	if (match === 0) {
+				// 		console.log(member);
+				// 	}
+				// }
+				//} catch (er) {
+				//console.log(er);
+				//}
+				const validInput = input as {
+					OPTIONS: {
+						ORDER?:
+							| string
+							| {
+									dir: "UP" | "DOWN";
+									keys: string[];
+							  };
+					};
+				};
 				if (validInput.OPTIONS.ORDER) {
-					const field = validInput.OPTIONS.ORDER;
+					if (typeof validInput.OPTIONS.ORDER === "string") {
+						const field = validInput.OPTIONS.ORDER;
+						for (let i = 1; i < result.length; i++) {
+							if (result[i][field] < result[i - 1][field]) {
+								expect.fail("not in correct order");
+							}
+						}
+					}
+				}
+				if (typeof validInput.OPTIONS.ORDER === "object") {
+					const comp: (a: any, b: any) => boolean =
+						validInput.OPTIONS.ORDER.dir === "UP"
+							? (a: any, b: any): boolean => a < b
+							: (a: any, b: any): boolean => a > b;
+
 					for (let i = 1; i < result.length; i++) {
-						if (result[i][field] < result[i - 1][field]) {
-							expect.fail("not in correct order");
+						for (const key of validInput.OPTIONS.ORDER.keys) {
+							if (comp(result[i][key], result[i - 1][key])) {
+								expect.fail("results are not in the correct order");
+							} else if (result[i][key] === result[i - 1][key]) {
+								//do nothing
+							} else {
+								break;
+							}
 						}
 					}
 				}
@@ -604,6 +739,7 @@ describe("InsightFacade", function () {
 			// Will *fail* if there is a problem reading ANY dataset.
 			const loadDatasetPromises: Promise<string[]>[] = [
 				facade.addDataset("sections", sections, InsightDatasetKind.Sections),
+				facade.addDataset("rooms", rooms, InsightDatasetKind.Rooms),
 			];
 
 			try {
@@ -656,5 +792,37 @@ describe("InsightFacade", function () {
 		it("[valid/allFilters.json]", checkQuery);
 		it("[valid/year1900(Valid).json]", checkQuery);
 		//it("[valid/nestedNot.json]", checkQuery);
+
+		//Queries with Transformations
+		it("[validTrans/simpleGDeptAMax.json]", checkQuery);
+		it("[validTrans/simpleGDeptASum.json]", checkQuery);
+		it("[validTrans/simpleGPassAavg.json]", checkQuery);
+		it("[validTrans/twoGroupFields.json]", checkQuery);
+		it("[validTrans/manyGroupFields.json]", checkQuery);
+		it("[invalidTrans/deptColNOTGroup.json]", checkQuery);
+		it("[invalidTrans/emptyGroupArray.json]", checkQuery);
+		it("[invalidTrans/noGroup.json]", checkQuery);
+		it("[invalidTrans/nonExistantGroupKey.json]", checkQuery);
+		it("[validTrans/multipleApplyKeys.json]", checkQuery);
+		it("[validTrans/allApplyKeys.json]", checkQuery);
+		it("[validTrans/duplicateApplyKeys.json]", checkQuery);
+		it("[invalidTrans/duplicateApplyAvg.json]", checkQuery);
+		it("[validTrans/countOnString.json]", checkQuery);
+		it("[invalidTrans/maxOnString.json]", checkQuery);
+		it("[validTrans/noContent.json]", checkQuery);
+
+		//Queries with Sorting
+		it("[validSort/sortUp.json]", checkQuery);
+		it("[validSort/sortDown.json]", checkQuery);
+		it("[validSort/multipleKeysUp.json]", checkQuery);
+		it("[validSort/multipleKeysDown.json]", checkQuery);
+		it("[invalidSort/badDir.json]", checkQuery);
+		it("[invalidSort/badKey.json]", checkQuery);
+		it("[invalidSort/notInColumns.json]", checkQuery);
+		it("[invalidSort/emptyKeys.json]", checkQuery);
+		it("[validSort/duplicateKey.json]", checkQuery);
+
+		//Rooms Queries
+		it("[validRooms/complex.json]", checkQuery);
 	});
 });

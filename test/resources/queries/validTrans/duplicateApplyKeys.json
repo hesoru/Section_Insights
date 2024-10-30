@@ -1,0 +1,278 @@
+{
+  "title": "query with grouping and duplicate apply keys",
+  "input": {
+      "WHERE": {
+        "GT": {
+          "sections_avg": 95
+        }
+      },
+      "OPTIONS": {
+        "COLUMNS": [
+          "sections_pass",
+          "avgSectionAvg",
+          "avgSectionFail",
+          "countSections"
+        ],
+        "ORDER": "avgSectionAvg"
+      },
+      "TRANSFORMATIONS": {
+        "GROUP": [
+          "sections_pass"
+        ],
+        "APPLY": [
+          {
+            "avgSectionAvg": {
+              "AVG": "sections_avg"
+            }
+          },
+          {
+            "avgSectionFail": {
+              "AVG": "sections_fail"
+            }
+          },
+          {
+            "countSections": {
+              "COUNT": "sections_id"
+            }
+          }
+        ]
+      }
+    },
+    "errorExpected": false,
+    "expected": [
+      {
+        "sections_pass": 121,
+        "avgSectionAvg": 95.07,
+        "avgSectionFail": 0,
+        "countSections": 1
+      },
+      {
+        "sections_pass": 32,
+        "avgSectionAvg": 95.13,
+        "avgSectionFail": 0,
+        "countSections": 1
+      },
+      {
+        "sections_pass": 31,
+        "avgSectionAvg": 95.16,
+        "avgSectionFail": 0,
+        "countSections": 1
+      },
+      {
+        "sections_pass": 45,
+        "avgSectionAvg": 95.18,
+        "avgSectionFail": 0,
+        "countSections": 1
+      },
+      {
+        "sections_pass": 26,
+        "avgSectionAvg": 95.19,
+        "avgSectionFail": 0,
+        "countSections": 1
+      },
+      {
+        "sections_pass": 81,
+        "avgSectionAvg": 95.37,
+        "avgSectionFail": 0,
+        "countSections": 1
+      },
+      {
+        "sections_pass": 7,
+        "avgSectionAvg": 95.43,
+        "avgSectionFail": 0,
+        "countSections": 2
+      },
+      {
+        "sections_pass": 37,
+        "avgSectionAvg": 95.66,
+        "avgSectionFail": 0,
+        "countSections": 2
+      },
+      {
+        "sections_pass": 20,
+        "avgSectionAvg": 95.71,
+        "avgSectionFail": 0,
+        "countSections": 4
+      },
+      {
+        "sections_pass": 13,
+        "avgSectionAvg": 95.72,
+        "avgSectionFail": 0,
+        "countSections": 3
+      },
+      {
+        "sections_pass": 46,
+        "avgSectionAvg": 95.72,
+        "avgSectionFail": 0,
+        "countSections": 1
+      },
+      {
+        "sections_pass": 18,
+        "avgSectionAvg": 95.75,
+        "avgSectionFail": 0,
+        "countSections": 5
+      },
+      {
+        "sections_pass": 92,
+        "avgSectionAvg": 95.76,
+        "avgSectionFail": 0,
+        "countSections": 1
+      },
+      {
+        "sections_pass": 19,
+        "avgSectionAvg": 95.81,
+        "avgSectionFail": 0,
+        "countSections": 9
+      },
+      {
+        "sections_pass": 34,
+        "avgSectionAvg": 95.84,
+        "avgSectionFail": 0,
+        "countSections": 2
+      },
+      {
+        "sections_pass": 21,
+        "avgSectionAvg": 95.87,
+        "avgSectionFail": 0,
+        "countSections": 4
+      },
+      {
+        "sections_pass": 3,
+        "avgSectionAvg": 95.89,
+        "avgSectionFail": 0,
+        "countSections": 2
+      },
+      {
+        "sections_pass": 27,
+        "avgSectionAvg": 95.93,
+        "avgSectionFail": 0,
+        "countSections": 3
+      },
+      {
+        "sections_pass": 6,
+        "avgSectionAvg": 95.95,
+        "avgSectionFail": 0,
+        "countSections": 4
+      },
+      {
+        "sections_pass": 2,
+        "avgSectionAvg": 96,
+        "avgSectionFail": 0,
+        "countSections": 1
+      },
+      {
+        "sections_pass": 36,
+        "avgSectionAvg": 96.03,
+        "avgSectionFail": 0,
+        "countSections": 1
+      },
+      {
+        "sections_pass": 15,
+        "avgSectionAvg": 96.1,
+        "avgSectionFail": 0,
+        "countSections": 8
+      },
+      {
+        "sections_pass": 4,
+        "avgSectionAvg": 96.12,
+        "avgSectionFail": 0,
+        "countSections": 9
+      },
+      {
+        "sections_pass": 8,
+        "avgSectionAvg": 96.19,
+        "avgSectionFail": 0,
+        "countSections": 2
+      },
+      {
+        "sections_pass": 22,
+        "avgSectionAvg": 96.2,
+        "avgSectionFail": 0,
+        "countSections": 4
+      },
+      {
+        "sections_pass": 9,
+        "avgSectionAvg": 96.39,
+        "avgSectionFail": 0,
+        "countSections": 11
+      },
+      {
+        "sections_pass": 5,
+        "avgSectionAvg": 96.4,
+        "avgSectionFail": 0,
+        "countSections": 2
+      },
+      {
+        "sections_pass": 11,
+        "avgSectionAvg": 96.45,
+        "avgSectionFail": 0,
+        "countSections": 8
+      },
+      {
+        "sections_pass": 14,
+        "avgSectionAvg": 96.51,
+        "avgSectionFail": 0,
+        "countSections": 8
+      },
+      {
+        "sections_pass": 1,
+        "avgSectionAvg": 96.55,
+        "avgSectionFail": 0,
+        "countSections": 3
+      },
+      {
+        "sections_pass": 10,
+        "avgSectionAvg": 96.59,
+        "avgSectionFail": 0,
+        "countSections": 4
+      },
+      {
+        "sections_pass": 16,
+        "avgSectionAvg": 96.61,
+        "avgSectionFail": 0,
+        "countSections": 6
+      },
+      {
+        "sections_pass": 29,
+        "avgSectionAvg": 96.9,
+        "avgSectionFail": 0,
+        "countSections": 1
+      },
+      {
+        "sections_pass": 24,
+        "avgSectionAvg": 96.92,
+        "avgSectionFail": 0,
+        "countSections": 3
+      },
+      {
+        "sections_pass": 56,
+        "avgSectionAvg": 96.96,
+        "avgSectionFail": 0,
+        "countSections": 1
+      },
+      {
+        "sections_pass": 25,
+        "avgSectionAvg": 97.52,
+        "avgSectionFail": 0,
+        "countSections": 1
+      },
+      {
+        "sections_pass": 17,
+        "avgSectionAvg": 97.55,
+        "avgSectionFail": 0,
+        "countSections": 3
+      },
+      {
+        "sections_pass": 12,
+        "avgSectionAvg": 98.2,
+        "avgSectionFail": 0,
+        "countSections": 4
+      },
+      {
+        "sections_pass": 82,
+        "avgSectionAvg": 98.98,
+        "avgSectionFail": 0,
+        "countSections": 1
+      }
+    ]
+  }

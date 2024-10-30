@@ -12,7 +12,8 @@
 	},
 	"include": [
 		"src/**/*.ts",
-		"test/**/*.ts"
+		"test/**/*.ts",
+		"testUnit"
 	],
 	"exclude": [
 		"node_modules"

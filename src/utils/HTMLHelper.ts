@@ -1,7 +1,24 @@
-import parse5 from 'parse5';
-import {InsightError} from "../controller/IInsightFacade";
-import {Building, Room} from "../models/Section";
+import * as parse5 from "parse5";
+import { InsightError } from "../controller/IInsightFacade";
+import { Building, Room } from "../models/Room";
 import * as http from "node:http";
+import JSZip from "jszip";
+import { writeRoomsToDisk } from "./JsonHelper";
+
+export async function addRoomsDataset(unzipped: JSZip, fileStrings: string[], nextAvailableName: number, id: string):
+	Promise<Set<Room>> {
+	const added = new Set<Room>();
+	const indexHTML = unzipped.file("index.htm");
+	if (!indexHTML) {
+		throw new InsightError("index.htm not found in dataset");
+	}
+	const indexString = await indexHTML.async("string");
+	const buildings = await parseIndexString(indexString);
+	const roomsDataset = parseBuildingStrings(fileStrings, buildings);
+	roomsDataset.forEach((room) => added.add(room));
+	await writeRoomsToDisk(roomsDataset, nextAvailableName, id);
+	return added;
+}
 
 export async function parseIndexString(indexString: string): Promise<Building[]> {
 	try {
@@ -9,7 +26,9 @@ export async function parseIndexString(indexString: string): Promise<Building[]>
 		const document = parse5.parse(indexString);
 		// find buildings table in document and extract buildings from it
 		const tableBodyNode = findTableBodyNode(document);
-		const buildingsIndex = extractBuildingsIndex(tableBodyNode);
+
+		let buildingsIndex: Partial<Building>[] = [];
+		buildingsIndex = extractBuildingsIndex(tableBodyNode, buildingsIndex);
 		// add geolocation data to all buildings
 		return await addGeolocationDataToAll(buildingsIndex);
 	} catch (error) {
@@ -21,42 +40,52 @@ export function parseBuildingStrings(buildingStrings: string[], buildingsIndex: 
 	const roomsDataset: Room[] = [];
 	try {
 		// for each rooms HTML file:
-		buildingStrings.forEach(file => {
+		buildingStrings.forEach((file) => {
 			// parse rooms HTML into document (node tree)
+
 			const document = parse5.parse(file);
-			const buildingString = extractBuildingString(document);
+			const buildingString = extractBuildingName(document);
 			// find rooms table in document and extract rooms from it
 			const tableBodyNode = findTableBodyNode(document);
-			const roomsData = extractRooms(tableBodyNode);
-			// match building string to building in index
-			const buildingRooms = addBuildingToRooms(buildingsIndex, buildingString, roomsData);
-			// push rooms for each building to roomsDataset
-			buildingRooms.forEach(room => {
-				roomsDataset.push(room);
-			});
+			if (tableBodyNode) {
+				let roomsData: Partial<Room>[] = [];
+				roomsData = extractRooms(tableBodyNode, roomsData);
+				// match building string to building in index
+				const buildingRooms = addBuildingToRooms(buildingsIndex, buildingString, roomsData);
+				// push rooms for each building to roomsDataset
+				buildingRooms.forEach((room) => {
+					roomsDataset.push(room);
+				});
+			} //else building has no rooms to be added
 		});
+		// roomsDataset.filter((room) => (room.building.fullname !== null));
 		return roomsDataset;
 	} catch (error) {
-		throw new InsightError("Failed to extract rooms from building file: " + error);
+		throw new InsightError("failed to parse building strings" + error);
 	}
 }
 
 async function addGeolocationDataToAll(buildingsIndex: Partial<Building>[]): Promise<Building[]> {
 	try {
 		// for each building in buildingsIndex:
-		return await Promise.all(buildingsIndex.map(async (building: Partial<Building>) => {
-			// encode the address in URL format
-			const address = (building as Building).address;
-			const addressURL = encodeURIComponent(address);
-			try {
-				// add geolocation data to building
-				return await addGeolocationData(building, addressURL);
-			} catch {
-				// TODO: what do we do if we don't receive geolocation data? reject the building?
-				// return building without geolocation data otherwise
-				return building as Building;
-			}
-		}));
+		const buildingsIndexGeolocation =  await Promise.all(
+			buildingsIndex.map(async (building: Partial<Building>) => {
+				// encode the address in URL format
+				const address = (building as Building).address;
+				const addressURL = encodeURIComponent(address);
+				try {
+					// add geolocation data to building
+					return await addGeolocationData(building, addressURL);
+				} catch {
+					// TODO: what do we do if we don't receive geolocation data? reject the building? YES!
+					// return building without geolocation data otherwise
+					// return building as Building;
+					return null;
+					// throw new InsightError("GEOLOCATION FAIL");
+				}
+			})
+		);
+		return buildingsIndexGeolocation.filter((building) => (building !== null)) as Building[];
 	} catch (error) {
 		throw new InsightError("Adding geolocation data failed: " + error);
 	}
@@ -68,44 +97,46 @@ async function addGeolocationData(building: Partial<Building>, addressURL: strin
 		let geoResponse = null;
 
 		// send HTTP GET request
-		http.get(url, (res) => {
-			let data = '';
-			// collect response data in chunks
-			res.on('data', (chunk) => {
-				data += chunk;
-			});
-			// once request is complete:
-			res.on('end', () => {
-				try {
-					// parse JSON-formatted georesponse into object
-					geoResponse = JSON.parse(data);
-					// if georesponse does not contain an error, transfer lat/lon into requested building
-					if (!geoResponse.error) {
-						building.lat = geoResponse.lat;
-						building.lon = geoResponse.lon;
+		http
+			.get(url, (res) => {
+				let data = "";
+				// collect response data in chunks
+				res.on("data", (chunk) => {
+					data += chunk;
+				});
+				// once request is complete:
+				res.on("end", () => {
+					try {
+						// parse JSON-formatted georesponse into object
+						geoResponse = JSON.parse(data);
+						// if georesponse does not contain an error, transfer lat/lon into requested building
+						if (!geoResponse.error) {
+							building.lat = geoResponse.lat;
+							building.lon = geoResponse.lon;
+						} else {
+							reject(new InsightError("Georesponse error returned.")); // reject promise
+						}
+						resolve(building as Building); // resolve promise
+					} catch (error: any) {
+						reject(new InsightError(error.message)); // reject promise
 					}
-					resolve(building as Building);  // resolve promise
-				} catch (error) {
-					reject(error);  // reject promise
-				}
+				});
+			})
+			.on("error", (error) => {
+				reject(new InsightError(error.message)); // reject promise
 			});
-		}).on('error', (error) => {
-			reject(error);  // reject promise
-		});
 	});
 }
 
 // match building to roomsData based on given buildingString (from roomsData)
-function addBuildingToRooms(buildingsIndex: Building[], buildingString: string, roomsData: Partial<Room>[]): Room[] {
-	let foundBuilding = {} as Building;
+function addBuildingToRooms(buildingsIndex: Building[], buildingName: string, roomsData: Partial<Room>[]): Room[] {
+	let foundBuilding: (Building | null) = null;
 	try {
 		// every() behaves like foreach(), except stops iterating when receiving a false value
 		buildingsIndex.every((building) => {
-			if (building.fullname === buildingString) {
+			if (building.fullname === buildingName) {
 				foundBuilding = building;
-				if (foundBuilding) {
-					return false;
-				}
+				return false;
 			}
 			return true;
 		});
@@ -115,8 +146,8 @@ function addBuildingToRooms(buildingsIndex: Building[], buildingString: string, 
 		}
 		// else add building to every room in roomsData
 		roomsData.forEach((room) => {
-			room.building = foundBuilding;
-		})
+			room.building = foundBuilding!;
+		});
 		return roomsData as Room[];
 	} catch (error) {
 		throw new InsightError("Not able to find building in index file that matches building in rooms file: " + error);
@@ -126,42 +157,46 @@ function addBuildingToRooms(buildingsIndex: Building[], buildingString: string, 
 // recursive function to traverse the document tree and extract table rows
 export function findTableBodyNode(node: any): any {
 	// verify if node is a table node (return tbody node)
-	if (node.nodeName === 'table' && node.attrs) {
+	let tableBody: any = null;
+	if (node.nodeName === "table" && node.attrs) {
 		// both building and room tables have this specifier - TODO: is it too specific?
-		const isTable = node.attrs.some((attr: any) => attr.value.includes('views-table cols-5 table'));
+		const isTable = node.attrs.some((attr: any) => attr.value.includes("views-table cols-5 table"));
 		if (isTable) {
-			return node.childNodes.find((child: any) => child.nodeName === 'tbody');
+			tableBody = node.childNodes.find((child: any) => child.nodeName === "tbody");
+			return tableBody;
 		}
 	}
 
 	// recurse through tree to find table
 	if (node.childNodes) {
-		node.childNodes.forEach((child: any) => findTableBodyNode(child));
+		for (const child of node.childNodes) {
+			const result = findTableBodyNode(child);
+			if (result) {
+				return result;
+			}
+		}
 	}
-
-	// throw error if table not found in tree
-	throw new InsightError("Data table not found in HTML file!")
+	return tableBody;
+	//throw new InsightError("Data table not found in HTML file!");
 }
 
-function extractBuildingsIndex(tableBodyNode: any): Partial<Building>[] {
-	// extracts fullname, shortname, address, and href from index HTML
+function extractBuildingsIndex(tableBodyNode: any, buildingsIndex: Partial<Building>[]): Partial<Building>[] {
+	// extracts full name, shortname, address, and href from index HTML
 	// buildings will be partially completed (no geolocation)
-	const buildingsIndex: Partial<Building>[] = [];
-	if (tableBodyNode.nodeName === 'tr' && tableBodyNode.childNodes) {
+	if (tableBodyNode.nodeName === "tr" && tableBodyNode.childNodes) {
 		const building: Partial<Building> = {};
 		tableBodyNode.childNodes.forEach((child: any) => {
-			if (child.nodeName === 'td') {
-				if (child.attrs?.some((attr: any) => attr.name === 'class'
-					&& attr.value.includes('views-field-field-building-code'))) {
+			if (child.nodeName === "td") {
+				if (child.attrs?.some((attr: any) => attr.name === "class"
+						&& attr.value.includes("views-field-field-building-code"))) {
 					building.shortname = child.childNodes[0].value.trim();
 				}
-				if (child.attrs?.some((attr: any) => attr.name === 'class'
-					&& attr.value.includes('views-field-title'))) {
-					building.fullname = child.childNodes[0].childNodes[0].value.trim();
-					building.href = child.childNodes[0].attrs.find((attr:any) => attr.name === 'href').value;
+				if (child.attrs?.some((attr: any) => attr.name === "class" && attr.value.includes("views-field-title"))) {
+					building.fullname = child.childNodes[1].childNodes[0].value.trim(); //problem is here, can not access child of a child, does not exist, changed to index 1 but might need to change to name === 'a'
+					building.href = child.childNodes[1].attrs.find((attr: any) => attr.name === "href").value;
 				}
-				if (child.attrs?.some((attr: any) => attr.name === 'class'
-					&& attr.value.includes('views-field-field-building-address'))) {
+				if (child.attrs?.some((attr: any) => attr.name === "class"
+						&& attr.value.includes("views-field-field-building-address"))) {
 					building.address = child.childNodes[0].value.trim();
 				}
 			}
@@ -170,65 +205,88 @@ function extractBuildingsIndex(tableBodyNode: any): Partial<Building>[] {
 	}
 	// recurse through tree to extract building data
 	if (tableBodyNode.childNodes) {
-		tableBodyNode.childNodes.forEach((child: any) => extractBuildingsIndex(child));
+		tableBodyNode.childNodes.forEach((child: any) => extractBuildingsIndex(child, buildingsIndex));
 	}
 	return buildingsIndex;
 }
 
-function extractRooms(node: any): Partial<Room>[] {
+function extractRooms(node: any, rooms: Partial<Room>[]): Partial<Room>[] {
 	// extracts room number, seats, furniture, and type from each room HTML
 	// rooms will be partially completed (no building)
-	const rooms: Partial<Room>[] = [];
-	if (node.nodeName === 'tr' && node.childNodes) {
-		const room: Partial<Room> = {};
-		node.childNodes.forEach((child: any) => {
-			if (child.nodeName === 'td') {
-				if (child.attrs.some((attr: any) => attr.name === 'class'
-					&& attr.value.includes('views-field-field-room-number'))) {
-					room.number = child.childNodes[0].childNodes[0].value.trim();
-				}
-				if (child.attrs.some((attr: any) => attr.name === 'class'
-					&& attr.value.includes('views-field-field-room-capacity'))) {
-					room.seats = child.childNodes[0].value.trim();
-				}
-				if (child.attrs.some((attr: any) => attr.name === 'class'
-					&& attr.value.includes('views-field-field-room-furniture'))) {
-					room.furniture = child.childNodes[0].value.trim();
-				}
-				if (child.attrs.some((attr: any) => attr.name === 'class'
-					&& attr.value.includes('views-field-field-room-type'))) {
-					room.type = child.childNodes[0].value.trim();
-				}
-			}
-		});
-		rooms.push(room);
+
+	if (node.nodeName === "tr" && node.childNodes) {
+		rooms.push(extractChildRooms(node));
 	}
+
 	// recurse through tree to extract room data
 	if (node.childNodes) {
-		node.childNodes.forEach((child:any) => extractRooms(child));
+		node.childNodes.forEach((child: any) => extractRooms(child, rooms));
 	}
 	return rooms;
 }
 
-function extractBuildingString(node: any): string {
+function extractChildRooms(node: any): Partial<Room> {
+	const room: Partial<Room> = {};
+	node.childNodes.forEach((child: any) => {
+		if (child.nodeName === "td") {
+			if (child.attrs.some((attr: any) => attr.name === "class"
+				&& attr.value.includes("views-field-field-room-number"))) {
+				room.number = child.childNodes[1].childNodes[0].value.trim();
+			}
+			if (child.attrs.some((attr: any) => attr.name === "class" && attr.value.includes("views-field-field-room-capacity"))) {
+				room.seats = child.childNodes[0].value.trim();
+			}
+			if (
+				child.attrs.some(
+					(attr: any) => attr.name === "class" && attr.value.includes("views-field-field-room-furniture")
+				)
+			) {
+				room.furniture = child.childNodes[0].value.trim();
+			}
+			if (
+				child.attrs.some((attr: any) => attr.name === "class" && attr.value.includes("views-field-field-room-type"))
+			) {
+				room.type = child.childNodes[0].value.trim();
+			}
+		}
+	});
+	return room;
+}
+
+function extractBuildingName(node: any): string {
 	// extracts name of building from room HTML
-	let buildingString: string;
-	if (node.nodeName === 'div' && node.attrs) {
-		const isBuildingInfo = node.attrs.some((attr: any) => attr.name === 'id' && attr.value === 'building-info');
+	const buildingString = findBuildingInfo(node);
+	if (buildingString) {
+		return buildingString;
+	}
+
+	throw new InsightError("Building name not found in room HTML file.");
+}
+
+function findBuildingInfo(node: any): any {
+	let buildingString: string | null = null;
+	if (node.nodeName === "div" && node.attrs) {
+		const isBuildingInfo = node.attrs.some((attr: any) => attr.name === "id" && attr.value === "building-info");
 		if (isBuildingInfo) {
 			node.childNodes.forEach((child: any) => {
 				// TODO: too hard-coded?
-				if (child.nodeName === 'h2' && child.childNodes && child.childNodes[0].nodeName === '#text') {
-					buildingString = child.childNodes[0].value.trim();
+				if (child.nodeName === "h2" && child.childNodes && child.childNodes[0].nodeName === "span") {
+					if (child.childNodes[0].childNodes) {
+						buildingString = child.childNodes[0].childNodes[0].value.trim();
+					}
+
 					return buildingString;
 				}
 			});
 		}
 	}
-	throw new InsightError("Building name not found in room HTML file.");
+	if (node.childNodes) {
+		for (const child of node.childNodes) {
+			const result = findBuildingInfo(child);
+			if (result) {
+				return result;
+			}
+		}
+	}
+	return buildingString;
 }
-
-
-
-
-

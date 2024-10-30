@@ -1,0 +1,441 @@
+{
+  "title": "simple query w/ grouping and avg apply",
+  "input": {
+      "WHERE": {
+        "GT": {
+          "sections_avg": 96
+        }
+      },
+      "OPTIONS": {
+        "COLUMNS": [
+          "sections_dept",
+          "sections_instructor",
+          "avgGrade",
+          "totalPass"
+        ]
+      },
+      "TRANSFORMATIONS": {
+        "GROUP": [
+          "sections_dept",
+          "sections_instructor"
+        ],
+        "APPLY": [
+          {
+            "avgGrade": {
+              "AVG": "sections_avg"
+            }
+          },
+          {
+            "totalPass": {
+              "SUM": "sections_pass"
+            }
+          }
+        ]
+      }
+    },
+  "errorExpected": false,
+  "expected": [
+      {
+        "sections_dept":"adhe",
+        "sections_instructor":"bishundayal, deonarine",
+        "avgGrade":96.11,
+        "totalPass":27
+      },
+      {
+        "sections_dept":"arst",
+        "sections_instructor":"",
+        "avgGrade":96.94,
+        "totalPass":32
+      },
+      {
+        "sections_dept":"audi",
+        "sections_instructor":"adelman, sharon",
+        "avgGrade":96.9,
+        "totalPass":10
+      },
+      {
+        "sections_dept":"audi",
+        "sections_instructor":"",
+        "avgGrade":96.9,
+        "totalPass":10
+      },
+      {
+        "sections_dept":"civl",
+        "sections_instructor":"ventura, carlos estuardo",
+        "avgGrade":96.27,
+        "totalPass":15
+      },
+      {
+        "sections_dept":"civl",
+        "sections_instructor":"",
+        "avgGrade":96.27,
+        "totalPass":15
+      },
+      {
+        "sections_dept":"cnps",
+        "sections_instructor":"cox, daniel",
+        "avgGrade":97.76,
+        "totalPass":34
+      },
+      {
+        "sections_dept":"cnps",
+        "sections_instructor":"neault, roberta a",
+        "avgGrade":97.47,
+        "totalPass":15
+      },
+      {
+        "sections_dept":"cnps",
+        "sections_instructor":"",
+        "avgGrade":96.81,
+        "totalPass":52
+      },
+      {
+        "sections_dept":"crwr",
+        "sections_instructor":"campbell, deborah",
+        "avgGrade":97,
+        "totalPass":1
+      },
+      {
+        "sections_dept":"crwr",
+        "sections_instructor":"maillard, keith",
+        "avgGrade":98,
+        "totalPass":1
+      },
+      {
+        "sections_dept":"crwr",
+        "sections_instructor":"grady, albert wayne",
+        "avgGrade":98,
+        "totalPass":1
+      },
+      {
+        "sections_dept":"edst",
+        "sections_instructor":"vanwynsberghe, robert",
+        "avgGrade":96.46,
+        "totalPass":13
+      },
+      {
+        "sections_dept":"edst",
+        "sections_instructor":"",
+        "avgGrade":96.46,
+        "totalPass":13
+      },
+      {
+        "sections_dept":"educ",
+        "sections_instructor":"morgan, tannis",
+        "avgGrade":97.5,
+        "totalPass":14
+      },
+      {
+        "sections_dept":"eece",
+        "sections_instructor":"coria, lino",
+        "avgGrade":98.75,
+        "totalPass":12
+      },
+      {
+        "sections_dept":"eece",
+        "sections_instructor":"",
+        "avgGrade":98.75,
+        "totalPass":12
+      },
+      {
+        "sections_dept":"epse",
+        "sections_instructor":"stockman, james",
+        "avgGrade":96.03,
+        "totalPass":36
+      },
+      {
+        "sections_dept":"epse",
+        "sections_instructor":"",
+        "avgGrade":97.4,
+        "totalPass":220
+      },
+      {
+        "sections_dept":"epse",
+        "sections_instructor":"gaster, sean",
+        "avgGrade":96.9,
+        "totalPass":29
+      },
+      {
+        "sections_dept":"epse",
+        "sections_instructor":"cole, kenneth",
+        "avgGrade":97.57,
+        "totalPass":55
+      },
+      {
+        "sections_dept":"epse",
+        "sections_instructor":"ervin, ruth",
+        "avgGrade":96.21,
+        "totalPass":24
+      },
+      {
+        "sections_dept":"epse",
+        "sections_instructor":"grow, laura",
+        "avgGrade":98.01,
+        "totalPass":107
+      },
+      {
+        "sections_dept":"epse",
+        "sections_instructor":"wilk, diana",
+        "avgGrade":97.41,
+        "totalPass":17
+      },
+      {
+        "sections_dept":"epse",
+        "sections_instructor":"porath, marion",
+        "avgGrade":96.95,
+        "totalPass":31
+      },
+      {
+        "sections_dept":"epse",
+        "sections_instructor":"cannon, joanna",
+        "avgGrade":98.45,
+        "totalPass":11
+      },
+      {
+        "sections_dept":"epse",
+        "sections_instructor":"mcquarrie, maureen",
+        "avgGrade":96.33,
+        "totalPass":15
+      },
+      {
+        "sections_dept":"epse",
+        "sections_instructor":"amaral, deborah;ford, laurie",
+        "avgGrade":97.39,
+        "totalPass":17
+      },
+      {
+        "sections_dept":"epse",
+        "sections_instructor":"kishor, nand",
+        "avgGrade":97.09,
+        "totalPass":11
+      },
+      {
+        "sections_dept":"etec",
+        "sections_instructor":"marker, michael",
+        "avgGrade":96.47,
+        "totalPass":19
+      },
+      {
+        "sections_dept":"etec",
+        "sections_instructor":"",
+        "avgGrade":96.47,
+        "totalPass":19
+      },
+      {
+        "sections_dept":"fipr",
+        "sections_instructor":"wenzek, rob",
+        "avgGrade":96.4,
+        "totalPass":20
+      },
+      {
+        "sections_dept":"fipr",
+        "sections_instructor":"",
+        "avgGrade":96.4,
+        "totalPass":20
+      },
+      {
+        "sections_dept":"frst",
+        "sections_instructor":"timko, joleen",
+        "avgGrade":96.36,
+        "totalPass":11
+      },
+      {
+        "sections_dept":"frst",
+        "sections_instructor":"",
+        "avgGrade":96.36,
+        "totalPass":11
+      },
+      {
+        "sections_dept":"kin",
+        "sections_instructor":"",
+        "avgGrade":96.06,
+        "totalPass":36
+      },
+      {
+        "sections_dept":"libr",
+        "sections_instructor":"farrell, adam",
+        "avgGrade":96.1,
+        "totalPass":10
+      },
+      {
+        "sections_dept":"libr",
+        "sections_instructor":"",
+        "avgGrade":96.1,
+        "totalPass":10
+      },
+      {
+        "sections_dept":"math",
+        "sections_instructor":"karu, kalle",
+        "avgGrade":96.96,
+        "totalPass":30
+      },
+      {
+        "sections_dept":"math",
+        "sections_instructor":"",
+        "avgGrade":97.18,
+        "totalPass":67
+      },
+      {
+        "sections_dept":"math",
+        "sections_instructor":"wei, juncheng",
+        "avgGrade":96.25,
+        "totalPass":4
+      },
+      {
+        "sections_dept":"math",
+        "sections_instructor":"fraser, ailana",
+        "avgGrade":97.25,
+        "totalPass":4
+      },
+      {
+        "sections_dept":"math",
+        "sections_instructor":"gomez, jose",
+        "avgGrade":99.78,
+        "totalPass":9
+      },
+      {
+        "sections_dept":"math",
+        "sections_instructor":"laba, izabella",
+        "avgGrade":97.09,
+        "totalPass":11
+      },
+      {
+        "sections_dept":"math",
+        "sections_instructor":"nachmias, asaf",
+        "avgGrade":96.83,
+        "totalPass":6
+      },
+      {
+        "sections_dept":"midw",
+        "sections_instructor":"mcrae, lorna",
+        "avgGrade":96.5,
+        "totalPass":14
+      },
+      {
+        "sections_dept":"midw",
+        "sections_instructor":"",
+        "avgGrade":96.5,
+        "totalPass":14
+      },
+      {
+        "sections_dept":"mine",
+        "sections_instructor":"veiga, marcello",
+        "avgGrade":96.59,
+        "totalPass":34
+      },
+      {
+        "sections_dept":"mtrl",
+        "sections_instructor":"dixon, david",
+        "avgGrade":96.25,
+        "totalPass":4
+      },
+      {
+        "sections_dept":"mtrl",
+        "sections_instructor":"",
+        "avgGrade":96.25,
+        "totalPass":4
+      },
+      {
+        "sections_dept":"musc",
+        "sections_instructor":"girard, jonathan",
+        "avgGrade":96.5,
+        "totalPass":4
+      },
+      {
+        "sections_dept":"musc",
+        "sections_instructor":"",
+        "avgGrade":96.5,
+        "totalPass":4
+      },
+      {
+        "sections_dept":"nurs",
+        "sections_instructor":"brew, nancy",
+        "avgGrade":98.02,
+        "totalPass":26
+      },
+      {
+        "sections_dept":"nurs",
+        "sections_instructor":"",
+        "avgGrade":97.87,
+        "totalPass":126
+      },
+      {
+        "sections_dept":"nurs",
+        "sections_instructor":"krist, jennifer",
+        "avgGrade":97.42,
+        "totalPass":28
+      },
+      {
+        "sections_dept":"nurs",
+        "sections_instructor":"burrows, marlene;harding, jillian;krist, jennifer;mccuaig, fairleth",
+        "avgGrade":98.02,
+        "totalPass":33
+      },
+      {
+        "sections_dept":"nurs",
+        "sections_instructor":"burrows, marlene",
+        "avgGrade":96.73,
+        "totalPass":15
+      },
+      {
+        "sections_dept":"plan",
+        "sections_instructor":"dorcey, anthony h j",
+        "avgGrade":96.47,
+        "totalPass":19
+      },
+      {
+        "sections_dept":"plan",
+        "sections_instructor":"",
+        "avgGrade":96.47,
+        "totalPass":19
+      },
+      {
+        "sections_dept":"psyc",
+        "sections_instructor":"",
+        "avgGrade":97,
+        "totalPass":1
+      },
+      {
+        "sections_dept":"sowk",
+        "sections_instructor":"bryson, stephanie;o'connor, deborah;stainton, timothy;sullivan, t richard;tester, frank",
+        "avgGrade":96.15,
+        "totalPass":27
+      },
+      {
+        "sections_dept":"sowk",
+        "sections_instructor":"",
+        "avgGrade":96.15,
+        "totalPass":27
+      },
+      {
+        "sections_dept":"sowk",
+        "sections_instructor":"gill, deana",
+        "avgGrade":96.09,
+        "totalPass":11
+      },
+      {
+        "sections_dept":"spph",
+        "sections_instructor":"frankish, charles james",
+        "avgGrade":96.96,
+        "totalPass":56
+      },
+      {
+        "sections_dept":"spph",
+        "sections_instructor":"frank, erica",
+        "avgGrade":98.98,
+        "totalPass":82
+      },
+      {
+        "sections_dept":"spph",
+        "sections_instructor":"",
+        "avgGrade":97.89,
+        "totalPass":87
+      },
+      {
+        "sections_dept":"spph",
+        "sections_instructor":"kishchenko, svetlana",
+        "avgGrade":96.8,
+        "totalPass":5
+      }
+    ]
+  }

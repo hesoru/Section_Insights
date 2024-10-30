@@ -1,0 +1,48 @@
+{
+  "title": "query with grouping and duplicate apply keys",
+  "input": {
+    "WHERE": {
+      "GT": {
+        "sections_avg": 75
+      }
+    },
+    "OPTIONS": {
+      "COLUMNS": [
+        "sections_pass",
+        "avgSectionAvg",
+        "avgSectionFail",
+        "countSections"
+      ],
+      "ORDER": "avgSectionAvg"
+    },
+    "TRANSFORMATIONS": {
+      "GROUP": [
+        "sections_pass"
+      ],
+      "APPLY": [
+        {
+          "avgSectionAvg": {
+            "AVG": "sections_avg"
+          }
+        },
+        {
+          "avgSectionFail": {
+            "AVG": "sections_fail"
+          }
+        },
+        {
+          "countSections": {
+            "COUNT": "sections_id"
+          }
+        },
+        {
+          "avgSectionAvg": {
+            "AVG": "sections_avg"
+          }
+        }
+      ]
+    }
+  },
+  "errorExpected": true,
+  "expected": "InsightError"
+}
