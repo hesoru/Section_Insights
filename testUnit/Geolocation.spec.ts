@@ -35,8 +35,8 @@
 //             const result = await getGeolocation("6245 Agronomy Road V6T 1Z4");
 //             const result1 = await getGeolocation("2194 Health Sciences Mall");
 //             const result2 = await getGeolocation("6358 University Blvd, V6T 1Z4");
-//             const result3 = await getGeolocation("6361 Memorial Road")
-//             expect(result).to.deep.equal({lat: 49.26125, lon: -123.24807})
+//             const result3 = await getGeolocation("6361 Memorial Road");
+//             expect(result).to.deep.equal({lat: 49.26125, lon: -123.24807});
 //             expect(result1).to.have.property("lat");
 //             expect(result1).to.have.property("lon");
 //             expect(result2).to.have.property("lat");
