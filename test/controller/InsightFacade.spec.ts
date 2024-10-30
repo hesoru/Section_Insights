@@ -321,7 +321,7 @@ describe("InsightFacade", function () {
 					{
 						id: "rooms",
 						kind: InsightDatasetKind.Rooms,
-						numRows: 366,
+						numRows: 364,
 					},
 				]);
 			} catch (err) {
@@ -818,5 +818,7 @@ describe("InsightFacade", function () {
 
 		//Rooms Queries
 		it("[validRooms/complex.json]", checkQuery);
+		it("[validRooms/AND.IS.GT.json]", checkQuery);
+		it("[validRooms/NOTfilter.json]", checkQuery);
 	});
 });

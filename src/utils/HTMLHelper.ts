@@ -61,7 +61,6 @@ async function addGeolocationDataToAll(buildingsIndex: Partial<Building>[]): Pro
 					// add geolocation data to building
 					return await addGeolocationData(building, addressURL);
 				} catch {
-					// TODO: what do we do if we don't receive geolocation data? reject the building?
 					// return building without geolocation data otherwise
 					return building as Building;
 				}
@@ -140,7 +139,7 @@ export function findTableBodyNode(node: any): any {
 	// verify if node is a table node (return tbody node)
 	let tableBody: any = null;
 	if (node.nodeName === "table" && node.attrs) {
-		// both building and room tables have this specifier - TODO: is it too specific?
+		// both building and room tables have this specifier
 		const isTable = node.attrs.some((attr: any) => attr.value.includes("views-table cols-5 table"));
 		if (isTable) {
 			tableBody = node.childNodes.find((child: any) => child.nodeName === "tbody");
