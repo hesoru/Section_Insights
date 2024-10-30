@@ -1,0 +1,69 @@
+{
+  "title": "complex rooms",
+  "input": {
+    "WHERE": {
+      "GT": {
+        "rooms_seats": 50
+      }
+    },
+    "OPTIONS": {
+      "COLUMNS": [
+        "rooms_type",
+        "maxCapacity"
+      ],
+      "ORDER": {
+        "dir": "DOWN",
+        "keys": [
+          "maxCapacity"
+        ]
+      }
+    },
+    "TRANSFORMATIONS": {
+      "GROUP": [
+        "rooms_type"
+      ],
+      "APPLY": [
+        {
+          "maxCapacity": {
+            "MAX": "rooms_seats"
+          }
+        }
+      ]
+    }
+  },
+  "errorExpected": false,
+  "expected": [
+      {
+        "rooms_type":"Tiered Large Group",
+        "maxCapacity":503
+      },
+      {
+        "rooms_type":"Open Design General Purpose",
+        "maxCapacity":442
+      },
+      {
+        "rooms_type":"TBD",
+        "maxCapacity":299
+      },
+      {
+        "rooms_type":"Case Style",
+        "maxCapacity":108
+      },
+      {
+        "rooms_type":"Active Learning",
+        "maxCapacity":72
+      },
+      {
+        "rooms_type":"Studio Lab",
+        "maxCapacity":72
+      },
+      {
+        "rooms_type":"",
+        "maxCapacity":60
+      },
+      {
+        "rooms_type":"Small Group",
+        "maxCapacity":60
+      }
+    ]
+  }

@@ -1,0 +1,112 @@
+{
+  "title": "complex rooms",
+  "input": {
+    "WHERE": {
+      "AND": [
+        {
+          "IS": {
+            "rooms_furniture": "*Tables*"
+          }
+        },
+        {
+          "IS": {
+            "rooms_shortname": "*L*"
+          }
+        }
+      ]
+    },
+    "OPTIONS": {
+      "COLUMNS": [
+        "rooms_shortname",
+        "maxSeats",
+        "minSeats",
+        "avgSeats"
+      ],
+      "ORDER": {
+        "dir": "DOWN",
+        "keys": [
+          "maxSeats"
+        ]
+      }
+    },
+    "TRANSFORMATIONS": {
+      "GROUP": [
+        "rooms_shortname"
+      ],
+      "APPLY": [
+        {
+          "maxSeats": {
+            "MAX": "rooms_lat"
+          }
+        },
+        {
+          "minSeats": {
+            "MIN": "rooms_lon"
+          }
+        },
+        {
+          "avgSeats": {
+            "AVG": "rooms_lon"
+          }
+        }
+      ]
+    }
+  },
+  "errorExpected": false,
+  "expected": [
+      {
+        "rooms_shortname":"ALRD",
+        "maxSeats":49.2699,
+        "minSeats":-123.25318,
+        "avgSeats":-123.25
+      },
+      {
+        "rooms_shortname":"UCLL",
+        "maxSeats":49.26867,
+        "minSeats":-123.25692,
+        "avgSeats":-123.26
+      },
+      {
+        "rooms_shortname":"LASR",
+        "maxSeats":49.26767,
+        "minSeats":-123.25583,
+        "avgSeats":-123.26
+      },
+      {
+        "rooms_shortname":"IBLC",
+        "maxSeats":49.26766,
+        "minSeats":-123.2521,
+        "avgSeats":-123.25
+      },
+      {
+        "rooms_shortname":"LSK",
+        "maxSeats":49.26545,
+        "minSeats":-123.25533,
+        "avgSeats":-123.26
+      },
+      {
+        "rooms_shortname":"BIOL",
+        "maxSeats":49.26479,
+        "minSeats":-123.25249,
+        "avgSeats":-123.25
+      },
+      {
+        "rooms_shortname":"LSC",
+        "maxSeats":49.26236,
+        "minSeats":-123.24494,
+        "avgSeats":-123.24
+      },
+      {
+        "rooms_shortname":"MCLD",
+        "maxSeats":49.26176,
+        "minSeats":-123.24935,
+        "avgSeats":-123.25
+      },
+      {
+        "rooms_shortname":"MCML",
+        "maxSeats":49.26114,
+        "minSeats":-123.25027,
+        "avgSeats":-123.25
+      }
+    ]
+  }

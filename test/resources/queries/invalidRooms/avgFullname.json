@@ -1,0 +1,38 @@
+{
+  "title": "complex rooms",
+  "input": {
+    "WHERE": {
+      "LT": {
+        "rooms_seats": 34
+      }
+    },
+    "OPTIONS": {
+      "COLUMNS": [
+        "rooms_shortname",
+        "avgLat",
+        "maxLon"
+      ],
+      "ORDER": "avgLat"
+    },
+    "TRANSFORMATIONS": {
+      "GROUP": [
+        "rooms_shortname",
+        "rooms_type"
+      ],
+      "APPLY": [
+        {
+          "avgLat": {
+            "AVG": "rooms_fullname"
+          }
+        },
+        {
+          "maxLon": {
+            "MAX": "rooms_furniture"
+          }
+        }
+      ]
+    }
+  },
+  "errorExpected": true,
+  "expected": "InsightError"
+}

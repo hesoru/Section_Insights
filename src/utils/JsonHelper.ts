@@ -170,7 +170,7 @@ export async function writeMetadataFile(
  * @param kind
  * @returns - Promise<string>[], when all promises are resolved will be an array of file contents.
  */
-export function extractFileStrings(unzipped: JSZip, kind: InsightDatasetKind): Promise<string>[] {
+export async function extractFileStrings(unzipped: JSZip, kind: InsightDatasetKind): Promise<string[]> {
 	//forEach documentation: https://stuk.github.io/jszip/documentation/api_jszip/for_each.html
 	const fileStringsPromises: Promise<string>[] = [];
 	let directory: JSZip | null;
@@ -198,13 +198,13 @@ export function extractFileStrings(unzipped: JSZip, kind: InsightDatasetKind): P
 		fileStringsPromises.push(file.async("string"));
 	});
 
-	// const fileStrings = await Promise.all(fileStringsPromises); TODO: where is the promise resolved?
+	const fileStrings = await Promise.all(fileStringsPromises);
 
-	if (fileStringsPromises.length === 0) {
+	if (fileStrings.length === 0) {
 		throw new InsightError("file does not contain at least one valid section or building");
 	}
 
-	return fileStringsPromises;
+	return fileStrings;
 }
 
 /**
@@ -232,7 +232,6 @@ export async function unzipContent(content: string): Promise<JSZip> {
 export async function getDatasetInfo(id: string): Promise<InsightDataset> {
 	// get dataset file path
 	try {
-		// TODO: test new implementation using metadata file
 		const metadataPath = path.resolve("./data", "meta");
 		const metafile = await fs.readJson(metadataPath);
 		const metadata = metafile as Meta[];

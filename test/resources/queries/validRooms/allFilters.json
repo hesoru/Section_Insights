@@ -1,0 +1,134 @@
+{
+  "title": "complex rooms",
+  "input": {
+    "WHERE": {
+      "AND": [
+        {
+          "GT": {
+            "rooms_lon": -160.324
+          }
+        },
+        {
+          "NOT": {
+            "IS": {
+              "rooms_shortname": "EBDF"
+            }
+          }
+        },
+        {
+          "OR": [
+            {
+              "LT": {
+                "rooms_seats": 93
+              }
+            },
+            {
+              "IS": {
+                "rooms_address": "*West Mall"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "OPTIONS": {
+      "COLUMNS": [
+        "avgFails",
+        "minFails",
+        "maxFails",
+        "rooms_furniture"
+      ],
+      "ORDER": {
+        "dir": "UP",
+        "keys": [
+          "avgFails"
+        ]
+      }
+    },
+    "TRANSFORMATIONS": {
+      "GROUP": [
+        "rooms_furniture"
+      ],
+      "APPLY": [
+        {
+          "maxFails": {
+            "MAX": "rooms_seats"
+          }
+        },
+        {
+          "minFails": {
+            "MIN": "rooms_seats"
+          }
+        },
+        {
+          "avgFails": {
+            "AVG": "rooms_seats"
+          }
+        }
+      ]
+    }
+  },
+  "errorExpected": false,
+  "expected": [
+      {
+        "avgFails":17.45,
+        "minFails":6,
+        "maxFails":40,
+        "rooms_furniture":"Classroom-Moveable Tables & Chairs"
+      },
+      {
+        "avgFails":31.43,
+        "minFails":7,
+        "maxFails":100,
+        "rooms_furniture":"Classroom-Movable Tables & Chairs"
+      },
+      {
+        "avgFails":33,
+        "minFails":16,
+        "maxFails":72,
+        "rooms_furniture":"Classroom-Hybrid Furniture"
+      },
+      {
+        "avgFails":34.45,
+        "minFails":12,
+        "maxFails":68,
+        "rooms_furniture":"Classroom-Movable Tablets"
+      },
+      {
+        "avgFails":50,
+        "minFails":30,
+        "maxFails":72,
+        "rooms_furniture":"Classroom-Learn Lab"
+      },
+      {
+        "avgFails":56.25,
+        "minFails":25,
+        "maxFails":88,
+        "rooms_furniture":"Classroom-Fixed Tables/Movable Chairs"
+      },
+      {
+        "avgFails":70.67,
+        "minFails":56,
+        "maxFails":78,
+        "rooms_furniture":"Classroom-Fixed Tables/Moveable Chairs"
+      },
+      {
+        "avgFails":80,
+        "minFails":80,
+        "maxFails":80,
+        "rooms_furniture":"Classroom-Fixed Tables/Fixed Chairs"
+      },
+      {
+        "avgFails":90,
+        "minFails":90,
+        "maxFails":90,
+        "rooms_furniture":"Classroom-Moveable Tablets"
+      },
+      {
+        "avgFails":107.8,
+        "minFails":60,
+        "maxFails":225,
+        "rooms_furniture":"Classroom-Fixed Tablets"
+      }
+    ]
+  }

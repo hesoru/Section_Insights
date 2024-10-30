@@ -19,7 +19,6 @@ import {
 import { Meta, Section } from "../models/Section";
 import { validateQuery } from "../utils/ValidateHelper";
 import path from "node:path";
-//import { addRoomsDataset } from "../utils/HTMLHelper";
 import { Room } from "../models/Room";
 import { addRoomsDataset } from "../utils/HTMLHelper";
 
@@ -55,14 +54,12 @@ export default class InsightFacade implements IInsightFacade {
 
 		// 3) Unzips content: checks for valid content
 		const unzipped = await unzipContent(content);
-		const fileStringsPromises = extractFileStrings(unzipped, kind);
+		const fileStrings = await extractFileStrings(unzipped, kind);
 
 		// 4) Write files to disk
-		let fileStrings: string[];
 		let addedData;
 		let numRows = 0;
 		try {
-			fileStrings = await Promise.all(fileStringsPromises);
 			if (kind === InsightDatasetKind.Sections) {
 				addedData = await addSectionsDataset(fileStrings, this.nextAvailableName, id);
 				this.loadedSections.set(id, addedData);
@@ -123,10 +120,7 @@ export default class InsightFacade implements IInsightFacade {
 
 	public async performQuery(query: unknown): Promise<InsightResult[]> {
 		// 2) extract dataset id from validated query, ensure dataset exists
-		const id = extractDatasetId(query);
-		if (!this.datasetIds.has(id)) {
-			throw new InsightError(`Dataset '${id}' does not exist.`);
-		}
+		const id = extractDatasetId(query, this.datasetIds);
 
 		// 3) start with data for all sections
 		let allResults: Set<InsightResult>;
@@ -140,7 +134,7 @@ export default class InsightFacade implements IInsightFacade {
 			validatedQuery = validateQuery(query, kind);
 			const allSections = this.loadedSections.get(id);
 			if (typeof allSections === "undefined") {
-				allResults = await getAllData(validatedQuery, this.datasetIds, kind);
+				allResults = await getAllData(validatedQuery, this.datasetIds, kind, this.datasetIds);
 			} else {
 				allResults = parseSectionsToInsightResult(allSections, id);
 			}
@@ -148,7 +142,7 @@ export default class InsightFacade implements IInsightFacade {
 			validatedQuery = validateQuery(query, kind);
 			const allRooms = this.loadedRooms.get(id);
 			if (typeof allRooms === "undefined") {
-				allResults = await getAllData(validatedQuery, this.datasetIds, kind);
+				allResults = await getAllData(validatedQuery, this.datasetIds, kind, this.datasetIds);
 			} else {
 				allResults = parseRoomsToInsightResult(allRooms, id);
 			}
