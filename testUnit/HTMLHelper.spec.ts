@@ -4,11 +4,10 @@ import {
 import { clearDisk, getContentFromArchives } from "../test/TestUtil";
 import { expect, use } from "chai";
 import chaiAsPromised from "chai-as-promised";
-import IInsightFacade from "../src/controller/InsightFacade";
-import InsightFacade from "../src/controller/InsightFacade";
-import {Building, Room} from "../src/models/Section";
+// import IInsightFacade from "../src/controller/InsightFacade";
+// import InsightFacade from "../src/controller/InsightFacade";
 import {unzipContent} from "../src/utils/JsonHelper";
-import parse5 from "parse5";
+import * as parse5 from "parse5";
 import {
 	addBuildingToRooms, addGeolocationData,
 	extractBuildingsIndex,
@@ -16,17 +15,16 @@ import {
 	extractRooms,
 	findTableBodyNode
 } from "../src/utils/HTMLHelper";
+import {Building, Room} from "../src/models/Room";
 
 use(chaiAsPromised);
 
 describe("HTMLHelper", function () {
-	let facade: IInsightFacade;
 
 	// Declare datasets used in tests. You should add more datasets like this!
 	let miniCampus1: string;
-	let miniCampus2: string;
+	// let miniCampus2: string;
 	let indexString: any;
-	let fileStringsPromises: Promise<string>[] = [];
 	let fileStrings: string[];
 	let fileString1: any;
 	let fileString2: any;
@@ -43,7 +41,7 @@ describe("HTMLHelper", function () {
 		try {
 			// This block runs once and loads the datasets.
 			miniCampus1 = await getContentFromArchives("miniCampus1.zip");
-			miniCampus2 = await getContentFromArchives("miniCampus2.zip");
+			// miniCampus2 = await getContentFromArchives("miniCampus2.zip");
 
 			const unzipped = await unzipContent(miniCampus1);
 			const indexHTML = unzipped.file("index.htm");
@@ -57,6 +55,7 @@ describe("HTMLHelper", function () {
 			if (!directory) {
 				throw new Error("no building files");
 			}
+			const fileStringsPromises: Promise<string>[] = [];
 			directory.forEach((relativePath, file) => {
 				if (file.dir) {
 					throw new InsightError("file " + relativePath + " is a folder within courses folder");
@@ -65,13 +64,15 @@ describe("HTMLHelper", function () {
 			});
 			fileStrings = await Promise.all(fileStringsPromises);
 			expect(fileStrings).to.be.an("array");
-			expect(fileStrings.length).to.deep.equal(3);
+			const files = 3;
+			expect(fileStrings.length).to.deep.equal(files);
 
-			fileString1 = parse5.parse(fileStrings[0]);
-			fileString2 = parse5.parse(fileStrings[1]);
-			fileString3 = parse5.parse(fileStrings[2]);
-
-			facade = new InsightFacade();
+			const index0 = 0
+			const index1 = 1;
+			const index2 = 2;
+			fileString1 = parse5.parse(fileStrings[index0]);
+			fileString2 = parse5.parse(fileStrings[index1]);
+			fileString3 = parse5.parse(fileStrings[index2]);
 		} catch (err) {
 			throw new Error("Before all hook failed: " + err);
 		}
@@ -124,9 +125,10 @@ describe("HTMLHelper", function () {
 
 		it("extract buildings index successfully", function () {
 			try {
+				const indexNumBuildings = 74;
 				const result = extractBuildingsIndex(tableBodyNode);
 				expect(result[0].fullname).to.deep.equal("Acute Care Unit");
-				expect(result.length).to.deep.equal(74);
+				expect(result.length).to.deep.equal(indexNumBuildings);
 
 
 				// expect(result[0].fullname).to.deep.equal("Biological Sciences");
@@ -164,9 +166,12 @@ describe("HTMLHelper", function () {
 		it("extract rooms successfully", async function () {
 			try {
 				const result = extractRooms(tableBodyNode);
-				expect(result[0].number).to.deep.equal("1503");
-				expect(result[3].number).to.deep.equal("2519");
-				expect(result.length).to.deep.equal(4);
+				const first = 0;
+				const last = 3;
+				const numRooms = 4;
+				expect(result[first].number).to.deep.equal("1503");
+				expect(result[last].number).to.deep.equal("2519");
+				expect(result.length).to.deep.equal(numRooms);
 			} catch (e) {
 				expect.fail('should not have thrown an error here' + e);
 			}
@@ -190,10 +195,12 @@ describe("HTMLHelper", function () {
 
 		it("add geolocation data to a building successfully", async function () {
 			try {
+				let buildingWithGeolocation: Partial<Building>;
 				if (index[0].address) {
-					const buildingWithGeolocation = await addGeolocationData(index[0], index[0].address);
-					expect(buildingWithGeolocation.lat).to.not.be.null;
-					expect(buildingWithGeolocation.lon).to.not.be.null;
+					buildingWithGeolocation = await addGeolocationData(index[0], index[0].address);
+					if (!buildingWithGeolocation.lat || !buildingWithGeolocation.lon) {
+						throw new InsightError("No geolocation data added.");
+					}
 				}
 			} catch (e) {
 				expect.fail('should not have thrown an error here' + e);
@@ -247,11 +254,15 @@ describe("HTMLHelper", function () {
 				const buildingRooms1 = addBuildingToRooms(indexComplete, buildingString1, rooms1);
 				const buildingRooms2 = addBuildingToRooms(indexComplete, buildingString2, rooms2);
 				const buildingRooms3 = addBuildingToRooms(indexComplete, buildingString3, rooms3);
-				expect(buildingRooms1.length).to.deep.equal(4);
+
+				const biolRooms = 4;
+				const chemRooms = 6;
+				const woodRooms = 16;
+				expect(buildingRooms1.length).to.deep.equal(biolRooms);
 				expect(buildingRooms1[0].building.fullname).to.deep.equal("Biological Sciences");
-				expect(buildingRooms2.length).to.deep.equal(6);
+				expect(buildingRooms2.length).to.deep.equal(chemRooms);
 				expect(buildingRooms1[0].building.fullname).to.deep.equal("Chemistry");
-				expect(buildingRooms3.length).to.deep.equal(16);
+				expect(buildingRooms3.length).to.deep.equal(woodRooms);
 				expect(buildingRooms1[0].building.fullname).to.deep.equal("Woodward (Instructional Resources Centre-IRC)");
 			} catch (e) {
 				expect.fail('should not have thrown an error here' + e);
