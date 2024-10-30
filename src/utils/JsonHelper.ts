@@ -232,7 +232,6 @@ export async function unzipContent(content: string): Promise<JSZip> {
 export async function getDatasetInfo(id: string): Promise<InsightDataset> {
 	// get dataset file path
 	try {
-		// TODO: test new implementation using metadata file
 		const metadataPath = path.resolve("./data", "meta");
 		const metafile = await fs.readJson(metadataPath);
 		const metadata = metafile as Meta[];

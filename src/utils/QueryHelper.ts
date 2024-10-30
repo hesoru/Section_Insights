@@ -195,9 +195,9 @@ export function selectColumns(filteredResults: InsightResult[], validatedQuery: 
 		const result: any = {};
 		const columns = validatedQuery.OPTIONS.COLUMNS;
 		for (const column of columns) {
-			if (section[column] === undefined) {
-				throw new InsightError("could not find column in columns");
-			}
+			// if (section[column] === undefined) {
+			// 	throw new InsightError("could not find column in columns");
+			// }
 			result[column] = section[column];
 		}
 		return result;
