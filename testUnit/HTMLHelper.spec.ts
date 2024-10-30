@@ -11,7 +11,7 @@ import * as parse5 from "parse5";
 import {
 	addBuildingToRooms, addGeolocationData,
 	extractBuildingsIndex,
-	extractBuildingString,
+	extractBuildingName,
 	extractRooms,
 	findTableBodyNode
 } from "../src/utils/HTMLHelper";
@@ -78,7 +78,7 @@ describe("HTMLHelper", function () {
 		}
 	});
 
-	describe("ExtractBuildingString", function () {
+	describe("ExtractBuildingName", function () {
 	    beforeEach(async function () {
 	        await clearDisk();
 	    });
@@ -90,7 +90,7 @@ describe("HTMLHelper", function () {
 	    it("extract building string successfully", async function () {
 
 	        try {
-	           const result = extractBuildingString(fileString1);
+	           const result = extractBuildingName(fileString1);
 			   expect(result).to.deep.equal("Biological Sciences");
 	        } catch (e) {
 	            expect.fail('should not have thrown an error here' + e);
@@ -231,9 +231,9 @@ describe("HTMLHelper", function () {
 			const tableBodyNode4 = findTableBodyNode(fileString3);
 			rooms3 = extractRooms(tableBodyNode4);
 
-			buildingString1 = extractBuildingString(fileString1);
-			buildingString2 = extractBuildingString(fileString2);
-			buildingString3 = extractBuildingString(fileString3);
+			buildingString1 = extractBuildingName(fileString1);
+			buildingString2 = extractBuildingName(fileString2);
+			buildingString3 = extractBuildingName(fileString3);
 
 			index.forEach((building: Partial<Building>) => {
 				if (building.address) {

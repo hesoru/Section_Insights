@@ -5,6 +5,7 @@ import * as http from "node:http";
 import JSZip from "jszip";
 import { writeRoomsToDisk } from "./JsonHelper";
 
+
 export async function addRoomsDataset(unzipped: JSZip, fileStrings: string[], nextAvailableName: number, id: string):
 	Promise<Set<Room>> {
 	const added = new Set<Room>();
@@ -65,7 +66,7 @@ export function parseBuildingStrings(buildingStrings: string[], buildingsIndex: 
 	}
 }
 
-async function addGeolocationDataToAll(buildingsIndex: Partial<Building>[]): Promise<Building[]> {
+export async function addGeolocationDataToAll(buildingsIndex: Partial<Building>[]): Promise<Building[]> {
 	try {
 		// for each building in buildingsIndex:
 		const buildingsIndexGeolocation =  await Promise.all(
@@ -91,7 +92,7 @@ async function addGeolocationDataToAll(buildingsIndex: Partial<Building>[]): Pro
 	}
 }
 
-async function addGeolocationData(building: Partial<Building>, addressURL: string): Promise<Building> {
+export async function addGeolocationData(building: Partial<Building>, addressURL: string): Promise<Building> {
 	return new Promise((resolve, reject) => {
 		const url = `http://cs310.students.cs.ubc.ca:11316/api/v1/project_team154/${addressURL}`;
 		let geoResponse = null;
@@ -129,7 +130,8 @@ async function addGeolocationData(building: Partial<Building>, addressURL: strin
 }
 
 // match building to roomsData based on given buildingString (from roomsData)
-function addBuildingToRooms(buildingsIndex: Building[], buildingName: string, roomsData: Partial<Room>[]): Room[] {
+export function addBuildingToRooms(buildingsIndex: Building[], buildingName: string, roomsData: Partial<Room>[]):
+	Room[] {
 	let foundBuilding: (Building | null) = null;
 	try {
 		// every() behaves like foreach(), except stops iterating when receiving a false value
@@ -180,7 +182,7 @@ export function findTableBodyNode(node: any): any {
 	//throw new InsightError("Data table not found in HTML file!");
 }
 
-function extractBuildingsIndex(tableBodyNode: any, buildingsIndex: Partial<Building>[]): Partial<Building>[] {
+export function extractBuildingsIndex(tableBodyNode: any, buildingsIndex: Partial<Building>[]): Partial<Building>[] {
 	// extracts full name, shortname, address, and href from index HTML
 	// buildings will be partially completed (no geolocation)
 	if (tableBodyNode.nodeName === "tr" && tableBodyNode.childNodes) {
@@ -210,7 +212,7 @@ function extractBuildingsIndex(tableBodyNode: any, buildingsIndex: Partial<Build
 	return buildingsIndex;
 }
 
-function extractRooms(node: any, rooms: Partial<Room>[]): Partial<Room>[] {
+export function extractRooms(node: any, rooms: Partial<Room>[]): Partial<Room>[] {
 	// extracts room number, seats, furniture, and type from each room HTML
 	// rooms will be partially completed (no building)
 
@@ -225,7 +227,7 @@ function extractRooms(node: any, rooms: Partial<Room>[]): Partial<Room>[] {
 	return rooms;
 }
 
-function extractChildRooms(node: any): Partial<Room> {
+export function extractChildRooms(node: any): Partial<Room> {
 	const room: Partial<Room> = {};
 	node.childNodes.forEach((child: any) => {
 		if (child.nodeName === "td") {
@@ -253,9 +255,9 @@ function extractChildRooms(node: any): Partial<Room> {
 	return room;
 }
 
-function extractBuildingName(node: any): string {
+export function extractBuildingName(node: any): string {
 	// extracts name of building from room HTML
-	const buildingString = findBuildingInfo(node);
+	const buildingString = findBuildingName(node);
 	if (buildingString) {
 		return buildingString;
 	}
@@ -263,7 +265,7 @@ function extractBuildingName(node: any): string {
 	throw new InsightError("Building name not found in room HTML file.");
 }
 
-function findBuildingInfo(node: any): any {
+function findBuildingName(node: any): any {
 	let buildingString: string | null = null;
 	if (node.nodeName === "div" && node.attrs) {
 		const isBuildingInfo = node.attrs.some((attr: any) => attr.name === "id" && attr.value === "building-info");
@@ -282,7 +284,7 @@ function findBuildingInfo(node: any): any {
 	}
 	if (node.childNodes) {
 		for (const child of node.childNodes) {
-			const result = findBuildingInfo(child);
+			const result = findBuildingName(child);
 			if (result) {
 				return result;
 			}

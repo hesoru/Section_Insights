@@ -55,14 +55,12 @@ export default class InsightFacade implements IInsightFacade {
 
 		// 3) Unzips content: checks for valid content
 		const unzipped = await unzipContent(content);
-		const fileStringsPromises = extractFileStrings(unzipped, kind);
+		const fileStrings = await extractFileStrings(unzipped, kind);
 
 		// 4) Write files to disk
-		let fileStrings: string[];
 		let addedData;
 		let numRows = 0;
 		try {
-			fileStrings = await Promise.all(fileStringsPromises);
 			if (kind === InsightDatasetKind.Sections) {
 				addedData = await addSectionsDataset(fileStrings, this.nextAvailableName, id);
 				this.loadedSections.set(id, addedData);
