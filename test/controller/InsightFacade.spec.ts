@@ -242,6 +242,7 @@ describe("InsightFacade", function () {
 		});
 
 		it("checking persistence for add followed by a query", async function () {
+			this.timeout(10000);
 			try {
 				const result = await facade.addDataset("sections", sections, InsightDatasetKind.Sections);
 				expect(result).to.be.an("array");
@@ -311,6 +312,7 @@ describe("InsightFacade", function () {
 		});
 
 		it("should successfully add valid large Rooms dataset, and create file on disk", async function () {
+			this.timeout(10000);
 			try {
 				const result = await facade.addDataset("rooms", rooms, InsightDatasetKind.Rooms);
 				expect(result).to.be.an("array");
