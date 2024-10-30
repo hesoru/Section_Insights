@@ -52,7 +52,7 @@ export function parseBuildingStrings(buildingStrings: string[], buildingsIndex: 
 async function addGeolocationDataToAll(buildingsIndex: Partial<Building>[]): Promise<Building[]> {
 	try {
 		// for each building in buildingsIndex:
-		return await Promise.all(
+		const buildingsIndexGeolocation =  await Promise.all(
 			buildingsIndex.map(async (building: Partial<Building>) => {
 				// encode the address in URL format
 				const address = (building as Building).address;
@@ -61,12 +61,14 @@ async function addGeolocationDataToAll(buildingsIndex: Partial<Building>[]): Pro
 					// add geolocation data to building
 					return await addGeolocationData(building, addressURL);
 				} catch {
-					// TODO: what do we do if we don't receive geolocation data? reject the building?
+					// TODO: what do we do if we don't receive geolocation data? reject the building? YES!
 					// return building without geolocation data otherwise
-					return building as Building;
+					// return building as Building;
+					return null;
 				}
 			})
 		);
+		return buildingsIndexGeolocation.filter((building) => (building !== null)) as Building[];
 	} catch (error) {
 		throw new InsightError("Adding geolocation data failed: " + error);
 	}
@@ -94,15 +96,17 @@ async function addGeolocationData(building: Partial<Building>, addressURL: strin
 						if (!geoResponse.error) {
 							building.lat = geoResponse.lat;
 							building.lon = geoResponse.lon;
+						} else {
+							reject(new InsightError("Georesponse error returned.")); // reject promise
 						}
 						resolve(building as Building); // resolve promise
-					} catch (error) {
-						reject(error); // reject promise
+					} catch (error: any) {
+						reject(new InsightError(error.message)); // reject promise
 					}
 				});
 			})
 			.on("error", (error) => {
-				reject(error); // reject promise
+				reject(new InsightError(error.message)); // reject promise
 			});
 	});
 }
@@ -168,22 +172,16 @@ function extractBuildingsIndex(tableBodyNode: any, buildingsIndex: Partial<Build
 		const building: Partial<Building> = {};
 		tableBodyNode.childNodes.forEach((child: any) => {
 			if (child.nodeName === "td") {
-				if (
-					child.attrs?.some(
-						(attr: any) => attr.name === "class" && attr.value.includes("views-field-field-building-code")
-					)
-				) {
+				if (child.attrs?.some((attr: any) => attr.name === "class"
+						&& attr.value.includes("views-field-field-building-code"))) {
 					building.shortname = child.childNodes[0].value.trim();
 				}
 				if (child.attrs?.some((attr: any) => attr.name === "class" && attr.value.includes("views-field-title"))) {
 					building.fullname = child.childNodes[1].childNodes[0].value.trim(); //problem is here, can not access child of a child, does not exist, changed to index 1 but might need to change to name === 'a'
 					building.href = child.childNodes[1].attrs.find((attr: any) => attr.name === "href").value;
 				}
-				if (
-					child.attrs?.some(
-						(attr: any) => attr.name === "class" && attr.value.includes("views-field-field-building-address")
-					)
-				) {
+				if (child.attrs?.some((attr: any) => attr.name === "class"
+						&& attr.value.includes("views-field-field-building-address"))) {
 					building.address = child.childNodes[0].value.trim();
 				}
 			}
@@ -216,14 +214,11 @@ function extractChildRooms(node: any): Partial<Room> {
 	const room: Partial<Room> = {};
 	node.childNodes.forEach((child: any) => {
 		if (child.nodeName === "td") {
-			if (
-				child.attrs.some((attr: any) => attr.name === "class" && attr.value.includes("views-field-field-room-number"))
-			) {
+			if (child.attrs.some((attr: any) => attr.name === "class"
+				&& attr.value.includes("views-field-field-room-number"))) {
 				room.number = child.childNodes[1].childNodes[0].value.trim();
 			}
-			if (
-				child.attrs.some((attr: any) => attr.name === "class" && attr.value.includes("views-field-field-room-capacity"))
-			) {
+			if (child.attrs.some((attr: any) => attr.name === "class" && attr.value.includes("views-field-field-room-capacity"))) {
 				room.seats = child.childNodes[0].value.trim();
 			}
 			if (

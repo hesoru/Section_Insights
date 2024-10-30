@@ -276,11 +276,8 @@ export async function getExistingDatasets(): Promise<[Map<string, number>, numbe
 	return [result, nextName];
 }
 
-export async function addSectionsDataset(
-	fileStrings: string[],
-	nextAvailableName: number,
-	id: string
-): Promise<Set<Section>> {
+export async function addSectionsDataset(fileStrings: string[], nextAvailableName: number, id: string):
+	Promise<Set<Section>> {
 	const added = new Set<Section>();
 	for (const fileString of fileStrings) {
 		parseJSONtoSections(fileString).forEach((section) => added.add(section));
