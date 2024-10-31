@@ -1,0 +1,30 @@
+{
+	"title": "Applying Transformation on Non-Numeric Field",
+	"input": {
+		"WHERE": {
+			"IS": {
+				"rooms_type": "*Open*"
+			}
+		},
+		"OPTIONS": {
+			"COLUMNS": [
+				"rooms_type",
+				"avgName"
+			]
+		},
+		"TRANSFORMATIONS": {
+			"GROUP": [
+				"rooms_type"
+			],
+			"APPLY": [
+				{
+					"avgName": {
+						"AVG": "rooms_name"
+					}
+				}
+			]
+		}
+	},
+	"errorExpected": true,
+	"expected": "InsightError"
+}

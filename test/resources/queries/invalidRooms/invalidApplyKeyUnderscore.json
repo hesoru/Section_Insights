@@ -1,0 +1,30 @@
+{
+	"title": "Grouping by type and Applying COUNT on name",
+	"input": {
+		"WHERE": {
+			"IS": {
+				"rooms_type": "*Tables*"
+			}
+		},
+		"OPTIONS": {
+			"COLUMNS": [
+				"rooms_type",
+				"room_count"
+			]
+		},
+		"TRANSFORMATIONS": {
+			"GROUP": [
+				"rooms_type"
+			],
+			"APPLY": [
+				{
+					"room_count": {
+						"COUNT": "rooms_name"
+					}
+				}
+			]
+		}
+	},
+	"errorExpected": true,
+	"expected": "InsightError"
+}

@@ -1,0 +1,25 @@
+{
+	"title": "ORDER with Non-String Key Values",
+	"input": {
+		"WHERE": {
+			"LT": {
+				"rooms_lat": 50
+			}
+		},
+		"OPTIONS": {
+			"COLUMNS": [
+				"rooms_name",
+				"rooms_lat"
+			],
+			"ORDER": {
+				"dir": "UP",
+				"keys": [
+					"rooms_lat",
+					123
+				]
+			}
+		}
+	},
+	"errorExpected": true,
+	"expected": "InsightError"
+}

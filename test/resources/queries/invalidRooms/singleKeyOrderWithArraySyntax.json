@@ -1,0 +1,21 @@
+{
+	"title": "Single Key ORDER with Array Syntax",
+	"input": {
+		"WHERE": {
+			"IS": {
+				"rooms_type": "Auditorium"
+			}
+		},
+		"OPTIONS": {
+			"COLUMNS": [
+				"rooms_address",
+				"rooms_type"
+			],
+			"ORDER": [
+				"rooms_address"
+			]
+		}
+	},
+	"errorExpected": true,
+	"expected": "InsightError"
+}

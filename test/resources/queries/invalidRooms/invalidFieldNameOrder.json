@@ -1,0 +1,24 @@
+{
+	"title": "Invalid Field Name in ORDER",
+	"input": {
+		"WHERE": {
+			"IS": {
+				"rooms_furniture": "Tables"
+			}
+		},
+		"OPTIONS": {
+			"COLUMNS": [
+				"rooms_name",
+				"rooms_furniture"
+			],
+			"ORDER": {
+				"dir": "UP",
+				"keys": [
+					"rooms_unknownfield"
+				]
+			}
+		}
+	},
+	"errorExpected": true,
+	"expected": "InsightError"
+}

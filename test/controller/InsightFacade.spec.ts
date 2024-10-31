@@ -56,7 +56,9 @@ describe("InsightFacade", function () {
 		afterEach(async function () {
 			// This section resets the data directory (removing any cached data)
 			// This runs after each test, which should make each test independent of the previous one
-			//await clearDisk();
+			const timeout = 10000;
+			this.timeout(timeout);
+			// await clearDisk();
 		});
 
 		it("should reject adding an empty dataset id", async function () {
@@ -242,7 +244,7 @@ describe("InsightFacade", function () {
 		});
 
 		it("checking persistence for add followed by a query", async function () {
-			//this.timeout(10000);
+			// this.timeout(10000);
 			try {
 				const result = await facade.addDataset("sections", sections, InsightDatasetKind.Sections);
 				expect(result).to.be.an("array");
@@ -740,7 +742,7 @@ describe("InsightFacade", function () {
 		}
 
 		before(async function () {
-			//this.timeout(10000);
+			// this.timeout(10000);
 			await clearDisk();
 			facade = new InsightFacade();
 			// Add the datasets to InsightFacade once.
@@ -754,12 +756,13 @@ describe("InsightFacade", function () {
 		});
 
 		after(async function () {
-			//await clearDisk();
+			await clearDisk();
 		});
 
 		// Examples demonstrating how to test performQuery using the JSON Test Queries.
 		// The relative path to the query file must be given in square brackets.
 
+		// Sections dataset queries
 		it("[valid/simple.json] SELECT dept, avg WHERE avg > 97", checkQuery);
 		it("[invalid/invalid.json] Query missing WHERE", checkQuery);
 		it("[invalid/queryingMultipleDatasets.json]", checkQuery);
@@ -779,7 +782,7 @@ describe("InsightFacade", function () {
 		it("[invalid/orderKeyMissing.json]", checkQuery);
 		it("[invalid/idDoesNotExist.json]", checkQuery);
 		it("[valid/negativeAverage(Valid).json]", checkQuery);
-		it("[valid/filterNOT.json]", checkQuery); //works but timesout at 2.47
+		it("[valid/filterNOT.json]", checkQuery); //works but timesout at 2-4s
 		it("[invalid/notObject.json]", checkQuery);
 		it("[invalid/badWHERE.json]", checkQuery);
 		it("[invalid/badOptions.json]", checkQuery);
@@ -797,7 +800,7 @@ describe("InsightFacade", function () {
 		it("[valid/year1900(Valid).json]", checkQuery);
 		//it("[valid/nestedNot.json]", checkQuery);
 
-		//Queries with Transformations
+		// Sections queries with Transformations
 		it("[validTrans/simpleGDeptAMax.json]", checkQuery);
 		it("[validTrans/simpleGDeptASum.json]", checkQuery);
 		it("[validTrans/simpleGPassAavg.json]", checkQuery);
@@ -815,7 +818,7 @@ describe("InsightFacade", function () {
 		it("[invalidTrans/maxOnString.json]", checkQuery);
 		it("[validTrans/noContent.json]", checkQuery);
 
-		//Queries with Sorting
+		// Sections queries with Sorting
 		it("[validSort/sortUp.json]", checkQuery);
 		it("[validSort/sortDown.json]", checkQuery);
 		it("[validSort/multipleKeysUp.json]", checkQuery);
@@ -826,18 +829,50 @@ describe("InsightFacade", function () {
 		it("[invalidSort/emptyKeys.json]", checkQuery);
 		it("[validSort/duplicateKey.json]", checkQuery);
 
-		//Rooms Queries
+		// Rooms Queries
 		it("[validRooms/complex.json]", checkQuery);
 		it("[validRooms/AND.IS.GT.json]", checkQuery);
 		it("[validRooms/NOTfilter.json]", checkQuery);
 		it("[validRooms/allFilters.json]", checkQuery);
-		it("[validRooms/3apply.json]", checkQuery);
+		it("[validRooms/3apply.json]", checkQuery);	// TODO: avgSeats is negative?
 		it("[validRooms/max1.json]", checkQuery);
 		it("[validRooms/max2.json]", checkQuery);
+		it("[validRooms/sortingByAscendingOrderMultipleKeys.json]", checkQuery);
+		it("[validRooms/alphabeticalSortingOnFullnameDescendingOrder.json]", checkQuery); // TODO: test fail (asc/desc alphabetically is different? href?)
+		it("[validRooms/sortingOrderPrecedenceNumericAndTextField.json]", checkQuery);
+		it("[validRooms/singleKeySortingOnAddress.json]", checkQuery);
+		it("[validRooms/sortingUsingHRefAscendingOrder.json]", checkQuery); // TODO: test fail (asc/desc alphabetically is different? href?)
+		it("[validRooms/groupingByTypeAndApplyingCountOnName.json]", checkQuery);
+		it("[validRooms/groupingByAddressWithMinTransSeats.json]", checkQuery);
+		it("[validRooms/groupingByFurnitureAndCalcAverageSeats.json]", checkQuery);
+		it("[validRooms/complexGroupingByAddressSumOnSeatsAndCountOnUniqueHRef.json]", checkQuery); // TODO: test fail
+		it("[validRooms/sortingAllPossibleKeysInAscendingOrder.json]", checkQuery);
+		it("[validRooms/sortingOnSeatsWithTiesBrokenByTypeAndFurniture.json]", checkQuery);
+		it("[validRooms/sortingAlphabeticallyByFurniturePrioritizingSpecialCharacters.json]", checkQuery);
+		it("[validRooms/sortingByHRefInDescendingOrderNonStandardCharacters.json]", checkQuery); // TODO: test fail (href?)
+		it("[validRooms/singleKeySortingShortname.json]", checkQuery);
+		it("[validRooms/groupingByShortnameAndApplyingCountOnUniqueHRef.json]", checkQuery); // TODO: test fail (href?)
+		it("[validRooms/groupByFurnitureWithSumOnSeatsAndMinOnLat.json]", checkQuery);
+		it("[validRooms/complexGroupingOnFullnameWithMultipleStatisticalOperations.json]", checkQuery);
+		it("[validRooms/wildcardMatchingWithGroupingAndMinTrans.json]", checkQuery);
+		it("[validRooms/groupingByTypeAndApplyingMaxOnSeatsFilteringSmallValues.json]", checkQuery);
+		it("[validRooms/transWithCountAndSumAcrossNumericAndTextFieldTypes.json]", checkQuery);
+		it("[validRooms/avgTransformationOnLatAndLonWithGroupingByShortname.json]", checkQuery);
+		it("[validRooms/validEmptyApplyArrayInTrans.json]", checkQuery);
+
 		it("[invalidRooms/avgFullname.json]", checkQuery);
 		it("[invalidRooms/avgHref.json]", checkQuery);
 		it("[invalidRooms/maxFurniture.json]", checkQuery);
 		it("[invalidRooms/minAddress.json]", checkQuery);
 		it("[invalidRooms/minType.json]", checkQuery);
+		it("[invalidRooms/invalidApplyKeyUnderscore.json]", checkQuery); // TODO: test fail: should validate no underscore in applykey
+		it("[invalidRooms/invalidDirectionValueOrder.json]", checkQuery);
+		it("[invalidRooms/emptyKeysArrayInOrder.json]", checkQuery);
+		it("[invalidRooms/singleKeyOrderWithArraySyntax.json]", checkQuery);
+		it("[invalidRooms/invalidFieldNameOrder.json]", checkQuery);
+		it("[invalidRooms/orderWithNon-StringKeyValues.json]", checkQuery);
+		it("[invalidRooms/invalidApplyTokenInTransformation.json]", checkQuery);
+		it("[invalidRooms/applyingTransformationOnNon-NumericField.json]", checkQuery);
+		it("[invalidRooms/validOrInvalidDuplicateKeysInColumnsAndApply.json]", checkQuery); // TODO: should this be valid or invalid?
 	});
 });

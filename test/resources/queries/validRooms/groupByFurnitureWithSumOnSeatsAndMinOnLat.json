@@ -1,0 +1,62 @@
+{
+	"title": "Group by furniture with SUM on seats and MIN on lat",
+	"input": {
+		"WHERE": {
+			"IS": {
+				"rooms_furniture": "*Chairs*"
+			}
+		},
+		"OPTIONS": {
+			"COLUMNS": [
+				"rooms_furniture",
+				"totalSeats",
+				"minLat"
+			]
+		},
+		"TRANSFORMATIONS": {
+			"GROUP": [
+				"rooms_furniture"
+			],
+			"APPLY": [
+				{
+					"totalSeats": {
+						"SUM": "rooms_seats"
+					}
+				},
+				{
+					"minLat": {
+						"MIN": "rooms_lat"
+					}
+				}
+			]
+		}
+	},
+	"errorExpected": false,
+	"expected": [
+		{
+			"rooms_furniture": "Classroom-Fixed Tables/Movable Chairs",
+			"totalSeats": 6231,
+			"minLat": 49.26044
+		},
+		{
+			"rooms_furniture": "Classroom-Movable Tables & Chairs",
+			"totalSeats": 6479,
+			"minLat": 49.26044
+		},
+		{
+			"rooms_furniture": "Classroom-Moveable Tables & Chairs",
+			"totalSeats": 506,
+			"minLat": 49.26114
+		},
+		{
+			"rooms_furniture": "Classroom-Fixed Tables/Fixed Chairs",
+			"totalSeats": 1572,
+			"minLat": 49.26176
+		},
+		{
+			"rooms_furniture": "Classroom-Fixed Tables/Moveable Chairs",
+			"totalSeats": 212,
+			"minLat": 49.26826
+		}
+	]
+}

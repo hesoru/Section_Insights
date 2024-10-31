@@ -1,0 +1,35 @@
+{
+	"title": "Grouping by type and Applying COUNT on name",
+	"input": {
+		"WHERE": {
+			"IS": {
+				"rooms_type": "*Small*"
+			}
+		},
+		"OPTIONS": {
+			"COLUMNS": [
+				"rooms_type",
+				"roomCount"
+			]
+		},
+		"TRANSFORMATIONS": {
+			"GROUP": [
+				"rooms_type"
+			],
+			"APPLY": [
+				{
+					"roomCount": {
+						"COUNT": "rooms_name"
+					}
+				}
+			]
+		}
+	},
+	"errorExpected": false,
+	"expected": [
+		{
+			"rooms_type": "Small Group",
+			"roomCount": 158
+		}
+	]
+}

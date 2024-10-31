@@ -46,7 +46,6 @@ export function parseBuildingStrings(buildingStrings: string[], buildingsIndex: 
 		// for each rooms HTML file:
 		buildingStrings.forEach((file) => {
 			// parse rooms HTML into document (node tree)
-
 			const document = parse5.parse(file);
 			const buildingString = extractBuildingName(document);
 			// find rooms table in document and extract rooms from it
@@ -150,6 +149,8 @@ function addBuildingToRooms(buildingsIndex: Building[], buildingName: string, ro
 		// else add building to every room in roomsData
 		roomsData.forEach((room) => {
 			room.building = foundBuilding!;
+			// add room name!
+			room.name = room.building.shortname + "_" + room.number!;
 		});
 		return roomsData as Room[];
 	} catch (error) {

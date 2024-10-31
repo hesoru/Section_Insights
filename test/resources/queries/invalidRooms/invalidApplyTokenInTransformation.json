@@ -1,0 +1,30 @@
+{
+	"title": "Invalid APPLYTOKEN in Transformation",
+	"input": {
+		"WHERE": {
+			"GT": {
+				"rooms_lon": -120
+			}
+		},
+		"OPTIONS": {
+			"COLUMNS": [
+				"rooms_address",
+				"totalSeats"
+			]
+		},
+		"TRANSFORMATIONS": {
+			"GROUP": [
+				"rooms_address"
+			],
+			"APPLY": [
+				{
+					"totalSeats": {
+						"INVALIDTOKEN": "rooms_seats"
+					}
+				}
+			]
+		}
+	},
+	"errorExpected": true,
+	"expected": "InsightError"
+}

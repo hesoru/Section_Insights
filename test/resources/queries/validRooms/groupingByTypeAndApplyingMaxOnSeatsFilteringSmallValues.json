@@ -1,0 +1,44 @@
+{
+	"title": "Grouping by type and Applying MAX on seats with Edge Filtering on Small Values",
+	"input": {
+		"WHERE": {
+			"AND": [
+				{
+					"IS": {
+						"rooms_type": "*Small*"
+					}
+				},
+				{
+					"GT": {
+						"rooms_seats": 1
+					}
+				}
+			]
+		},
+		"OPTIONS": {
+			"COLUMNS": [
+				"rooms_type",
+				"maxSeats"
+			]
+		},
+		"TRANSFORMATIONS": {
+			"GROUP": [
+				"rooms_type"
+			],
+			"APPLY": [
+				{
+					"maxSeats": {
+						"MAX": "rooms_seats"
+					}
+				}
+			]
+		}
+	},
+	"errorExpected": false,
+	"expected": [
+		{
+			"rooms_type": "Small Group",
+			"maxSeats": 60
+		}
+	]
+}
