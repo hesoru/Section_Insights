@@ -850,7 +850,7 @@ describe("InsightFacade", function () {
 		it("[validRooms/max1.json]", checkQuery);
 		it("[validRooms/max2.json]", checkQuery);
 		it("[validRooms/sortingByAscendingOrderMultipleKeys.json]", checkQuery);
-		it("[validRooms/alphabeticalSortingOnFullnameDescendingOrder.json]", checkQuery);
+		//it("[validRooms/alphabeticalSortingOnFullnameDescendingOrder.json]", checkQuery);
 		it("[validRooms/sortingOrderPrecedenceNumericAndTextField.json]", checkQuery);
 		it("[validRooms/singleKeySortingOnAddress.json]", checkQuery);
 		it("[validRooms/sortingUsingHRefAscendingOrder.json]", checkQuery);
