@@ -1,0 +1,59 @@
+{
+	"title": "Wildcard Matching with Grouping and MIN Transformation",
+	"input": {
+		"WHERE": {
+			"IS": {
+				"rooms_address": "*East*"
+			}
+		},
+		"OPTIONS": {
+			"COLUMNS": [
+				"rooms_address",
+				"minLon"
+			]
+		},
+		"TRANSFORMATIONS": {
+			"GROUP": [
+				"rooms_address"
+			],
+			"APPLY": [
+				{
+					"minLon": {
+						"MIN": "rooms_lon"
+					}
+				}
+			]
+		}
+	},
+	"errorExpected": false,
+	"expected": [
+		{
+			"rooms_address": "1822 East Mall",
+			"minLon": -123.25318
+		},
+		{
+			"rooms_address": "1874 East Mall",
+			"minLon": -123.25237
+		},
+		{
+			"rooms_address": "2360 East Mall V6T 1Z3",
+			"minLon": -123.24718
+		},
+		{
+			"rooms_address": "2205 East Mall",
+			"minLon": -123.24959
+		},
+		{
+			"rooms_address": "2045 East Mall",
+			"minLon": -123.25165
+		},
+		{
+			"rooms_address": "1961 East Mall V6T 1Z1",
+			"minLon": -123.2521
+		},
+		{
+			"rooms_address": "2206 East Mall",
+			"minLon": -123.24842
+		}
+	]
+}

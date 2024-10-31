@@ -1,0 +1,147 @@
+{
+	"title": "Grouping by shortname and Applying COUNT on Unique href",
+	"input": {
+		"WHERE": {
+			"GT": {
+				"rooms_lon": -123.25318
+			}
+		},
+		"OPTIONS": {
+			"COLUMNS": [
+				"rooms_shortname",
+				"uniqueUrls"
+			]
+		},
+		"TRANSFORMATIONS": {
+			"GROUP": [
+				"rooms_shortname"
+			],
+			"APPLY": [
+				{
+					"uniqueUrls": {
+						"COUNT": "rooms_href"
+					}
+				}
+			]
+		}
+	},
+	"errorExpected": false,
+	"expected": [
+		{
+			"rooms_shortname": "AERL",
+			"uniqueUrls": 1
+		},
+		{
+			"rooms_shortname": "BIOL",
+			"uniqueUrls": 4
+		},
+		{
+			"rooms_shortname": "BRKX",
+			"uniqueUrls": 2
+		},
+		{
+			"rooms_shortname": "CIRS",
+			"uniqueUrls": 1
+		},
+		{
+			"rooms_shortname": "CHBE",
+			"uniqueUrls": 3
+		},
+		{
+			"rooms_shortname": "CHEM",
+			"uniqueUrls": 6
+		},
+		{
+			"rooms_shortname": "CEME",
+			"uniqueUrls": 6
+		},
+		{
+			"rooms_shortname": "EOSM",
+			"uniqueUrls": 1
+		},
+		{
+			"rooms_shortname": "ESB",
+			"uniqueUrls": 3
+		},
+		{
+			"rooms_shortname": "FNH",
+			"uniqueUrls": 6
+		},
+		{
+			"rooms_shortname": "FSC",
+			"uniqueUrls": 10
+		},
+		{
+			"rooms_shortname": "FORW",
+			"uniqueUrls": 3
+		},
+		{
+			"rooms_shortname": "FRDM",
+			"uniqueUrls": 1
+		},
+		{
+			"rooms_shortname": "HEBB",
+			"uniqueUrls": 4
+		},
+		{
+			"rooms_shortname": "DMP",
+			"uniqueUrls": 5
+		},
+		{
+			"rooms_shortname": "IONA",
+			"uniqueUrls": 2
+		},
+		{
+			"rooms_shortname": "IBLC",
+			"uniqueUrls": 18
+		},
+		{
+			"rooms_shortname": "LSC",
+			"uniqueUrls": 3
+		},
+		{
+			"rooms_shortname": "MCLD",
+			"uniqueUrls": 6
+		},
+		{
+			"rooms_shortname": "MCML",
+			"uniqueUrls": 19
+		},
+		{
+			"rooms_shortname": "SCRF",
+			"uniqueUrls": 22
+		},
+		{
+			"rooms_shortname": "ORCH",
+			"uniqueUrls": 21
+		},
+		{
+			"rooms_shortname": "PHRM",
+			"uniqueUrls": 11
+		},
+		{
+			"rooms_shortname": "OSBO",
+			"uniqueUrls": 3
+		},
+		{
+			"rooms_shortname": "SPPH",
+			"uniqueUrls": 6
+		},
+		{
+			"rooms_shortname": "SRC",
+			"uniqueUrls": 3
+		},
+		{
+			"rooms_shortname": "MGYM",
+			"uniqueUrls": 2
+		},
+		{
+			"rooms_shortname": "WESB",
+			"uniqueUrls": 2
+		},
+		{
+			"rooms_shortname": "WOOD",
+			"uniqueUrls": 16
+		}
+	]
+}

@@ -1,0 +1,23 @@
+{
+	"title": "Empty APPLY Array in TRANSFORMATIONS",
+	"input": {
+		"WHERE": {
+			"IS": {
+				"rooms_furniture": "Movable Chairs"
+			}
+		},
+		"OPTIONS": {
+			"COLUMNS": [
+				"rooms_furniture"
+			]
+		},
+		"TRANSFORMATIONS": {
+			"GROUP": [
+				"rooms_furniture"
+			],
+			"APPLY": []
+		}
+	},
+	"errorExpected": false,
+	"expected": []
+}

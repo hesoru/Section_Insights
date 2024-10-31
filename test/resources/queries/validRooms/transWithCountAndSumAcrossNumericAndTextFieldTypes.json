@@ -1,0 +1,42 @@
+{
+	"title": "Transformation with COUNT and SUM Across Different Field Types (Numeric and Text)",
+	"input": {
+		"WHERE": {
+			"IS": {
+				"rooms_type": "*Case*"
+			}
+		},
+		"OPTIONS": {
+			"COLUMNS": [
+				"rooms_type",
+				"totalSeats",
+				"roomCount"
+			]
+		},
+		"TRANSFORMATIONS": {
+			"GROUP": [
+				"rooms_type"
+			],
+			"APPLY": [
+				{
+					"totalSeats": {
+						"SUM": "rooms_seats"
+					}
+				},
+				{
+					"roomCount": {
+						"COUNT": "rooms_name"
+					}
+				}
+			]
+		}
+	},
+	"errorExpected": false,
+	"expected": [
+		{
+			"rooms_type": "Case Style",
+			"totalSeats": 1525,
+			"roomCount": 24
+		}
+	]
+}

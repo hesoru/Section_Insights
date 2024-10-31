@@ -1,0 +1,205 @@
+{
+	"title": "Complex Grouping on fullname with Multiple Statistical Operations",
+	"input": {
+		"WHERE": {
+			"IS": {
+				"rooms_type": "*Open*"
+			}
+		},
+		"OPTIONS": {
+			"COLUMNS": [
+				"rooms_fullname",
+				"maxSeats",
+				"avgLat",
+				"countRooms"
+			]
+		},
+		"TRANSFORMATIONS": {
+			"GROUP": [
+				"rooms_fullname"
+			],
+			"APPLY": [
+				{
+					"maxSeats": {
+						"MAX": "rooms_seats"
+					}
+				},
+				{
+					"avgLat": {
+						"AVG": "rooms_lat"
+					}
+				},
+				{
+					"countRooms": {
+						"COUNT": "rooms_name"
+					}
+				}
+			]
+		}
+	},
+	"errorExpected": false,
+	"expected": [
+		{
+			"rooms_fullname": "Allard Hall (LAW)",
+			"maxSeats": 44,
+			"avgLat": 49.27,
+			"countRooms": 3
+		},
+		{
+			"rooms_fullname": "Anthropology and Sociology",
+			"maxSeats": 90,
+			"avgLat": 49.27,
+			"countRooms": 1
+		},
+		{
+			"rooms_fullname": "Brock Hall Annex",
+			"maxSeats": 24,
+			"avgLat": 49.27,
+			"countRooms": 1
+		},
+		{
+			"rooms_fullname": "Buchanan",
+			"maxSeats": 50,
+			"avgLat": 49.27,
+			"countRooms": 18
+		},
+		{
+			"rooms_fullname": "Chemical and Biological Engineering Building",
+			"maxSeats": 60,
+			"avgLat": 49.26,
+			"countRooms": 1
+		},
+		{
+			"rooms_fullname": "Earth and Ocean Sciences - Main",
+			"maxSeats": 50,
+			"avgLat": 49.26,
+			"countRooms": 1
+		},
+		{
+			"rooms_fullname": "Food, Nutrition and Health",
+			"maxSeats": 54,
+			"avgLat": 49.26,
+			"countRooms": 2
+		},
+		{
+			"rooms_fullname": "Frank Forward",
+			"maxSeats": 63,
+			"avgLat": 49.26,
+			"countRooms": 1
+		},
+		{
+			"rooms_fullname": "Frederic Lasserre",
+			"maxSeats": 51,
+			"avgLat": 49.27,
+			"countRooms": 1
+		},
+		{
+			"rooms_fullname": "Geography",
+			"maxSeats": 100,
+			"avgLat": 49.27,
+			"countRooms": 5
+		},
+		{
+			"rooms_fullname": "Hebb",
+			"maxSeats": 54,
+			"avgLat": 49.27,
+			"countRooms": 3
+		},
+		{
+			"rooms_fullname": "Henry Angus",
+			"maxSeats": 80,
+			"avgLat": 49.26,
+			"countRooms": 7
+		},
+		{
+			"rooms_fullname": "Iona Building",
+			"maxSeats": 50,
+			"avgLat": 49.27,
+			"countRooms": 1
+		},
+		{
+			"rooms_fullname": "Irving K Barber Learning Centre",
+			"maxSeats": 112,
+			"avgLat": 49.27,
+			"countRooms": 1
+		},
+		{
+			"rooms_fullname": "Jack Bell Building for the School of Social Work",
+			"maxSeats": 68,
+			"avgLat": 49.26,
+			"countRooms": 4
+		},
+		{
+			"rooms_fullname": "Leonard S. Klinck (also known as CSCI)",
+			"maxSeats": 75,
+			"avgLat": 49.27,
+			"countRooms": 2
+		},
+		{
+			"rooms_fullname": "MacLeod",
+			"maxSeats": 84,
+			"avgLat": 49.26,
+			"countRooms": 3
+		},
+		{
+			"rooms_fullname": "MacMillan",
+			"maxSeats": 47,
+			"avgLat": 49.26,
+			"countRooms": 1
+		},
+		{
+			"rooms_fullname": "Mathematics",
+			"maxSeats": 48,
+			"avgLat": 49.27,
+			"countRooms": 4
+		},
+		{
+			"rooms_fullname": "Orchard Commons",
+			"maxSeats": 72,
+			"avgLat": 49.26,
+			"countRooms": 10
+		},
+		{
+			"rooms_fullname": "Pharmaceutical Sciences Building",
+			"maxSeats": 72,
+			"avgLat": 49.26,
+			"countRooms": 1
+		},
+		{
+			"rooms_fullname": "Ponderosa Commons: Oak House",
+			"maxSeats": 40,
+			"avgLat": 49.26,
+			"countRooms": 3
+		},
+		{
+			"rooms_fullname": "Robert F. Osborne Centre",
+			"maxSeats": 442,
+			"avgLat": 49.26,
+			"countRooms": 1
+		},
+		{
+			"rooms_fullname": "School of Population and Public Health",
+			"maxSeats": 66,
+			"avgLat": 49.26,
+			"countRooms": 1
+		},
+		{
+			"rooms_fullname": "The Leon and Thea Koerner University Centre",
+			"maxSeats": 55,
+			"avgLat": 49.27,
+			"countRooms": 2
+		},
+		{
+			"rooms_fullname": "War Memorial Gymnasium",
+			"maxSeats": 40,
+			"avgLat": 49.27,
+			"countRooms": 2
+		},
+		{
+			"rooms_fullname": "West Mall Swing Space",
+			"maxSeats": 47,
+			"avgLat": 49.26,
+			"countRooms": 9
+		}
+	]
+}

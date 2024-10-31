@@ -228,8 +228,8 @@ export function parseSectionsToInsightResult(allSections: Set<Section>, idString
 }
 
 export function parseRoomsToInsightResult(allRooms: Set<Room>, idString: string): Set<InsightResult> {
-	const roomColumns = new Set<string>(["name", "number", "type", "furniture", "seats"]);
-	const buildingColumns = new Set<string>(["fullname", "shortname", "address", "lat", "lon", "href"]);
+	const roomColumns = new Set<string>(["name", "number", "type", "furniture", "seats", "href"]);
+	const buildingColumns = new Set<string>(["fullname", "shortname", "address", "lat", "lon"]);
 	const allResults = new Set<InsightResult>();
 	for (const room of allRooms) {
 		const roomResult: InsightResult = {};

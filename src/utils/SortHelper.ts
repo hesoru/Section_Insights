@@ -41,7 +41,13 @@ export function sortCompare(a: InsightResult, b: InsightResult, order: string, d
 
 	if (typeof aValue === "string" && typeof bValue === "string") {
 		// string comparison (case-insensitive)
-		return dir * aValue.localeCompare(bValue, undefined, { sensitivity: "base" });
+		if (aValue.toLowerCase() < bValue.toLowerCase()) {
+			return dir * -1;
+		} else if (aValue.toLowerCase() > bValue.toLowerCase()) {
+			return dir;
+		} else {
+			return 0;
+		}
 	}
 
 	if (typeof aValue === "number" && typeof bValue === "number") {

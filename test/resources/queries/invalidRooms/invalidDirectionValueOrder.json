@@ -1,0 +1,24 @@
+{
+	"title": "Invalid Direction Value in ORDER",
+	"input": {
+		"WHERE": {
+			"IS": {
+				"rooms_type": "Classroom"
+			}
+		},
+		"OPTIONS": {
+			"COLUMNS": [
+				"rooms_name",
+				"rooms_lat"
+			],
+			"ORDER": {
+				"dir": "ASCENDING",
+				"keys": [
+					"rooms_lat"
+				]
+			}
+		}
+	},
+	"errorExpected": true,
+	"expected": "InsightError"
+}

@@ -1,0 +1,19 @@
+{
+	"title": "Single Key Sorting on address",
+	"input": {
+		"WHERE": {
+			"IS": {
+				"rooms_type": "Auditorium"
+			}
+		},
+		"OPTIONS": {
+			"COLUMNS": [
+				"rooms_address",
+				"rooms_type"
+			],
+			"ORDER": "rooms_address"
+		}
+	},
+	"errorExpected": false,
+	"expected": []
+}
