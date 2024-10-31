@@ -38,7 +38,6 @@ export interface Building {
 	address: string;
 	lat?: number;
 	lon?: number;
-	href: string;
 }
 
 export interface Room {
@@ -48,6 +47,7 @@ export interface Room {
 	type: string;
 	furniture: string;
 	seats: number;
+	href: string;
 }
 
 //Why do we have the address in GeoResponse? is it not the return type they specified in the specs?

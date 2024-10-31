@@ -346,7 +346,7 @@ function validateApplyRule(applyRule: any, type: InsightDatasetKind): string {
 	if (keys.length !== 1) {
 		throw new InsightError("invalid apply field in transformations, invalid applyRule found");
 	}
-	const validApplyKey = /[^_]+/;
+	const validApplyKey = /^[^_]+$/;
 	const applyKey = keys[0];
 	if (!validApplyKey.test(applyKey)) {
 		throw new InsightError("invalid apply field in transformations, invalid applyKey");

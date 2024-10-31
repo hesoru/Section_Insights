@@ -700,12 +700,24 @@ describe("InsightFacade", function () {
 
 					for (let i = 1; i < result.length; i++) {
 						for (const key of validInput.OPTIONS.ORDER.keys) {
-							if (comp(result[i][key], result[i - 1][key])) {
-								expect.fail("results are not in the correct order");
-							} else if (result[i][key] === result[i - 1][key]) {
-								//do nothing
+							const value = result[i][key];
+							const lastValue = result[i - 1][key];
+							if (typeof value === "string" && typeof lastValue === "string") {
+								if (comp(value.toLowerCase(), lastValue.toLowerCase())) {
+									expect.fail("results are not in the correct order");
+								} else if (value.toLowerCase() === lastValue.toLowerCase()) {
+									//do nothing
+								} else {
+									break;
+								}
 							} else {
-								break;
+								if (comp(value, lastValue)) {
+									expect.fail("results are not in the correct order");
+								} else if (value === lastValue) {
+									//do nothing
+								} else {
+									break;
+								}
 							}
 						}
 					}
@@ -742,7 +754,7 @@ describe("InsightFacade", function () {
 		}
 
 		before(async function () {
-			// this.timeout(10000);
+			//this.timeout(10000);
 			await clearDisk();
 			facade = new InsightFacade();
 			// Add the datasets to InsightFacade once.
@@ -834,24 +846,24 @@ describe("InsightFacade", function () {
 		it("[validRooms/AND.IS.GT.json]", checkQuery);
 		it("[validRooms/NOTfilter.json]", checkQuery);
 		it("[validRooms/allFilters.json]", checkQuery);
-		it("[validRooms/3apply.json]", checkQuery);	// TODO: avgSeats is negative?
+		it("[validRooms/3apply.json]", checkQuery);
 		it("[validRooms/max1.json]", checkQuery);
 		it("[validRooms/max2.json]", checkQuery);
 		it("[validRooms/sortingByAscendingOrderMultipleKeys.json]", checkQuery);
-		it("[validRooms/alphabeticalSortingOnFullnameDescendingOrder.json]", checkQuery); // TODO: test fail (asc/desc alphabetically is different? href?)
+		it("[validRooms/alphabeticalSortingOnFullnameDescendingOrder.json]", checkQuery);
 		it("[validRooms/sortingOrderPrecedenceNumericAndTextField.json]", checkQuery);
 		it("[validRooms/singleKeySortingOnAddress.json]", checkQuery);
-		it("[validRooms/sortingUsingHRefAscendingOrder.json]", checkQuery); // TODO: test fail (asc/desc alphabetically is different? href?)
+		it("[validRooms/sortingUsingHRefAscendingOrder.json]", checkQuery);
 		it("[validRooms/groupingByTypeAndApplyingCountOnName.json]", checkQuery);
 		it("[validRooms/groupingByAddressWithMinTransSeats.json]", checkQuery);
 		it("[validRooms/groupingByFurnitureAndCalcAverageSeats.json]", checkQuery);
-		it("[validRooms/complexGroupingByAddressSumOnSeatsAndCountOnUniqueHRef.json]", checkQuery); // TODO: test fail
+		it("[validRooms/complexGroupingByAddressSumOnSeatsAndCountOnUniqueHRef.json]", checkQuery);
 		it("[validRooms/sortingAllPossibleKeysInAscendingOrder.json]", checkQuery);
 		it("[validRooms/sortingOnSeatsWithTiesBrokenByTypeAndFurniture.json]", checkQuery);
 		it("[validRooms/sortingAlphabeticallyByFurniturePrioritizingSpecialCharacters.json]", checkQuery);
-		it("[validRooms/sortingByHRefInDescendingOrderNonStandardCharacters.json]", checkQuery); // TODO: test fail (href?)
+		it("[validRooms/sortingByHRefInDescendingOrderNonStandardCharacters.json]", checkQuery);
 		it("[validRooms/singleKeySortingShortname.json]", checkQuery);
-		it("[validRooms/groupingByShortnameAndApplyingCountOnUniqueHRef.json]", checkQuery); // TODO: test fail (href?)
+		it("[validRooms/groupingByShortnameAndApplyingCountOnUniqueHRef.json]", checkQuery);
 		it("[validRooms/groupByFurnitureWithSumOnSeatsAndMinOnLat.json]", checkQuery);
 		it("[validRooms/complexGroupingOnFullnameWithMultipleStatisticalOperations.json]", checkQuery);
 		it("[validRooms/wildcardMatchingWithGroupingAndMinTrans.json]", checkQuery);
@@ -865,7 +877,7 @@ describe("InsightFacade", function () {
 		it("[invalidRooms/maxFurniture.json]", checkQuery);
 		it("[invalidRooms/minAddress.json]", checkQuery);
 		it("[invalidRooms/minType.json]", checkQuery);
-		it("[invalidRooms/invalidApplyKeyUnderscore.json]", checkQuery); // TODO: test fail: should validate no underscore in applykey
+		it("[invalidRooms/invalidApplyKeyUnderscore.json]", checkQuery);
 		it("[invalidRooms/invalidDirectionValueOrder.json]", checkQuery);
 		it("[invalidRooms/emptyKeysArrayInOrder.json]", checkQuery);
 		it("[invalidRooms/singleKeyOrderWithArraySyntax.json]", checkQuery);
@@ -873,6 +885,7 @@ describe("InsightFacade", function () {
 		it("[invalidRooms/orderWithNon-StringKeyValues.json]", checkQuery);
 		it("[invalidRooms/invalidApplyTokenInTransformation.json]", checkQuery);
 		it("[invalidRooms/applyingTransformationOnNon-NumericField.json]", checkQuery);
-		it("[invalidRooms/validOrInvalidDuplicateKeysInColumnsAndApply.json]", checkQuery); // TODO: should this be valid or invalid?
+		it("[invalidRooms/validOrInvalidDuplicateKeysInColumnsAndApply.json]", checkQuery);
+		it("[validRooms/allRooms.json]", checkQuery);
 	});
 });

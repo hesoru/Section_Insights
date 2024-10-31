@@ -200,7 +200,7 @@ function extractBuildingsIndex(tableBodyNode: any, buildingsIndex: Partial<Build
 				}
 				if (child.attrs?.some((attr: any) => attr.name === "class" && attr.value.includes("views-field-title"))) {
 					building.fullname = child.childNodes[1].childNodes[0].value.trim(); //problem is here, can not access child of a child, does not exist, changed to index 1 but might need to change to name === 'a'
-					building.href = child.childNodes[1].attrs.find((attr: any) => attr.name === "href").value;
+					//building.href = new URL(child.childNodes[1].attrs.find((attr: any) => attr.name === "href").value, "http://students/ubc.ca").href;
 				}
 				if (
 					child.attrs?.some(
@@ -260,6 +260,11 @@ function extractChildRooms(node: any): Partial<Room> {
 				child.attrs.some((attr: any) => attr.name === "class" && attr.value.includes("views-field-field-room-type"))
 			) {
 				room.type = child.childNodes[0].value.trim();
+			}
+
+			if (child.childNodes.some((cn: any) => cn.nodeName === "a")) {
+				//might need to additionally check existence of href in attributes
+				room.href = child.childNodes[1].attrs.find((attr: any) => attr.name === "href").value;
 			}
 		}
 	});
