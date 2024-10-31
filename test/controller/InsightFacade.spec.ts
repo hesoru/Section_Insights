@@ -280,8 +280,18 @@ describe("InsightFacade", function () {
 						},
 					},
 					OPTIONS: {
-						COLUMNS: ["sections_dept", "sections_avg"],
-						ORDER: "sections_avg",
+						COLUMNS: ["maxAvg", "sections_dept"],
+						ORDER: "maxAvg",
+					},
+					TRANSFORMATIONS: {
+						GROUP: ["sections_dept"],
+						APPLY: [
+							{
+								maxAvg: {
+									MAX: "sections_avg",
+								},
+							},
+						],
 					},
 				};
 
