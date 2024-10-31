@@ -134,7 +134,7 @@ export default class InsightFacade implements IInsightFacade {
 			validatedQuery = validateQuery(query, kind);
 			const allSections = this.loadedSections.get(id);
 			if (typeof allSections === "undefined") {
-				allResults = await getAllData(validatedQuery, this.datasetIds, kind, this.datasetIds);
+				allResults = await getAllData(validatedQuery, this.datasetIds, kind);
 			} else {
 				allResults = parseSectionsToInsightResult(allSections, id);
 			}
@@ -142,7 +142,7 @@ export default class InsightFacade implements IInsightFacade {
 			validatedQuery = validateQuery(query, kind);
 			const allRooms = this.loadedRooms.get(id);
 			if (typeof allRooms === "undefined") {
-				allResults = await getAllData(validatedQuery, this.datasetIds, kind, this.datasetIds);
+				allResults = await getAllData(validatedQuery, this.datasetIds, kind);
 			} else {
 				allResults = parseRoomsToInsightResult(allRooms, id);
 			}

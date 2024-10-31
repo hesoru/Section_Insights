@@ -1,5 +1,6 @@
 import { InsightError, InsightResult } from "../controller/IInsightFacade";
 import { ApplyRule, ApplyToken, Query } from "../models/Query";
+import Decimal from "decimal.js";
 
 export function groupBy(filteredResults: InsightResult[], query: Query): Map<string, InsightResult[]> {
 	const groups = new Map<string, InsightResult[]>();
@@ -52,6 +53,9 @@ export function apply(group: InsightResult[], applyRules: ApplyRule[]): InsightR
 
 export function applyNumericOperation(keyValues: number[], applyToken: ApplyToken): number {
 	const dec = 2;
+	let decValues;
+	let total;
+	let avg;
 
 	switch (applyToken) {
 		case "MAX":
@@ -59,7 +63,10 @@ export function applyNumericOperation(keyValues: number[], applyToken: ApplyToke
 		case "MIN":
 			return Math.min(...keyValues);
 		case "AVG":
-			return +(keyValues.reduce((a: number, b: number) => a + b, 0) / keyValues.length).toFixed(dec);
+			decValues = keyValues.map((v: number) => new Decimal(v));
+			total = decValues.reduce((acc: Decimal, val: Decimal) => acc.add(val), new Decimal(0));
+			avg = total.toNumber() / keyValues.length;
+			return Number(avg.toFixed(dec));
 		case "SUM":
 			return +keyValues.reduce((a: number, b: number) => a + b, 0).toFixed(dec);
 		default:

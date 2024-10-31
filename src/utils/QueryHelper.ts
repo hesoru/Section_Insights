@@ -109,10 +109,9 @@ export function handleNegation(filter: any, data: InsightResult[]): InsightResul
 export async function getAllData(
 	query: Query,
 	datasets: Map<string, number>,
-	kind: InsightDatasetKind,
-	datasetIds: Map<string, number>
+	kind: InsightDatasetKind
 ): Promise<Set<InsightResult>> {
-	const idString = extractDatasetId(query, datasetIds);
+	const idString = extractDatasetId(query, datasets);
 	const fileName = String(datasets.get(idString));
 	const dataset = await loadDataset(idString, fileName, kind);
 
