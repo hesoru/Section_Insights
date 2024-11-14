@@ -3,16 +3,20 @@ import { StatusCodes } from "http-status-codes";
 import Log from "@ubccpsc310/folder-test/build/Log";
 import * as http from "http";
 import cors from "cors";
+import {InsightDatasetKind, NotFoundError} from "../controller/IInsightFacade";
+import InsightFacade from "../controller/InsightFacade";
 
 export default class Server {
 	private readonly port: number;
 	private express: Application;
 	private server: http.Server | undefined;
+	private facade: InsightFacade;
 
 	constructor(port: number) {
 		Log.info(`Server::<init>( ${port} )`);
 		this.port = port;
 		this.express = express();
+		this.facade = new InsightFacade();
 
 		this.registerMiddleware();
 		this.registerRoutes();
@@ -25,7 +29,7 @@ export default class Server {
 
 	/**
 	 * Starts the server. Returns a promise that resolves if success. Promises are used
-	 * here because starting the server takes some time and we want to know when it
+	 * here because starting the server takes some time, and we want to know when it
 	 * is done (and if it worked).
 	 *
 	 * @returns {Promise<void>}
@@ -47,6 +51,9 @@ export default class Server {
 						Log.error(`Server::start() - server ERROR: ${err.message}`);
 						reject(err);
 					});
+
+				// process.on('SIGTERM', this.stop);
+				// process.on('SIGINT', this.stop);
 			}
 		});
 	}
@@ -57,6 +64,7 @@ export default class Server {
 	 *
 	 * @returns {Promise<void>}
 	 */
+	// TODO: when do you stop the server? just for tests?
 	public async stop(): Promise<void> {
 		Log.info("Server::stop()");
 		return new Promise((resolve, reject) => {
@@ -89,6 +97,63 @@ export default class Server {
 		this.express.get("/echo/:msg", Server.echo);
 
 		// TODO: your other endpoints should go here
+
+		this.express.put("/dataset/:id/:kind", this.addDatasetToServer);
+
+		this.express.delete("/dataset/:id", this.removeDatasetFromServer);
+
+		this.express.post("/query", this.performQueryOnServer);
+
+		this.express.get("/datasets", this.listDatasetsOnServer);
+	}
+
+	private addDatasetToServer(req: Request, res: Response): void {
+		try {
+			Log.info(`Server::addDatasetToServer(..) - params: ${JSON.stringify(req.params)}`);
+			const newDataset = {
+				id: req.params.id,
+				content: Buffer.from(req.body.content).toString('base64'),
+				kind: req.params.kind as InsightDatasetKind
+			};
+			const response = this.facade.addDataset(newDataset.id, newDataset.content, newDataset.kind);
+			res.status(StatusCodes.OK).json({ result: response });
+		} catch (err) {
+			res.status(StatusCodes.BAD_REQUEST).json({ error: err });
+		}
+	}
+
+	private removeDatasetFromServer(req: Request, res: Response): void {
+		try {
+			Log.info(`Server::removeDatasetFromServer(..) - params: ${JSON.stringify(req.params)}`);
+			const response = this.facade.removeDataset(req.params.id);
+			res.status(StatusCodes.OK).json({ result: response });
+		} catch (err) {
+			if (err instanceof NotFoundError) {
+				res.status(StatusCodes.NOT_FOUND).json({ error: err });
+			} else {
+				res.status(StatusCodes.BAD_REQUEST).json({ error: err });
+			}
+		}
+	}
+
+	private performQueryOnServer(req: Request, res: Response): void {
+		try {
+			Log.info(`Server::performQueryOnServer - params: ${JSON.stringify(req.params)}`);
+			const query = JSON.parse(req.body.query);
+			const response = this.facade.performQuery(query);
+			res.status(StatusCodes.OK).json({ result: response });
+		} catch (err) {
+			res.status(StatusCodes.BAD_REQUEST).json({ error: err });
+		}
+	}
+
+	private listDatasetsOnServer(res: Response): void {
+		try {
+			const response = this.facade.listDatasets();
+			res.status(StatusCodes.OK).json({ result: response });
+		} catch (err) {
+			res.status(StatusCodes.BAD_REQUEST).json({ error: err });
+		}
 	}
 
 	// The next two methods handle the echo service.

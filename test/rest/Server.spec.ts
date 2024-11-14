@@ -2,14 +2,35 @@ import { expect } from "chai";
 import request, { Response } from "supertest";
 import { StatusCodes } from "http-status-codes";
 import Log from "@ubccpsc310/folder-test/build/Log";
+import {App} from "../../src/App";
+import Server from "../../src/rest/Server";
 
 describe("Facade C3", function () {
-	before(function () {
-		// TODO: start server here once and handle errors properly
+	const port = 4321;
+	let server: Server;
+
+	before(async function () {
+		// start server here once and handle errors properly
+		Log.info("App - starting");
+		server = new Server(port);
+		return server
+			.start()
+			.then(() => {
+				Log.info("App::server - started");
+			})
+			.catch((err: Error) => {
+				Log.error(`App::server - ERROR: ${err.message}`);
+			});
 	});
 
-	after(function () {
-		// TODO: stop server here once!
+	after(async function () {
+		// stop server here once!
+		Log.info("App - stopping");
+		return server
+			.stop()
+			.then(() => {
+				Log.info("App::server - closed");
+			})
 	});
 
 	beforeEach(function () {
