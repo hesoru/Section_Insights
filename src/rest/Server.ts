@@ -107,25 +107,26 @@ export default class Server {
 		this.express.get("/datasets", this.listDatasetsOnServer);
 	}
 
-	private addDatasetToServer(req: Request, res: Response): void {
+	private async addDatasetToServer(req: Request, res: Response): Promise<void> {
 		try {
 			Log.info(`Server::addDatasetToServer(..) - params: ${JSON.stringify(req.params)}`);
+			Log.info(`Server::addDatasetToServer(..) - content: ${JSON.stringify(req.body)}`);
 			const newDataset = {
 				id: req.params.id,
 				content: Buffer.from(req.body.content).toString('base64'),
 				kind: req.params.kind as InsightDatasetKind
 			};
-			const response = this.facade.addDataset(newDataset.id, newDataset.content, newDataset.kind);
+			const response = await this.facade.addDataset(newDataset.id, newDataset.content, newDataset.kind);
 			res.status(StatusCodes.OK).json({ result: response });
 		} catch (err) {
 			res.status(StatusCodes.BAD_REQUEST).json({ error: err });
 		}
 	}
 
-	private removeDatasetFromServer(req: Request, res: Response): void {
+	private async removeDatasetFromServer(req: Request, res: Response): Promise<void> {
 		try {
 			Log.info(`Server::removeDatasetFromServer(..) - params: ${JSON.stringify(req.params)}`);
-			const response = this.facade.removeDataset(req.params.id);
+			const response = await this.facade.removeDataset(req.params.id);
 			res.status(StatusCodes.OK).json({ result: response });
 		} catch (err) {
 			if (err instanceof NotFoundError) {
@@ -136,20 +137,20 @@ export default class Server {
 		}
 	}
 
-	private performQueryOnServer(req: Request, res: Response): void {
+	private async performQueryOnServer(req: Request, res: Response): Promise<void> {
 		try {
-			Log.info(`Server::performQueryOnServer - params: ${JSON.stringify(req.params)}`);
-			const query = JSON.parse(req.body.query);
-			const response = this.facade.performQuery(query);
+			Log.info(`Server::performQueryOnServer - query: ${JSON.stringify(req.body)}`);
+			const query = JSON.parse(req.body);
+			const response = await this.facade.performQuery(query);
 			res.status(StatusCodes.OK).json({ result: response });
 		} catch (err) {
 			res.status(StatusCodes.BAD_REQUEST).json({ error: err });
 		}
 	}
 
-	private listDatasetsOnServer(res: Response): void {
+	private async listDatasetsOnServer(res: Response): Promise<void> {
 		try {
-			const response = this.facade.listDatasets();
+			const response = await this.facade.listDatasets();
 			res.status(StatusCodes.OK).json({ result: response });
 		} catch (err) {
 			res.status(StatusCodes.BAD_REQUEST).json({ error: err });

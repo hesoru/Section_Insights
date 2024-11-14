@@ -165,7 +165,7 @@ export default class InsightFacade implements IInsightFacade {
 			if (typeof existingResult !== "undefined") {
 				result = result.concat(existingResult);
 			} else {
-				// load datasets from disk
+				// load dataset info from disk
 				datasetPromises.push(getDatasetInfo(String(id)));
 			}
 		}
