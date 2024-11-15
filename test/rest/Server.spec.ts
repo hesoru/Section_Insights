@@ -2,15 +2,22 @@ import { expect } from "chai";
 import request, { Response } from "supertest";
 import { StatusCodes } from "http-status-codes";
 import Log from "@ubccpsc310/folder-test/build/Log";
-import {App} from "../../src/App";
 import Server from "../../src/rest/Server";
+import fs, {readFile} from "fs-extra";
+import {clearDisk, getContentFromArchives} from "../TestUtil";
 
 describe("Facade C3", function () {
 	const port = 4321;
 	let server: Server;
 	const SERVER_URL = "http://localhost:4321";
+	let ZIP_FILE_SMALL: Buffer;
+	let ZIP_FILE_SMALL_2: Buffer;
+	let ZIP_FILE_SMALL_3: Buffer;
+	let ZIP_FILE_SMALL_4: Buffer;
+	let ZIP_FILE_LARGE: Buffer;
 
 	before(async function () {
+		await clearDisk();
 		// start server here once and handle errors properly
 		Log.info("Starting server for testing");
 		server = new Server(port);
@@ -21,11 +28,20 @@ describe("Facade C3", function () {
 			})
 			.catch((err: Error) => {
 				Log.error(`Server - ERROR: ${err.message}`);
-			});
+			})
+
+		ZIP_FILE_SMALL = await fs.readFile("C:/Users/Helena/project_team154/test/resources/archives/miniData5.zip");
+		ZIP_FILE_SMALL_2 = await fs.readFile("C:/Users/Helena/project_team154/test/resources/archives/miniData6.zip");
+		ZIP_FILE_SMALL_3 = await fs.readFile("C:/Users/Helena/project_team154/test/resources/archives/miniData7.zip");
+		ZIP_FILE_SMALL_4 = await fs.readFile("C:/Users/Helena/project_team154/test/resources/archives/miniData8.zip");
+		ZIP_FILE_LARGE = await fs.readFile("C:/Users/Helena/project_team154/test/resources/archives/pair.zip");
 	});
 
 	after(async function () {
 		// stop server here once!
+		await clearDisk();
+		const timeout = 20000;
+		this.timeout(timeout);
 		Log.info("Stopping server after testing");
 		await server
 			.stop()
@@ -38,143 +54,126 @@ describe("Facade C3", function () {
 		// might want to add some process logging here to keep track of what is going on
 	});
 
-	afterEach(function () {
+	afterEach(async function () {
 		// might want to add some process logging here to keep track of what is going on
+		// await clearDisk();
 	});
 
-	// Sample on how to format PUT requests
-	it("PUT mini courses dataset on server", async function () {
-		const ENDPOINT_URL = "/dataset/miniData7/sections";
-		const ZIP_FILE_DATA = "../test/resources/archives/miniData7.zip";
-
-		try {
-			return request(SERVER_URL)
-				.put(ENDPOINT_URL)
-				.send(ZIP_FILE_DATA)
-				.set("Content-Type", "application/x-zip-compressed")
-				.then(function (res: Response) {
-					// some logging here please!
-					Log.info(`PUT response: ${JSON.stringify(res.body)}`);
-					expect(res.body.result).to.include("miniData7");
-					expect(res.status).to.be.equal(StatusCodes.OK);
-				})
-				.catch(function (err) {
-					// some logging here please!
-					Log.error(`PUT /dataset error: ${err.message}`);
-					expect.fail();
-				});
-		} catch (err: any) {
-			// and some more logging here!
-			Log.error(`PUT /dataset error: ${err.message}`);
-			expect.fail();
-		}
+	it("should PUT mini courses dataset on server", async function () {
+		const res = await request(SERVER_URL)
+			.put("/dataset/miniData5/sections")
+			.send(ZIP_FILE_SMALL)
+			.set("Content-Type", "application/x-zip-compressed") // application/x-zip-compressed
+		// some logging here please!
+		// Log.info(`PUT response: ${JSON.stringify(res.body)}`);
+		expect(res.body.result).to.include("miniData5");
+		expect(res.status).to.be.equal(StatusCodes.OK)
 	});
 
-	it("PUT same mini courses dataset on server twice - reject", async function () {
-		const ENDPOINT_URL = "/dataset/miniData7/sections";
-		const ZIP_FILE_DATA = "../test/resources/archives/miniData7.zip";
+	it("reject PUT request - same mini courses dataset on server twice", async function () {
+		const res1 = await request(SERVER_URL)
+			.put("/dataset/miniData6/sections")
+			.send(ZIP_FILE_SMALL_2)
+			.set("Content-Type", "application/x-zip-compressed")
+		expect(res1.body.result).to.include("miniData5");
+		expect(res1.status).to.be.equal(StatusCodes.OK)
 
-		try {
-			return request(SERVER_URL)
-				.put(ENDPOINT_URL)
-				.send(ZIP_FILE_DATA)
-				.set("Content-Type", "application/x-zip-compressed")
-				.then(function (res: Response) {
-					// some logging here please!
-					expect(res.status).to.be.equal(StatusCodes.BAD_REQUEST);
-				})
-				.catch(function (err) {
-					// some logging here please!
-					Log.error(`PUT /dataset error: ${err.message}`);
-					expect.fail();
-				});
-		} catch (err: any) {
-			// and some more logging here!
-			Log.error(`PUT /dataset error: ${err.message}`);
-			expect.fail();
-		}
+		const res2 = await request(SERVER_URL)
+			.put("/dataset/miniData6/sections")
+			.send(ZIP_FILE_SMALL_2)
+			.set("Content-Type", "application/x-zip-compressed") // application/x-zip-compressed
+		// some logging here please!
+		// Log.info(`PUT response: ${JSON.stringify(res.body)}`);
+		expect(res2.status).to.be.equal(StatusCodes.BAD_REQUEST);
 	});
 
-	it("PUT large courses dataset on server", async function () {
-		const ENDPOINT_URL = "/dataset/ubc/sections";
-		const ZIP_FILE_DATA = "../test/resources/archives/pair.zip";
+	it("should PUT large courses dataset on server", async function () {
+		const timeout = 10000;
+		this.timeout(timeout);
 
-		try {
-			return request(SERVER_URL)
-				.put(ENDPOINT_URL)
-				.send(ZIP_FILE_DATA)
-				.set("Content-Type", "application/x-zip-compressed")
-				.then(function (res: Response) {
-					// some logging here please!
-					Log.info(`PUT response: ${JSON.stringify(res.body)}`);
-					expect(res.body.result).to.include("ubc");
-					expect(res.status).to.be.equal(StatusCodes.OK);
-				})
-				.catch(function (err) {
-					// some logging here please!
-					Log.error(`PUT /dataset error: ${err.message}`);
-					expect.fail();
-				});
-		} catch (err: any) {
-			// and some more logging here!
-			Log.error(`PUT /dataset error: ${err.message}`);
-			expect.fail();
-		}
+		const res = await request(SERVER_URL)
+			.put("/dataset/ubc/sections")
+			.send(ZIP_FILE_LARGE)
+			.set("Content-Type", "application/x-zip-compressed") // application/x-zip-compressed
+		// some logging here please!
+		// Log.info(`PUT response: ${JSON.stringify(res.body)}`);
+		expect(res.body.result).to.include("ubc");
+		expect(res.status).to.be.equal(StatusCodes.OK)
 	});
 
-	it("GET list of datasets", async function () {
-		const ENDPOINT_URL = "/datasets";
+	it("should GET list of datasets", async function () {
+		const timeout = 10000;
+		this.timeout(timeout);
 
-		try {
-			return request(SERVER_URL)
-				.get(ENDPOINT_URL)
-				.then(function (res: Response) {
-					// some logging here please!
-					Log.info(`GET response: ${JSON.stringify(res.body)}`);
-					expect(res.body.result).to.be.an("array");
-					expect(res.status).to.be.equal(StatusCodes.OK);
-				})
-				.catch(function (err) {
-					// some logging here please!
-					Log.error(`GET /datasets error: ${err.message}`);
-					expect.fail();
-				});
-		} catch (err: any) {
-			// and some more logging here!
-			Log.error(`GET /datasets error: ${err.message}`);
-			expect.fail();
-		}
+		// await request(SERVER_URL)
+		// 	.put("/dataset/miniData7/sections")
+		// 	.send(ZIP_FILE_SMALL)
+		// 	.set("Content-Type", "application/x-zip-compressed")
+		// await request(SERVER_URL)
+		// 	.put("/dataset/miniData8/sections")
+		// 	.send(ZIP_FILE_SMALL_2)
+		// 	.set("Content-Type", "application/x-zip-compressed")
+
+		const res = await request(SERVER_URL)
+			.get("/datasets")
+		// some logging here please!
+		Log.info(`GET response: ${JSON.stringify(res.body)}`)
+		expect(res.body.result).to.be.an("array");
+		expect(res.body.result).to.include("miniData5");
+		expect(res.body.result).to.include("miniData6");
+		expect(res.body.result).to.include("ubc");
+		expect(res.status).to.be.equal(StatusCodes.OK);
 	});
 
-	it("POST query", async function () {
-		const ENDPOINT_URL = "/query";
+	it("should POST query", async function () {
+		const res1 = await request(SERVER_URL)
+			.put("/dataset/miniData7/sections")
+			.send(ZIP_FILE_SMALL_3)
+			.set("Content-Type", "application/x-zip-compressed")
+		expect(res1.body.result).to.include("miniData7");
+		expect(res1.status).to.be.equal(StatusCodes.OK)
+
 		const query = {
-			WHERE: { GT: { courses_avg: 97 } },
-			OPTIONS: { COLUMNS: ["courses_dept", "courses_avg"], ORDER: "courses_avg" },
+			WHERE: { GT: { "miniData7_avg": 97 } },
+			OPTIONS: { COLUMNS: ["miniData7_dept", "miniData7_avg"], ORDER: "miniData7_avg" },
 		};
 
-		try {
-			return request(SERVER_URL)
-				.post(ENDPOINT_URL)
-				.send(query)
-				.set("Content-Type", "application/json")
-				.then(function (res: Response) {
-					// some logging here please!
-					Log.info(`POST response: ${JSON.parse(res.body)}`);
-					expect(res.body.result).to.be.an("array");
-					expect(res.status).to.be.equal(StatusCodes.OK);
-				})
-				.catch(function (err) {
-					// some logging here please!
-					Log.error(`POST /query error: ${err.message}`);
-					expect.fail();
-				});
-		} catch (err: any) {
-			// and some more logging here!
-			Log.error(`POST /query error: ${err.message}`);
-			expect.fail();
-		}
+		const res2 = await request(SERVER_URL)
+			.post("/query")
+			.send(query)
+			.set("Content-Type", "application/json")
+		// some logging here please!
+		Log.info(`POST response: ${JSON.parse(res2.body)}`);
+		expect(res2.body.result).to.be.an("array");
+		expect(res2.status).to.be.equal(StatusCodes.OK);
 	});
+
+	it("should DELETE mini courses dataset from server", async function () {
+		await request(SERVER_URL)
+			.put("/dataset/miniData8/sections")
+			.send(ZIP_FILE_SMALL_4)
+			.set("Content-Type", "application/x-zip-compressed")
+
+		const res = await request(SERVER_URL)
+			.delete("/dataset/miniData8")
+		Log.info(`DELETE response: ${JSON.stringify(res.body)}`);
+		expect(res.body.result).to.include("miniData8");
+		expect(res.status).to.be.equal(StatusCodes.OK);
+	});
+
+	it("reject DELETE request - dataset does not exist", async function () {
+		// await request(SERVER_URL)
+		// 	.put("/dataset/miniData7/sections")
+		// 	.send(ZIP_FILE_SMALL)
+		// 	.set("Content-Type", "application/x-zip-compressed")
+
+		const res = await request(SERVER_URL)
+			.delete("/dataset/mcgill")
+		Log.info(`DELETE response: ${JSON.stringify(res.body)}`);
+		expect(res.status).to.be.equal(StatusCodes.NOT_FOUND);
+	});
+
+	// TODO: how to create other DELETE error, practically?
 
 	// The other endpoints work similarly. You should be able to find all instructions in the supertest documentation
 });

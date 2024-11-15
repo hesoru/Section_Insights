@@ -10,13 +10,13 @@ export default class Server {
 	private readonly port: number;
 	private express: Application;
 	private server: http.Server | undefined;
-	private facade: InsightFacade;
+	// private facade: InsightFacade;
 
 	constructor(port: number) {
 		Log.info(`Server::<init>( ${port} )`);
 		this.port = port;
 		this.express = express();
-		this.facade = new InsightFacade();
+		// this.facade = new InsightFacade();
 
 		this.registerMiddleware();
 		this.registerRoutes();
@@ -102,21 +102,24 @@ export default class Server {
 
 		this.express.delete("/dataset/:id", this.removeDatasetFromServer);
 
+		// should check for data on the disk
 		this.express.post("/query", this.performQueryOnServer);
 
+		// should check for data on the disk
 		this.express.get("/datasets", this.listDatasetsOnServer);
 	}
 
 	private async addDatasetToServer(req: Request, res: Response): Promise<void> {
 		try {
 			Log.info(`Server::addDatasetToServer(..) - params: ${JSON.stringify(req.params)}`);
-			Log.info(`Server::addDatasetToServer(..) - content: ${JSON.stringify(req.body)}`);
+			// Log.info(`Server::addDatasetToServer(..) - content: ${JSON.stringify(req.body)}`);
 			const newDataset = {
 				id: req.params.id,
-				content: Buffer.from(req.body.content).toString('base64'),
-				kind: req.params.kind as InsightDatasetKind
+				content: req.body.toString('base64'),
+				kind: InsightDatasetKind.Sections // req.params.kind as InsightDatasetKind
 			};
-			const response = await this.facade.addDataset(newDataset.id, newDataset.content, newDataset.kind);
+			const facade = new InsightFacade();
+			const response = await facade.addDataset(newDataset.id, newDataset.content, newDataset.kind);
 			res.status(StatusCodes.OK).json({ result: response });
 		} catch (err) {
 			res.status(StatusCodes.BAD_REQUEST).json({ error: err });
@@ -126,7 +129,8 @@ export default class Server {
 	private async removeDatasetFromServer(req: Request, res: Response): Promise<void> {
 		try {
 			Log.info(`Server::removeDatasetFromServer(..) - params: ${JSON.stringify(req.params)}`);
-			const response = await this.facade.removeDataset(req.params.id);
+			const facade = new InsightFacade();
+			const response = await facade.removeDataset(req.params.id);
 			res.status(StatusCodes.OK).json({ result: response });
 		} catch (err) {
 			if (err instanceof NotFoundError) {
@@ -141,7 +145,9 @@ export default class Server {
 		try {
 			Log.info(`Server::performQueryOnServer - query: ${JSON.stringify(req.body)}`);
 			const query = JSON.parse(req.body);
-			const response = await this.facade.performQuery(query);
+			// should check for data on the disk
+			const facade = new InsightFacade();
+			const response = await facade.performQuery(query);
 			res.status(StatusCodes.OK).json({ result: response });
 		} catch (err) {
 			res.status(StatusCodes.BAD_REQUEST).json({ error: err });
@@ -150,7 +156,9 @@ export default class Server {
 
 	private async listDatasetsOnServer(res: Response): Promise<void> {
 		try {
-			const response = await this.facade.listDatasets();
+			// should check for data on the disk
+			const facade = new InsightFacade();
+			const response = await facade.listDatasets();
 			res.status(StatusCodes.OK).json({ result: response });
 		} catch (err) {
 			res.status(StatusCodes.BAD_REQUEST).json({ error: err });
