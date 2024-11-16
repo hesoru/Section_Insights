@@ -1,7 +1,8 @@
 import {useState} from "react";
-import {Alert, Button, Card, Container, Row, Col, Form} from "react-bootstrap";
+import {Button, Card, Container, Row, Col, Form, Alert} from "react-bootstrap";
 import 'bootstrap/dist/css/bootstrap.min.css'
 import './App.css';
+import {addDataset, removeDataset} from "./Api";
 
 function App() {
     return (
@@ -18,19 +19,12 @@ function Layout() {
         <Container fluid className="h-100">
             <Row className="h-100">
                 <Col md={5} className="d-flex flex-column">
-                    <UploadInputFile/>
-
+                    <AddDataset/>
+                    <hr style={{marginTop: "70px", marginBottom: "30px", border: "1px solid black"}}/>
+                    <RemoveDataset/>
                 </Col>
                 <Col md={7} className="d-flex flex-column">
                     <InsightsViewer/>
-                </Col>
-            </Row>
-
-            <Row>
-                <Col>
-                    <AddDatasetButton/>
-                    <RemoveDatasetButton/>
-                    <ViewDatasetButton/>
                 </Col>
             </Row>
         </Container>
@@ -38,15 +32,15 @@ function Layout() {
     )
 }
 
-function AddDatasetButton() {
+function AddDatasetButton({onClick}) {
     return (
-        <Button className="App-buttons">Add Dataset</Button>
+        <Button onClick={onClick} className="App-buttons">Add Dataset</Button>
     );
 }
 
-function RemoveDatasetButton() {
+function RemoveDatasetButton({onClick}) {
     return (
-        <Button className="App-buttons">Remove Dataset</Button>
+        <Button onClick={onClick} className="App-buttons">Remove Dataset</Button>
     );
 }
 
@@ -56,7 +50,7 @@ function ViewDatasetButton() {
     );
 }
 
-function IdField() {
+function IdField({description}) {
     const [id, setId] = useState('');
     return (
         <Form.Group controlID="id" className="App-fieldtitle">
@@ -68,7 +62,7 @@ function IdField() {
                 placeholder="Enter an id for your dataset"
             />
             <Form.Text className="text-muted">
-                The ID will be used to uniquely identify your dataset, it may not contain underscores.
+                {description}
             </Form.Text>
         </Form.Group>
     )
@@ -94,11 +88,7 @@ function TypeField() {
 function SelectInputFile({file, setFile}) {
     const handleFileChange = (e) => {
         const selectedFile = e.target.files[0];
-        if (selectedFile && selectedFile.type === 'application/zip') {
-            setFile(selectedFile);
-        } else {
-            alert('Please upload a valid ZIP file');
-        }
+        setFile(selectedFile);
     };
 
     return (
@@ -119,35 +109,91 @@ function SelectInputFile({file, setFile}) {
     );
 }
 
-function UploadInputFile() {
-    const [id, setId] = useState('Enter an ID for the dataset');
+function AddDataset() {
+    const [id, setId] = useState("");
     const [file, setFile] = useState(null);
-    const [error, setError] = useState(null);
+    const [message, setMessage] = useState("");
+    const [alertType, setAlertType] = useState("");
 
-    const handleAddDataset = () => {
+    const handleAddDataset = async () => {
         if (!id || !file) {
-            setError("Please provide a dataset ID and a valid ZIP file")
+            setMessage("Please provide a dataset ID and a valid ZIP file");
+            setAlertType("danger");
             return;
         }
-
         //Handle upload
         console.log("do something with put to upload file");
-        alert("dataset added successfully!");
-        setError(null);
+        try {
+            const kind = "Sections";
+            await addDataset(id, file, kind);
+            setMessage(`Successfully added dataset ${id}!`);
+            setAlertType("success");
+        } catch (error) {
+            setMessage(`Could not add dataset ${id}, please check that you provided a valid dataset id and zip file`);
+            setAlertType("danger");
+        }
     };
     return (
         <Container>
             <h2 className="App-header">Add A Dataset</h2>
-            <IdField id={id} setId={setId}/>
+            {message && (
+                <Alert variant={alertType} onClose={() => setMessage(null)} dismissible>
+                    {message}
+                </Alert>
+            )}
+            <IdField id={id} setId={setId} description="The ID will be used to uniquely identify your dataset, it may not contain underscores."/>
             <TypeField/>
             <SelectInputFile file={file} setFile={setFile}/>
-            <Row className="mt-3">
+            <Row className="App-buttonrow">
                 <Col className="text-center">
                     <AddDatasetButton onClick={handleAddDataset} />
                 </Col>
             </Row>
         </Container>
     )
+}
+
+function RemoveDataset() {
+    const [id, setId] = useState("");
+    const [file, setFile] = useState(null);
+    const [message, setMessage] = useState("");
+    const [alertType, setAlertType] = useState("");
+
+    const handleRemoveDataset = async () => {
+        if (!id) {
+            setMessage("Please provide the id of an existing dataset");
+            setAlertType("danger");
+            return;
+        }
+        //Handle upload
+        console.log("do something with put to upload file");
+        try {
+            const kind = "Sections";
+            await removeDataset(id, file, kind);
+            setMessage(`Successfully removed dataset ${id}`);
+            setAlertType("success");
+        } catch (error) {
+            setMessage(`Could not remove dataset ${id}, please check that you provided the id of an existing dataset`);
+            setAlertType("danger");
+        }
+    };
+    return (
+        <Container>
+            <h2 className="App-header">Remove A Dataset</h2>
+            {message && (
+                <Alert variant={alertType} onClose={() => setMessage(null)} dismissible>
+                    {message}
+                </Alert>
+            )}
+            <IdField id={id} setId={setId} description="Enter the ID of the datset you wish to remove."/>
+            <Row className="App-buttonrow">
+                <Col className="text-center">
+                    <RemoveDatasetButton onClick={handleRemoveDataset} />
+                </Col>
+            </Row>
+        </Container>
+    )
+
 }
 
 function InsightsViewer() {

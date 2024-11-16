@@ -14,6 +14,7 @@
   font-family: Vernada, serif;
   font-size: 35px;
   font-style: normal;
+  font-weight: bold;
   color: black;
   text-align: center;
   margin-top: 20px;
@@ -27,6 +28,7 @@
 .App-title {
   font-family: Verdana, serif;
   font-size: 50px;
+  font-weight: bold;
   color: white;
   text-align: center;
   margin-top: 40px;
@@ -70,4 +72,8 @@
 .App-buttons:hover {
   background-color: #8B1D3D;
   border-color: #8B1D3D;
+}
+
+.App-buttonrow {
+  margin-top: 30px;
 }
