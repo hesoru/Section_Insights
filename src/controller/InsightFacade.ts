@@ -95,7 +95,7 @@ export default class InsightFacade implements IInsightFacade {
 			const fileName = this.datasetIds.get(id);
 			const datasetPath = path.resolve("./data", String(fileName));
 			await fs.remove(datasetPath);
-			// remove from datasetId array\
+			// remove from datasetId array
 			const datasetInfo = this.datasetInfo.get(id);
 			if (datasetInfo) {
 				if (datasetInfo.kind === InsightDatasetKind.Sections) {
