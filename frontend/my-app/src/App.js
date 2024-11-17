@@ -15,16 +15,17 @@ function App() {
 export default App;
 
 function Layout() {
+    const [view, setView] = useState("insights")
     return (
         <Container fluid className="h-100">
             <Row className="h-100">
                 <Col md={5} className="d-flex flex-column">
-                    <AddDataset/>
+                    <AddDataset setView={setView}/>
                     <hr style={{marginTop: "70px", marginBottom: "30px", border: "1px solid black"}}/>
                     <RemoveDataset/>
                 </Col>
                 <Col md={7} className="d-flex flex-column">
-                    <InsightsViewer/>
+                    <InsightsViewer view={view} setView={setView}/>
                 </Col>
             </Row>
         </Container>
@@ -44,9 +45,9 @@ function RemoveDatasetButton({onClick}) {
     );
 }
 
-function ViewDatasetButton() {
+function ViewDatasetButton({onClick}) {
     return (
-        <Button className="App-buttons">View Dataset</Button>
+        <Button onClick={onClick} className="App-buttons">View Dataset</Button>
     );
 }
 
@@ -109,13 +110,13 @@ function SelectInputFile({file, setFile}) {
     );
 }
 
-function AddDataset() {
+function AddDataset({setView}) {
     const [id, setId] = useState("");
     const [file, setFile] = useState(null);
     const [message, setMessage] = useState("");
     const [alertType, setAlertType] = useState("");
 
-    const handleAddDataset = async () => {
+    const handleAddDataset = async (setView) => {
         if (!id || !file) {
             setMessage("Please provide a dataset ID and a valid ZIP file");
             setAlertType("danger");
@@ -128,6 +129,7 @@ function AddDataset() {
             await addDataset(id, file, kind);
             setMessage(`Successfully added dataset ${id}!`);
             setAlertType("success");
+            setView("insights");
         } catch (error) {
             setMessage(`Could not add dataset ${id}, please check that you provided a valid dataset id and zip file`);
             setAlertType("danger");
@@ -193,50 +195,106 @@ function RemoveDataset() {
             </Row>
         </Container>
     )
-
 }
 
-function InsightsViewer() {
+function ViewDataset() {
+    const [id, setId] = useState("");
+    const [file, setFile] = useState(null);
+    const [message, setMessage] = useState("");
+    const [alertType, setAlertType] = useState("");
+
+    const handleRemoveDataset = async () => {
+        if (!id) {
+            setMessage("Please provide the id of an existing dataset");
+            setAlertType("danger");
+            return;
+        }
+        //Handle upload
+        console.log("do something with put to upload file");
+        try {
+            const kind = "Sections";
+            await removeDataset(id, file, kind);
+            setMessage(`Successfully removed dataset ${id}`);
+            setAlertType("success");
+        } catch (error) {
+            setMessage(`Could not remove dataset ${id}, please check that you provided the id of an existing dataset`);
+            setAlertType("danger");
+        }
+    };
+    return (
+        <Container>
+            <h2 className="App-header">Remove A Dataset</h2>
+            {message && (
+                <Alert variant={alertType} onClose={() => setMessage(null)} dismissible>
+                    {message}
+                </Alert>
+            )}
+            <IdField id={id} setId={setId} description="Enter the ID of the datset you wish to remove."/>
+            <Row className="App-buttonrow">
+                <Col className="text-center">
+                    <RemoveDatasetButton onClick={handleRemoveDataset} />
+                </Col>
+            </Row>
+        </Container>
+    )
+}
+
+function InsightsViewer({view, setView}) {
+    //view can be set to datasets or insights
     return (
         <Card style={{backgroundColor: '#CD8679', height: "100%"}}>
             <Card.Title className="App-header">
-                Insights for a Dataset
+                {view === "insights" ? "Insights for Dataset id" : "Available Datasets"}
             </Card.Title>
             <Card.Body>
-                <Row>
-                    <Col>
-                        <Card>
-                            <Card.Body>
-                                <Card.Title>
-                                    Graphic 1
-                                </Card.Title>
-                            </Card.Body>
-                        </Card>
-                    </Col>
-                    <Col>
-                        <Card>
-                            <Card.Body>
-                                <Card.Title>
-                                    Graphic 2
-                                </Card.Title>
-                            </Card.Body>
-                        </Card>
-                    </Col>
-                </Row>
-                <Row className="mt-3">
-                    <Col>
-                        <Card>
-                            <Card.Body>
-                                <Card.Title>
-                                    Graphic 3
-                                </Card.Title>
-                            </Card.Body>
-                        </Card>
-                    </Col>
-                </Row>
+                {view === "insights" ? DisplayInsights() : DisplayDatasets()}
             </Card.Body>
+            <Card.Footer>
+                <ViewDatasetButton onClick={() => setView("datasets")}/>
+            </Card.Footer>
         </Card>
     )
+}
+
+function DisplayInsights() {
+    return (
+        <Card>
+            <Row>
+                <Col>
+                    <Card>
+                        <Card.Body>
+                            <Card.Title>
+                                Graphic 1
+                            </Card.Title>
+                        </Card.Body>
+                    </Card>
+                </Col>
+                <Col>
+                    <Card>
+                        <Card.Body>
+                            <Card.Title>
+                                Graphic 2
+                            </Card.Title>
+                        </Card.Body>
+                    </Card>
+                </Col>
+            </Row>
+            <Row className="mt-3">
+                <Col>
+                    <Card>
+                        <Card.Body>
+                            <Card.Title>
+                                Graphic 3
+                            </Card.Title>
+                        </Card.Body>
+                    </Card>
+                </Col>
+            </Row>
+        </Card>
+    )
+}
+
+function DisplayDatasets() {
 }
 
 const Banner = () => {
