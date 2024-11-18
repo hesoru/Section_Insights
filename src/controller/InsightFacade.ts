@@ -44,7 +44,6 @@ export default class InsightFacade implements IInsightFacade {
 
 	public async addDataset(id: string, content: string, kind: InsightDatasetKind): Promise<string[]> {
 		await this.initializeFields();
-
 		// 1) check kind of dataset
 		if (kind !== InsightDatasetKind.Sections && kind !== InsightDatasetKind.Rooms) {
 			throw new InsightError("Dataset not of valid kind (Sections or Rooms), could not add dataset");

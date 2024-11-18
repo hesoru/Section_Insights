@@ -11,7 +11,7 @@
 }
 
 .App-header {
-  font-family: Vernada, serif;
+  font-family: Georgia, serif;
   font-size: 35px;
   font-style: normal;
   font-weight: bold;
@@ -63,15 +63,16 @@
 }
 
 .App-buttons {
-  background-color: #550C18;
+  background-color: #1E2019;
   color: white;
-  border-color: #550C18;
+  border-color: #1E2019;
   transform: scale(1.5);
+  font-family: Georgia, serif;
 }
 
 .App-buttons:hover {
-  background-color: #8B1D3D;
-  border-color: #8B1D3D;
+  background-color: #2B2D24;
+  border-color: #2B2D24;
 }
 
 .App-buttonrow {

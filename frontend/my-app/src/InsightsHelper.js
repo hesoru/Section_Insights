@@ -1,6 +1,6 @@
-import {performQuery} from "./Api";
+import {performQueryAPI} from "./Api";
 
-async function pieChartQuery(id) {
+export async function getPieChartData(id) {
     const query = {
         "WHERE": {},
         "OPTIONS": {
@@ -9,7 +9,11 @@ async function pieChartQuery(id) {
                 "totalPass",
                 "totalFail",
                 "totalAudit"
-            ]
+            ],
+            "ORDER": {
+                "dir": "DOWN",
+                "keys": ["totalPass"]
+            }
         },
         "TRANSFORMATIONS": {
             "GROUP": [
@@ -34,7 +38,19 @@ async function pieChartQuery(id) {
             ]
         }
     }
-
-    const results = await performQuery(query);
-
+    const res = await performQueryAPI(query);
+    const results = res.body.result
+    const chartData = results.map(result => {
+        return {
+            labels: ["Pass", "Fail", "Audit"],
+            datasets: [{
+                data: [result.totalPass, result.totalFail, result.totalAudit],
+                backgroundColor: ["blue", "green", "red"],
+                hoverOffset: 4
+            }],
+            departmentName: result[0]
+        };
+    });
 }
+
+

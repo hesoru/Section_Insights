@@ -8,13 +8,13 @@ Date:   Tue Oct 1 22:17:27 2024 -0700
 Author: smeans <u8t6d@ugrad.cs.ubc.ca>
 Date:   Mon Sep 30 17:17:28 2024 -0700
 
-    addDataset tests passing and writing to disk, added some more helpers
+    addDatasetAPI tests passing and writing to disk, added some more helpers
 
 [33mcommit bea0b853d2b8e01e8ffa099952aa067f058a59fa[m
 Author: smeans <u8t6d@ugrad.cs.ubc.ca>
 Date:   Sun Sep 29 22:34:03 2024 -0700
 
-    Got addDataset working, datasetIds now usable.
+    Got addDatasetAPI working, datasetIds now usable.
 
 [33mcommit 78c39347a0efe21e37e6ed94fc59305ad705f2ad[m
 Author: smeans <u8t6d@ugrad.cs.ubc.ca>
@@ -26,13 +26,13 @@ Date:   Sun Sep 29 00:01:24 2024 -0700
 Author: smeans <u8t6d@ugrad.cs.ubc.ca>
 Date:   Sat Sep 28 23:17:25 2024 -0700
 
-    Started on unittests for addDataset
+    Started on unittests for addDatasetAPI
 
 [33mcommit f12610fa530ee16aab34a74b965b2ec162a7848f[m
 Author: smeans <u8t6d@ugrad.cs.ubc.ca>
 Date:   Thu Sep 26 12:46:57 2024 -0700
 
-    Implementation of addDataset helper functions.
+    Implementation of addDatasetAPI helper functions.
 
 [33mcommit b997979ee8a4c123ecf06a17daa011b8ad686683[m
 Author: smeans <u8t6d@ugrad.cs.ubc.ca>
@@ -44,7 +44,7 @@ Date:   Wed Sep 25 22:07:31 2024 -0700
 Author: smeans <u8t6d@ugrad.cs.ubc.ca>
 Date:   Wed Sep 25 20:52:44 2024 -0700
 
-    Continued working on addDataset, used Promise.all() instead of await
+    Continued working on addDatasetAPI, used Promise.all() instead of await
 
 [33mcommit 82b648663557098e4a5690585d488fc6fae4c45e[m
 Author: smeans <u8t6d@ugrad.cs.ubc.ca>
@@ -62,7 +62,7 @@ Date:   Mon Sep 23 21:54:17 2024 -0700
 Author: smeans <u8t6d@ugrad.cs.ubc.ca>
 Date:   Mon Sep 23 21:52:45 2024 -0700
 
-    Started addDataset, sorry for all the errors!
+    Started addDatasetAPI, sorry for all the errors!
 
 [33mcommit 8a45e7c8cb1b839c38143807c632607d742b8580[m
 Author: smeans <u8t6d@ugrad.cs.ubc.ca>

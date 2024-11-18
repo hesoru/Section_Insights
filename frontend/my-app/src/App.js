@@ -1,8 +1,9 @@
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import {Button, Card, Container, Row, Col, Form, Alert} from "react-bootstrap";
 import 'bootstrap/dist/css/bootstrap.min.css'
 import './App.css';
-import {addDataset, removeDataset} from "./Api";
+import {addDatasetAPI, removeDatasetAPI} from "./Api";
+import {generatePieCharts, PieChart} from "./Graph";
 
 function App() {
     return (
@@ -15,17 +16,18 @@ function App() {
 export default App;
 
 function Layout() {
-    const [view, setView] = useState("insights")
+    const [view, setView] = useState("datasets")
+    const [id, setId] = useState("")
     return (
         <Container fluid className="h-100">
             <Row className="h-100">
                 <Col md={5} className="d-flex flex-column">
-                    <AddDataset setView={setView}/>
+                    <AddDataset setView={setView} id={id} setId={setId}/>
                     <hr style={{marginTop: "70px", marginBottom: "30px", border: "1px solid black"}}/>
                     <RemoveDataset/>
                 </Col>
                 <Col md={7} className="d-flex flex-column">
-                    <InsightsViewer view={view} setView={setView}/>
+                    <InsightsViewer view={view} setView={setView} id={id}/>
                 </Col>
             </Row>
         </Container>
@@ -51,8 +53,7 @@ function ViewDatasetButton({onClick}) {
     );
 }
 
-function IdField({description}) {
-    const [id, setId] = useState('');
+function IdField({id, setId, description}) {
     return (
         <Form.Group controlID="id" className="App-fieldtitle">
             <Form.Label className="App-fieldtitle">Dataset ID</Form.Label>
@@ -110,14 +111,15 @@ function SelectInputFile({file, setFile}) {
     );
 }
 
-function AddDataset({setView}) {
-    const [id, setId] = useState("");
+function AddDataset({setView, id, setId}) {
     const [file, setFile] = useState(null);
     const [message, setMessage] = useState("");
     const [alertType, setAlertType] = useState("");
 
-    const handleAddDataset = async (setView) => {
+    const handleAddDataset = async () => {
+        console.log(`reached handleAddDataset ${id}, ${file}`)
         if (!id || !file) {
+            console.log("inside if block")
             setMessage("Please provide a dataset ID and a valid ZIP file");
             setAlertType("danger");
             return;
@@ -125,11 +127,15 @@ function AddDataset({setView}) {
         //Handle upload
         console.log("do something with put to upload file");
         try {
-            const kind = "Sections";
-            await addDataset(id, file, kind);
+            console.log("reached inside try block")
+            const kind = "sections";
+            await addDatasetAPI(id, file, kind);
+            console.log("6")
+            setView("insights");
+            console.log("7")
             setMessage(`Successfully added dataset ${id}!`);
             setAlertType("success");
-            setView("insights");
+            console.log("after setting alert success")
         } catch (error) {
             setMessage(`Could not add dataset ${id}, please check that you provided a valid dataset id and zip file`);
             setAlertType("danger");
@@ -157,7 +163,6 @@ function AddDataset({setView}) {
 
 function RemoveDataset() {
     const [id, setId] = useState("");
-    const [file, setFile] = useState(null);
     const [message, setMessage] = useState("");
     const [alertType, setAlertType] = useState("");
 
@@ -171,7 +176,7 @@ function RemoveDataset() {
         console.log("do something with put to upload file");
         try {
             const kind = "Sections";
-            await removeDataset(id, file, kind);
+            await removeDatasetAPI(id, kind);
             setMessage(`Successfully removed dataset ${id}`);
             setAlertType("success");
         } catch (error) {
@@ -213,7 +218,7 @@ function ViewDataset() {
         console.log("do something with put to upload file");
         try {
             const kind = "Sections";
-            await removeDataset(id, file, kind);
+            await removeDatasetAPI(id, file, kind);
             setMessage(`Successfully removed dataset ${id}`);
             setAlertType("success");
         } catch (error) {
@@ -239,15 +244,15 @@ function ViewDataset() {
     )
 }
 
-function InsightsViewer({view, setView}) {
+function InsightsViewer({view, setView, id}) {
     //view can be set to datasets or insights
     return (
-        <Card style={{backgroundColor: '#CD8679', height: "100%"}}>
+        <Card style={{backgroundColor: '#C8D7C1', height: "100%"}}>
             <Card.Title className="App-header">
                 {view === "insights" ? "Insights for Dataset id" : "Available Datasets"}
             </Card.Title>
             <Card.Body>
-                {view === "insights" ? DisplayInsights() : DisplayDatasets()}
+                {view === "insights" ? DisplayInsights({id}) : DisplayDatasets({id})}
             </Card.Body>
             <Card.Footer>
                 <ViewDatasetButton onClick={() => setView("datasets")}/>
@@ -256,7 +261,8 @@ function InsightsViewer({view, setView}) {
     )
 }
 
-function DisplayInsights() {
+function DisplayInsights({id}) {
+    console.log("pie1");
     return (
         <Card>
             <Row>
@@ -265,6 +271,11 @@ function DisplayInsights() {
                         <Card.Body>
                             <Card.Title>
                                 Graphic 1
+                                {id ? (
+                                    <PassFailInsight id={id} />
+                                ) : (
+                                    <p>Pass Fail Insight</p>
+                                )}
                             </Card.Title>
                         </Card.Body>
                     </Card>
@@ -304,7 +315,8 @@ const Banner = () => {
                 <Col>
                     <Card.Body>
                         <h1 className="App-title">Sections Insight</h1>
-                        <p className="App-subtitle">A tool providing visual representations of Sections data in the InsightUBC database</p>
+                        <p className="App-subtitle">Welcome to Sections Insight, a tool providing visual representations
+                            of Sections data in the InsightUBC database. Add a dataset to get started!</p>
                         <hr className="my-lg-3" />
                         <p className="App-bannertxt"> By Helena and Sophia</p>
                     </Card.Body>
@@ -314,8 +326,39 @@ const Banner = () => {
     )
 }
 
-function PassFailInsight() {
-    return null;
+function PassFailInsight({id}) {
+    console.log("pie2")
+    const [pieData, setPieData] = useState(null);
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        if(!id || loading){return}
+        const fetchPieCharts = async () => {
+            console.log("pie3");
+            try{
+            setLoading(true);
+            const data = await generatePieCharts({id, setPieData});
+            setPieData(data);
+            setLoading(false);
+            console.log("pie5")
+        } catch (error) {
+            console.log("Error fetching data", error);
+                return(<p> tried to catch error </p>)
+            }
+        };
+        fetchPieCharts();
+    }, [id, loading]);
+
+    if(loading) {
+        console.log("pie load")
+        return <p>Loading Pass/Fail data...</p>
+    }
+    if(!pieData) {
+        return <p>No data found</p>
+    }
+
+    return <PieChart data={pieData} />;
+    //return <p>testing</p>
 }
 
 function DeptAvgInsight() {
