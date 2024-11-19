@@ -67,7 +67,7 @@ describe("Facade C3", function () {
 		// some logging here please!
 		// Log.info(`PUT response: ${JSON.stringify(res.body)}`);
 		expect(res.body.result).to.include("miniData5");
-		expect(res.status).to.be.equal(StatusCodes.OK)
+		expect(res.status).to.be.equal(StatusCodes.OK);
 	});
 
 	it("reject PUT request - same mini courses dataset on server twice", async function () {
@@ -143,7 +143,7 @@ describe("Facade C3", function () {
 			.send(query)
 			.set("Content-Type", "application/json")
 		// some logging here please!
-		Log.info(`POST response: ${JSON.parse(res2.body)}`);
+		Log.info(`POST response: ${JSON.stringify(res2.body)}`);
 		expect(res2.body.result).to.be.an("array");
 		expect(res2.status).to.be.equal(StatusCodes.OK);
 	});

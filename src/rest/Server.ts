@@ -24,7 +24,7 @@ export default class Server {
 		// NOTE: you can serve static frontend files in from your express server
 		// by uncommenting the line below. This makes files in ./frontend/public
 		// accessible at http://localhost:<port>/
-		this.express.use(express.static("./frontend/public"))
+		// this.express.use(express.static("./frontend/public"))
 	}
 
 	/**
@@ -118,11 +118,12 @@ export default class Server {
 				content: req.body.toString('base64'),
 				kind: InsightDatasetKind.Sections // req.params.kind as InsightDatasetKind
 			};
+			// Log.info(`this: ${this.toString()}`);
 			const facade = new InsightFacade();
 			const response = await facade.addDataset(newDataset.id, newDataset.content, newDataset.kind);
 			res.status(StatusCodes.OK).json({ result: response });
-		} catch (err) {
-			res.status(StatusCodes.BAD_REQUEST).json({ error: err });
+		} catch (err: any) {
+			res.status(StatusCodes.BAD_REQUEST).json({ error: err.toString() });
 		}
 	}
 
@@ -132,11 +133,11 @@ export default class Server {
 			const facade = new InsightFacade();
 			const response = await facade.removeDataset(req.params.id);
 			res.status(StatusCodes.OK).json({ result: response });
-		} catch (err) {
+		} catch (err: any) {
 			if (err instanceof NotFoundError) {
-				res.status(StatusCodes.NOT_FOUND).json({ error: err });
+				res.status(StatusCodes.NOT_FOUND).json({ error: err.toString() });
 			} else {
-				res.status(StatusCodes.BAD_REQUEST).json({ error: err });
+				res.status(StatusCodes.BAD_REQUEST).json({ error: err.toString() });
 			}
 		}
 	}
@@ -147,22 +148,22 @@ export default class Server {
 			const query = JSON.parse(req.body);
 			// should check for data on the disk
 			const facade = new InsightFacade();
-			//wil not check for data on the disk! need to sync it!
 			const response = await facade.performQuery(query);
 			res.status(StatusCodes.OK).json({ result: response });
-		} catch (err) {
-			res.status(StatusCodes.BAD_REQUEST).json({ error: err });
+		} catch (err: any) {
+			res.status(StatusCodes.BAD_REQUEST).json({ error: err.toString() });
 		}
 	}
 
-	private async listDatasetsOnServer(res: Response): Promise<void> {
+	private async listDatasetsOnServer(req: Request, res: Response): Promise<void> {
 		try {
 			// should check for data on the disk
+			Log.info(`Server::listDatasetsOnServer - method: ${req.method}`);
 			const facade = new InsightFacade();
 			const response = await facade.listDatasets();
 			res.status(StatusCodes.OK).json({ result: response });
-		} catch (err) {
-			res.status(StatusCodes.BAD_REQUEST).json({ error: err });
+		} catch (err: any) {
+			res.status(StatusCodes.BAD_REQUEST).json({ error: err.toString() });
 		}
 	}
 
