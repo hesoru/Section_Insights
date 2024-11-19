@@ -118,6 +118,7 @@ export default class InsightFacade implements IInsightFacade {
 	}
 
 	public async performQuery(query: unknown): Promise<InsightResult[]> {
+		await this.initializeFields();
 		// 2) extract dataset id from validated query, ensure dataset exists
 		const id = extractDatasetId(query, this.datasetIds);
 
