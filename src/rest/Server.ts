@@ -3,7 +3,7 @@ import { StatusCodes } from "http-status-codes";
 import Log from "@ubccpsc310/folder-test/build/Log";
 import * as http from "http";
 import cors from "cors";
-import {InsightDatasetKind, NotFoundError} from "../controller/IInsightFacade";
+import { InsightDatasetKind, NotFoundError } from "../controller/IInsightFacade";
 import InsightFacade from "../controller/InsightFacade";
 
 export default class Server {
@@ -115,8 +115,8 @@ export default class Server {
 			// Log.info(`Server::addDatasetToServer(..) - content: ${JSON.stringify(req.body)}`);
 			const newDataset = {
 				id: req.params.id,
-				content: req.body.toString('base64'),
-				kind: InsightDatasetKind.Sections // req.params.kind as InsightDatasetKind
+				content: req.body.toString("base64"),
+				kind: InsightDatasetKind.Sections, // req.params.kind as InsightDatasetKind
 			};
 			// Log.info(`this 2: ${this.toString()}`);
 			// const facade = new InsightFacade();
@@ -156,15 +156,16 @@ export default class Server {
 	}
 
 	private async listDatasetsOnServer(req: Request, res: Response): Promise<void> {
-		try {
-			// should check for data on the disk
-			Log.info(`Server::listDatasetsOnServer - method: ${req.method}`);
-			// const facade = new InsightFacade();
-			const response = await this.facade.listDatasets();
-			res.status(StatusCodes.OK).json({ result: response });
-		} catch (err: any) {
-			res.status(StatusCodes.BAD_REQUEST).json({ error: err.toString() });
-		}
+		// do not need to catch any errors for listDataset() request
+		// try {
+		// should check for data on the disk
+		Log.info(`Server::listDatasetsOnServer - method: ${req.method}`);
+		// const facade = new InsightFacade();
+		const response = await this.facade.listDatasets();
+		res.status(StatusCodes.OK).json({ result: response });
+		// } catch (err: any) {
+		// 	res.status(StatusCodes.BAD_REQUEST).json({ error: err.toString() });
+		// }
 	}
 
 	// The next two methods handle the echo service.
