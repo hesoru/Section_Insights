@@ -40,7 +40,7 @@ export async function getPieChartData(id) {
     }
     const res = await performQueryAPI(query);
     const results = res.body.result
-    const chartData = results.map(result => {
+    return results.map(result => {
         return {
             labels: ["Pass", "Fail", "Audit"],
             datasets: [{

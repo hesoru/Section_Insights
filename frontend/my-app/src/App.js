@@ -263,6 +263,11 @@ function InsightsViewer({view, setView, id}) {
 
 function DisplayInsights({id}) {
     console.log("pie1");
+    const [isTesting, setIsTesting] = useState(false);
+
+    const handleTestButtonClick = () => {
+        setIsTesting(true);
+    }
     return (
         <Card>
             <Row>
@@ -276,6 +281,8 @@ function DisplayInsights({id}) {
                                 ) : (
                                     <p>Pass Fail Insight</p>
                                 )}
+
+                                <Button onClick={() => setIsTesting(true)}>Testing Pie</Button>
                             </Card.Title>
                         </Card.Body>
                     </Card>
@@ -328,36 +335,90 @@ const Banner = () => {
 
 function PassFailInsight({id}) {
     console.log("pie2")
-    const [pieData, setPieData] = useState(null);
+    const [allPieData, setAllPieData] = useState(null);
+    const [selectedDept, setSelectedDept] = useState(null);
+    const [depts, setDepts] = useState(null);
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        if(!id || loading){return}
+        if(!id){return}
         const fetchPieCharts = async () => {
             console.log("pie3");
             try{
-            setLoading(true);
-            const data = await generatePieCharts({id, setPieData});
-            setPieData(data);
-            setLoading(false);
-            console.log("pie5")
-        } catch (error) {
-            console.log("Error fetching data", error);
+                setLoading(true);
+                console.log("reached before generatePieCharts")
+                //const data = await generatePieCharts({id: id});
+                const data = {
+                    data: [{
+                        CHEM: {
+                            labels: ["Pass", "Fail", "Audit"],
+                            datasets: [{
+                                data: [23, 1, 3],
+                                backgroundColor: ["blue", "green", "red"],
+                                hoverOffset: 4
+                            }]
+                        }
+                    },
+                        { BIO: {
+                                labels: ["Pass", "Fail", "Audit"],
+                                datasets: [{
+                                    data: [152, 24, 35],
+                                    backgroundColor: ["blue", "green", "red"],
+                                    hoverOffset: 4
+                                }]
+                            }
+                        }],
+                    departments: ["CHEM", "BIO"]
+                };
+                console.log("reached after generatePieCharts")
+                setDepts(data.departments);
+                setAllPieData(data.data);
+                setLoading(false);
+                console.log("pie5")
+            } catch (error) {
+                console.log("Error fetching data", error);
+                setLoading(false);
                 return(<p> tried to catch error </p>)
             }
         };
         fetchPieCharts();
-    }, [id, loading]);
+    }, [id]);
+
+    useEffect(() => {
+        if (depts && depts.length > 0 && !selectedDept) {
+            setSelectedDept(depts[0]);
+        }
+    }, [depts, selectedDept]);
+
+    const handleDeptChange = (newDept) => {
+        setSelectedDept(newDept);
+    }
 
     if(loading) {
         console.log("pie load")
         return <p>Loading Pass/Fail data...</p>
     }
-    if(!pieData) {
+    if(!allPieData) {
         return <p>No data found</p>
     }
 
-    return <PieChart data={pieData} />;
+    const pieDataForSelectedDept = allPieData.find(
+        (data) => data[selectedDept]
+    );
+
+    if(!pieDataForSelectedDept) {
+        return <p>No data found for {selectedDept}</p>
+    }
+
+    return <div>
+        <PieChart data={pieDataForSelectedDept[selectedDept]} />
+
+        <select onChange={(e) => handleDeptChange(e.target.value)} value={selectedDept}>
+            {depts.map((dept) => (
+                <option key={dept} value={dept}>{dept}</option>
+                ))}
+        </select>
+    </div>;
     //return <p>testing</p>
 }
 

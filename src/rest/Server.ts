@@ -35,7 +35,6 @@ export default class Server {
 	 * @returns {Promise<void>}
 	 */
 	public async start(): Promise<void> {
-		console.log("testing testing will this print")
 		return new Promise((resolve, reject) => {
 			Log.info("Server::start() - start");
 			if (this.server !== undefined) {
@@ -84,7 +83,6 @@ export default class Server {
 	// Registers middleware to parse request before passing them to request handlers
 	private registerMiddleware(): void {
 		// JSON parser must be place before raw parser because of wildcard matching done by raw parser below
-		console.log("will this reach middleware?")
 		this.express.use(express.json());
 		this.express.use(express.raw({ type: "application/*", limit: "10mb" }));
 
@@ -112,22 +110,16 @@ export default class Server {
 	}
 
 	private async addDatasetToServer(req: Request, res: Response): Promise<void> {
-		console.log("add dataset endpoint running")
 		try {
 			Log.info(`Server::addDatasetToServer(..) - params: ${JSON.stringify(req.params)}`);
 			// Log.info(`Server::addDatasetToServer(..) - content: ${JSON.stringify(req.body)}`);
-			console.log(typeof req.body)
 			const newDataset = {
 				id: req.params.id,
 				content: req.body.toString('base64'),
 				kind: InsightDatasetKind.Sections // req.params.kind as InsightDatasetKind
 			};
-			console.log(typeof newDataset.content);
-			//console.log(newDataset.content)
 			const facade = new InsightFacade();
-			console.log("7")
 			const response = await facade.addDataset(newDataset.id, newDataset.content, newDataset.kind);
-			console.log("8")
 			res.status(StatusCodes.OK).json({ result: response });
 		} catch (err) {
 			res.status(StatusCodes.BAD_REQUEST).json({ error: err });
@@ -156,9 +148,7 @@ export default class Server {
 			// should check for data on the disk
 			const facade = new InsightFacade();
 			//wil not check for data on the disk! need to sync it!
-			console.log("query1")
 			const response = await facade.performQuery(query);
-			console.log("query2");
 			res.status(StatusCodes.OK).json({ result: response });
 		} catch (err) {
 			res.status(StatusCodes.BAD_REQUEST).json({ error: err });

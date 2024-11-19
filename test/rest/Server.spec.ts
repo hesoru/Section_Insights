@@ -1,10 +1,10 @@
 import { expect } from "chai";
-import request, { Response } from "supertest";
+import request from "supertest";
 import { StatusCodes } from "http-status-codes";
 import Log from "@ubccpsc310/folder-test/build/Log";
 import Server from "../../src/rest/Server";
-import fs, {readFile} from "fs-extra";
-import {clearDisk, getContentFromArchives} from "../TestUtil";
+import fs from "fs-extra";
+import {clearDisk} from "../TestUtil";
 
 describe("Facade C3", function () {
 	const port = 4321;

@@ -16,31 +16,46 @@ export const PieChart = ({data}) => {
     return <Pie options={options} data={data}/>;
 }
 
-export async function generatePieCharts({id}) {
+export async function generatePieCharts({id, department}) {
     console.log("pie4")
     const pieData = (await getPieChartData(id))[0]
     console.log(typeof pieData)
     console.log(pieData)
-    if(!pieData || pieData.length === 0) {
-        return <div>No data found</div>;
+    if (!pieData || pieData.length === 0) {
+        return {data: {}, departments: []}
     }
+    const departments = [];
+    const allPieData = [];
 
-    const options = {}
-    return (
-        pieData
-        // <div>
-        //     {pieData ? (
-        //         pieData.map((data, index) => (
-        //             <div key={index} className="App-chart">
-        //                 <h3>{data.departmentName}</h3>
-        //                 <Pie data={data} options={options}/>
-        //             </div>
-        //         ))
-        //     ) : (
-        //         <p>Loading chart data...</p>
-        //     )}
-        //
-        // </div>
-    );
+    for (const data of pieData) {
+        departments.push(data.departmentName);
+        allPieData[data.departmentName] = {
+            labels: data.labels,
+            datasets: data.datasets
+        };
+    }
+    //return {data: allPieData, departments: departments};
+    return {
+        data: [{
+            CHEM: {
+                labels: ["Pass", "Fail", "Audit"],
+                datasets: [{
+                    data: [23, 1, 3],
+                    backgroundColor: ["blue", "green", "red"],
+                    hoverOffset: 4
+                }]
+            }
+        },
+            { BIO: {
+                labels: ["Pass", "Fail", "Audit"],
+                datasets: [{
+                    data: [152, 24, 35],
+                    backgroundColor: ["blue", "green", "red"],
+                    hoverOffset: 4
+                }]
+            }
+            }],
+        departments: ["CHEM", "BIO"]
+    }
 }
 
