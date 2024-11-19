@@ -27,3 +27,4 @@ const app = new App();
 (async (): Promise<void> => {
 	await app.initServer(port);
 })();
+// "yarn start" to start server

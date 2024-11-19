@@ -101,7 +101,7 @@ describe("InsightFacade", function () {
 		// TODO: how to test InsightDatasetKind that isn't sections or rooms?
 		// it("should reject adding with invalid InsightDatasetKind", async function () {
 		// 	try {
-		// 		await facade.addDataset("mini", miniAddDataset, InsightDatasetKind.Sections);
+		// 		await facade.addDatasetAPI("mini", miniAddDataset, InsightDatasetKind.Sections);
 		// 		expect.fail("Should have thrown above.");
 		// 	} catch (err) {
 		// 		expect(err).to.be.instanceOf(InsightError);
@@ -542,7 +542,7 @@ describe("InsightFacade", function () {
 				const miniData5 = await getContentFromArchives("miniData5.zip");
 				await facade.addDataset("miniData5", miniData5, InsightDatasetKind.Sections);
 			} catch (error) {
-				expect.fail("addDataset failed" + error);
+				expect.fail("addDatasetAPI failed" + error);
 			}
 
 			const result = await facade.listDatasets();
@@ -565,7 +565,7 @@ describe("InsightFacade", function () {
 				await facade.addDataset("miniData4", miniAddDataset, InsightDatasetKind.Sections);
 				await facade.addDataset("miniData5", miniData5, InsightDatasetKind.Sections);
 			} catch (error) {
-				expect.fail("addDataset failed" + error);
+				expect.fail("addDatasetAPI failed" + error);
 			}
 
 			const result = await facade.listDatasets();
@@ -616,7 +616,7 @@ describe("InsightFacade", function () {
 
 	describe("PerformQuery", function () {
 		/**
-		 * Loads the TestQuery specified in the test name and asserts the behaviour of performQuery.
+		 * Loads the TestQuery specified in the test name and asserts the behaviour of performQueryAPI.
 		 *
 		 * Note: the 'this' parameter is automatically set by Mocha and contains information about the test.
 		 */
@@ -742,7 +742,7 @@ describe("InsightFacade", function () {
 				if (expected === "InsightError") {
 					expect(err).to.be.instanceOf(InsightError);
 				}
-				expect("performQuery passed threw error when expected");
+				expect("performQueryAPI passed threw error when expected");
 				return;
 				//Look into resolving promises
 			}
@@ -771,7 +771,7 @@ describe("InsightFacade", function () {
 			await clearDisk();
 		});
 
-		// Examples demonstrating how to test performQuery using the JSON Test Queries.
+		// Examples demonstrating how to test performQueryAPI using the JSON Test Queries.
 		// The relative path to the query file must be given in square brackets.
 
 		// Sections dataset queries

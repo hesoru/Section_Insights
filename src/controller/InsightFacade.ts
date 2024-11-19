@@ -44,7 +44,6 @@ export default class InsightFacade implements IInsightFacade {
 
 	public async addDataset(id: string, content: string, kind: InsightDatasetKind): Promise<string[]> {
 		await this.initializeFields();
-
 		// 1) check kind of dataset
 		if (kind !== InsightDatasetKind.Sections && kind !== InsightDatasetKind.Rooms) {
 			throw new InsightError("Dataset not of valid kind (Sections or Rooms), could not add dataset");
@@ -95,7 +94,7 @@ export default class InsightFacade implements IInsightFacade {
 			const fileName = this.datasetIds.get(id);
 			const datasetPath = path.resolve("./data", String(fileName));
 			await fs.remove(datasetPath);
-			// remove from datasetId array\
+			// remove from datasetId array
 			const datasetInfo = this.datasetInfo.get(id);
 			if (datasetInfo) {
 				if (datasetInfo.kind === InsightDatasetKind.Sections) {
@@ -119,6 +118,7 @@ export default class InsightFacade implements IInsightFacade {
 	}
 
 	public async performQuery(query: unknown): Promise<InsightResult[]> {
+		await this.initializeFields();
 		// 2) extract dataset id from validated query, ensure dataset exists
 		const id = extractDatasetId(query, this.datasetIds);
 
@@ -165,7 +165,7 @@ export default class InsightFacade implements IInsightFacade {
 			if (typeof existingResult !== "undefined") {
 				result = result.concat(existingResult);
 			} else {
-				// load datasets from disk
+				// load dataset info from disk
 				datasetPromises.push(getDatasetInfo(String(id)));
 			}
 		}

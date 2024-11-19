@@ -84,7 +84,7 @@ export interface IInsightFacade {
 	 * or an InsightError (invalid id or any other source of failure) describing the error.
 	 *
 	 * This will delete both disk and memory caches for the dataset for the id meaning
-	 * that subsequent queries for that id should fail unless a new addDataset happens first.
+	 * that subsequent queries for that id should fail unless a new addDatasetAPI happens first.
 	 */
 	removeDataset(id: string): Promise<string>;
 

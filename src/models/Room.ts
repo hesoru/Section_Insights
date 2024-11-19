@@ -1,5 +1,5 @@
 /**
- * addDataset - content: file is in the format of a base64 string.
+ * addDatasetAPI - content: file is in the format of a base64 string.
  * Room data is contained in .htm files, spread between index.htm
  * and ACC.htm(building htm file)
  * Root of the zip is the index.htm file.

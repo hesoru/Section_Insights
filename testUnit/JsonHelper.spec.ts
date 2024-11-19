@@ -338,7 +338,7 @@
 // 		it("should produce correct InsightDataset info", async function () {
 // 			// try {
 // 			// 	// successfully add dataset - tested elsewhere
-// 			// 	await facade.addDataset("sections", sections, InsightDatasetKind.Sections);
+// 			// 	await facade.addDatasetAPI("sections", sections, InsightDatasetKind.Sections);
 // 			//
 // 			// 	// return dataset info
 // 			// 	const expected: InsightDataset = {
