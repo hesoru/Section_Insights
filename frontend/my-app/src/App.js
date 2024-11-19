@@ -1,8 +1,8 @@
 import {useEffect, useState} from "react";
-import {Button, Card, Container, Row, Col, Form, Alert} from "react-bootstrap";
+import {Button, Card, Container, Row, Col, Form, Alert, Table} from "react-bootstrap";
 import 'bootstrap/dist/css/bootstrap.min.css'
 import './App.css';
-import {addDatasetAPI, removeDatasetAPI} from "./Api";
+import {addDatasetAPI, listDatasetsAPI, removeDatasetAPI} from "./Api";
 import {generatePieCharts, PieChart} from "./Graph";
 
 function App() {
@@ -27,7 +27,7 @@ function Layout() {
                     <RemoveDataset/>
                 </Col>
                 <Col md={7} className="d-flex flex-column">
-                    <InsightsViewer view={view} setView={setView} id={id}/>
+                    <InsightsViewer view={view} setView={setView} id={id} setId={setId}/>
                 </Col>
             </Row>
         </Container>
@@ -202,57 +202,16 @@ function RemoveDataset() {
     )
 }
 
-function ViewDataset() {
-    const [id, setId] = useState("");
-    const [file, setFile] = useState(null);
-    const [message, setMessage] = useState("");
-    const [alertType, setAlertType] = useState("");
-
-    const handleRemoveDataset = async () => {
-        if (!id) {
-            setMessage("Please provide the id of an existing dataset");
-            setAlertType("danger");
-            return;
-        }
-        //Handle upload
-        console.log("do something with put to upload file");
-        try {
-            const kind = "Sections";
-            await removeDatasetAPI(id, file, kind);
-            setMessage(`Successfully removed dataset ${id}`);
-            setAlertType("success");
-        } catch (error) {
-            setMessage(`Could not remove dataset ${id}, please check that you provided the id of an existing dataset`);
-            setAlertType("danger");
-        }
-    };
-    return (
-        <Container>
-            <h2 className="App-header">Remove A Dataset</h2>
-            {message && (
-                <Alert variant={alertType} onClose={() => setMessage(null)} dismissible>
-                    {message}
-                </Alert>
-            )}
-            <IdField id={id} setId={setId} description="Enter the ID of the datset you wish to remove."/>
-            <Row className="App-buttonrow">
-                <Col className="text-center">
-                    <RemoveDatasetButton onClick={handleRemoveDataset} />
-                </Col>
-            </Row>
-        </Container>
-    )
-}
-
-function InsightsViewer({view, setView, id}) {
+function InsightsViewer({view, setView, id, setId}) {
     //view can be set to datasets or insights
+    console.log("reached insightsviewer")
     return (
         <Card style={{backgroundColor: '#C8D7C1', height: "100%"}}>
             <Card.Title className="App-header">
                 {view === "insights" ? "Insights for Dataset id" : "Available Datasets"}
             </Card.Title>
             <Card.Body>
-                {view === "insights" ? DisplayInsights({id}) : DisplayDatasets({id})}
+                {view === "insights" ? DisplayInsights({id}) : DisplayDatasets({setId, setView})}
             </Card.Body>
             <Card.Footer>
                 <ViewDatasetButton onClick={() => setView("datasets")}/>
@@ -262,12 +221,6 @@ function InsightsViewer({view, setView, id}) {
 }
 
 function DisplayInsights({id}) {
-    console.log("pie1");
-    const [isTesting, setIsTesting] = useState(false);
-
-    const handleTestButtonClick = () => {
-        setIsTesting(true);
-    }
     return (
         <Card>
             <Row>
@@ -281,8 +234,6 @@ function DisplayInsights({id}) {
                                 ) : (
                                     <p>Pass Fail Insight</p>
                                 )}
-
-                                <Button onClick={() => setIsTesting(true)}>Testing Pie</Button>
                             </Card.Title>
                         </Card.Body>
                     </Card>
@@ -312,7 +263,57 @@ function DisplayInsights({id}) {
     )
 }
 
-function DisplayDatasets() {
+function DisplayDatasets({setId, setView}) {
+    console.log("reached display datasets")
+    const [allDatasets, setAllDatasets] = useState([]);
+
+    useEffect(() => {
+        const fetchDatasets = async () => {
+            try {
+                let allDatasets = await listDatasetsAPI();
+                allDatasets = allDatasets.result
+                console.log("KEYS" + allDatasets.keys());
+                setAllDatasets(allDatasets);
+            } catch (error) {
+                console.error("failed to load datasets" + error);
+                return <p>Error loading datasets</p>
+            }
+        };
+        fetchDatasets();
+    }, []);
+
+    return <DatasetsTable setId={setId} setView={setView} datasets={allDatasets} />;
+
+}
+
+function DatasetsTable({setId, setView, datasets}) {
+    console.log("reached DatasetsTable")
+    console.log(typeof datasets);
+    console.log(datasets);
+    if(!datasets || !Array.isArray(datasets)) {
+        return <p>No datasets available</p>
+    }
+    const handleRowClick = (id) => {
+        setId(id);
+        setView("insights");
+    }
+    return (
+        <Card>
+            <Card.Header className="App-tablelabel">Select a dataset from the table below to view it's Insights</Card.Header>
+            <Card.Body>
+                <Table striped bordered hover>
+                    <tbody>
+                    {datasets.map((dataset) => (
+                        <tr key={dataset.id} onClick={() => handleRowClick(dataset.id)}>
+                            <td>{dataset.id}</td>
+                        </tr>
+                    ))}
+                    </tbody>
+                </Table>
+            </Card.Body>
+        </Card>
+    );
+
 }
 
 const Banner = () => {
@@ -347,38 +348,37 @@ function PassFailInsight({id}) {
             try{
                 setLoading(true);
                 console.log("reached before generatePieCharts")
-                //const data = await generatePieCharts({id: id});
-                const data = {
-                    data: [{
-                        CHEM: {
-                            labels: ["Pass", "Fail", "Audit"],
-                            datasets: [{
-                                data: [23, 1, 3],
-                                backgroundColor: ["blue", "green", "red"],
-                                hoverOffset: 4
-                            }]
-                        }
-                    },
-                        { BIO: {
-                                labels: ["Pass", "Fail", "Audit"],
-                                datasets: [{
-                                    data: [152, 24, 35],
-                                    backgroundColor: ["blue", "green", "red"],
-                                    hoverOffset: 4
-                                }]
-                            }
-                        }],
-                    departments: ["CHEM", "BIO"]
-                };
+                const data = await generatePieCharts({id: id});
+                // const data = {
+                //     data: [{
+                //         CHEM: {
+                //             labels: ["Pass", "Fail", "Audit"],
+                //             datasets: [{
+                //                 data: [23, 1, 3],
+                //                 backgroundColor: ["blue", "green", "red"],
+                //                 hoverOffset: 4
+                //             }]
+                //         }
+                //     },
+                //         { BIO: {
+                //                 labels: ["Pass", "Fail", "Audit"],
+                //                 datasets: [{
+                //                     data: [152, 24, 35],
+                //                     backgroundColor: ["blue", "green", "red"],
+                //                     hoverOffset: 4
+                //                 }]
+                //             }
+                //         }],
+                //     departments: ["CHEM", "BIO"]
+                // };
                 console.log("reached after generatePieCharts")
                 setDepts(data.departments);
                 setAllPieData(data.data);
                 setLoading(false);
                 console.log("pie5")
             } catch (error) {
-                console.log("Error fetching data", error);
+                console.error("Error fetching data", error);
                 setLoading(false);
-                return(<p> tried to catch error </p>)
             }
         };
         fetchPieCharts();

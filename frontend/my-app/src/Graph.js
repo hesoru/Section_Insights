@@ -1,7 +1,6 @@
 import {Bar, Line, Pie} from "react-chartjs-2"
 import {Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Title, Legend, ArcElement} from "chart.js"
 import {getPieChartData} from "./InsightsHelper";
-import {useState} from "react";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Title, Legend, ArcElement)
 // need labels and datasets.
@@ -17,10 +16,7 @@ export const PieChart = ({data}) => {
 }
 
 export async function generatePieCharts({id, department}) {
-    console.log("pie4")
     const pieData = (await getPieChartData(id))[0]
-    console.log(typeof pieData)
-    console.log(pieData)
     if (!pieData || pieData.length === 0) {
         return {data: {}, departments: []}
     }
@@ -34,28 +30,6 @@ export async function generatePieCharts({id, department}) {
             datasets: data.datasets
         };
     }
-    //return {data: allPieData, departments: departments};
-    return {
-        data: [{
-            CHEM: {
-                labels: ["Pass", "Fail", "Audit"],
-                datasets: [{
-                    data: [23, 1, 3],
-                    backgroundColor: ["blue", "green", "red"],
-                    hoverOffset: 4
-                }]
-            }
-        },
-            { BIO: {
-                labels: ["Pass", "Fail", "Audit"],
-                datasets: [{
-                    data: [152, 24, 35],
-                    backgroundColor: ["blue", "green", "red"],
-                    hoverOffset: 4
-                }]
-            }
-            }],
-        departments: ["CHEM", "BIO"]
-    }
+    return {data: allPieData, departments: departments};
 }
 
