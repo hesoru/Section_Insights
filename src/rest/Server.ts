@@ -121,8 +121,8 @@ export default class Server {
 			const facade = new InsightFacade();
 			const response = await facade.addDataset(newDataset.id, newDataset.content, newDataset.kind);
 			res.status(StatusCodes.OK).json({ result: response });
-		} catch (err) {
-			res.status(StatusCodes.BAD_REQUEST).json({ error: err });
+		} catch (err: any) {
+			res.status(StatusCodes.BAD_REQUEST).json({ error: err.toString() });
 		}
 	}
 
