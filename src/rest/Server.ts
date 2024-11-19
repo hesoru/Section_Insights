@@ -24,7 +24,7 @@ export default class Server {
 		// NOTE: you can serve static frontend files in from your express server
 		// by uncommenting the line below. This makes files in ./frontend/public
 		// accessible at http://localhost:<port>/
-		this.express.use(express.static("./frontend/public"));
+		// this.express.use(express.static("./frontend/public"))
 	}
 
 	/**
@@ -143,7 +143,6 @@ export default class Server {
 
 	private async performQueryOnServer(req: Request, res: Response): Promise<void> {
 		try {
-			// hardcode 3 queries (insights) into performQuery()
 			Log.info(`Server::performQueryOnServer - query: ${JSON.stringify(req.body)}`);
 			const query = JSON.parse(req.body);
 			// should check for data on the disk
@@ -155,9 +154,10 @@ export default class Server {
 		}
 	}
 
-	private async listDatasetsOnServer(res: Response): Promise<void> {
+	private async listDatasetsOnServer(req: Request, res: Response): Promise<void> {
 		try {
 			// should check for data on the disk
+			Log.info(`Server::listDatasetsOnServer - method: ${req.method}`);
 			const facade = new InsightFacade();
 			const response = await facade.listDatasets();
 			res.status(StatusCodes.OK).json({ result: response });
