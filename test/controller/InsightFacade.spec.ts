@@ -754,7 +754,7 @@ describe("InsightFacade", function () {
 		}
 
 		before(async function () {
-			this.timeout(10000);
+			//this.timeout(10000);
 			await clearDisk();
 			facade = new InsightFacade();
 			// Add the datasets to InsightFacade once.
