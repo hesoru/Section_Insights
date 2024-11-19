@@ -44,10 +44,10 @@
 // 			pair = await getContentFromArchives("pair.zip");
 // 			facade = new InsightFacade();
 //
-// 			const result0 = await facade.addDataset("sections0", sections0, InsightDatasetKind.Sections);
+// 			const result0 = await facade.addDatasetAPI("sections0", sections0, InsightDatasetKind.Sections);
 // 			expect(result0).to.deep.equal(["sections0"]);
 // 			expect(result0).to.be.an("array");
-// 			const result = await facade.addDataset("sections", sections, InsightDatasetKind.Sections);
+// 			const result = await facade.addDatasetAPI("sections", sections, InsightDatasetKind.Sections);
 // 			expect(result).to.deep.equal(["sections0", "sections"]);
 // 			expect(result).to.be.an("array");
 // 		} catch (err) {
@@ -61,7 +61,7 @@
 // 		const timeout = 20000;
 // 		this.timeout(timeout);
 //
-// 		const result = await facade.addDataset("pair", pair, InsightDatasetKind.Sections);
+// 		const result = await facade.addDatasetAPI("pair", pair, InsightDatasetKind.Sections);
 // 		expect(result).to.deep.equal(["sections0", "sections", "pair"]);
 // 		expect(result).to.be.an("array");
 //
@@ -81,7 +81,7 @@
 // 	//         await clearDisk();
 // 	//         facade = new InsightFacade();
 // 	//         try {
-// 	//             const result = await facade.addDataset("sections", sections, InsightDatasetKind.Sections);
+// 	//             const result = await facade.addDatasetAPI("sections", sections, InsightDatasetKind.Sections);
 // 	//             //expect(result).to.have.members(["sections"]);
 // 	//             expect(result).to.be.an("array");
 // 	//         } catch (err) {
@@ -145,9 +145,9 @@
 // 	// 	beforeEach(async function () {
 // 	// 		await clearDisk();
 // 	// 		const loadDatasetPromises: Promise<string[]>[] = [
-// 	// 			facade.addDataset("sections", sections, InsightDatasetKind.Sections),
-// 	// 			facade.addDataset("miniData5", miniData5, InsightDatasetKind.Sections),
-// 	// 			facade.addDataset("empty", empty, InsightDatasetKind.Sections)
+// 	// 			facade.addDatasetAPI("sections", sections, InsightDatasetKind.Sections),
+// 	// 			facade.addDatasetAPI("miniData5", miniData5, InsightDatasetKind.Sections),
+// 	// 			facade.addDatasetAPI("empty", empty, InsightDatasetKind.Sections)
 // 	// 		];
 // 	//
 // 	// 		try {
@@ -165,9 +165,9 @@
 // 	// 	it("valid query", function () {
 // 	// 		try {
 // 	// 			const miniData5 = await getContentFromArchives("miniData3.zip");
-// 	// 			await facade.addDataset("miniData5", miniData5, InsightDatasetKind.Sections);
+// 	// 			await facade.addDatasetAPI("miniData5", miniData5, InsightDatasetKind.Sections);
 // 	// 		} catch (error) {
-// 	// 			expect.fail("addDataset failed" + error);
+// 	// 			expect.fail("addDatasetAPI failed" + error);
 // 	// 		}
 // 	// 	});
 // 	// });

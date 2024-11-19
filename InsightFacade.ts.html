@@ -46,7 +46,7 @@ InsightFacade.ts</font>
 		<span class="s0">this</span><span class="s2">.</span><span class="s1">datasetIds </span><span class="s2">= [];</span>
 	<span class="s2">}</span>
 
-	<span class="s0">public </span><span class="s1">async addDataset</span><span class="s2">(</span><span class="s1">id</span><span class="s2">: </span><span class="s1">string</span><span class="s2">, </span><span class="s1">content</span><span class="s2">: </span><span class="s1">string</span><span class="s2">, </span><span class="s1">kind</span><span class="s2">: </span><span class="s1">InsightDatasetKind</span><span class="s2">): </span><span class="s1">Promise</span><span class="s2">&lt;</span><span class="s1">string</span><span class="s2">[]&gt; {</span>
+	<span class="s0">public </span><span class="s1">async addDatasetAPI</span><span class="s2">(</span><span class="s1">id</span><span class="s2">: </span><span class="s1">string</span><span class="s2">, </span><span class="s1">content</span><span class="s2">: </span><span class="s1">string</span><span class="s2">, </span><span class="s1">kind</span><span class="s2">: </span><span class="s1">InsightDatasetKind</span><span class="s2">): </span><span class="s1">Promise</span><span class="s2">&lt;</span><span class="s1">string</span><span class="s2">[]&gt; {</span>
 		<span class="s5">//1) check kind of dataset</span>
 		<span class="s0">if </span><span class="s2">(</span><span class="s1">kind </span><span class="s2">!== </span><span class="s1">InsightDatasetKind</span><span class="s2">.</span><span class="s1">Sections</span><span class="s2">) {</span>
 			<span class="s0">throw new </span><span class="s1">InsightError</span><span class="s2">(</span><span class="s3">&quot;Dataset not of kind InsightDatasetKind.Sections, could not add dataset&quot;</span><span class="s2">);</span>
@@ -56,7 +56,7 @@ InsightFacade.ts</font>
 		<span class="s0">try </span><span class="s2">{</span>
 			<span class="s1">checkValidId</span><span class="s2">(</span><span class="s1">id</span><span class="s2">, </span><span class="s0">this</span><span class="s2">.</span><span class="s1">datasetIds</span><span class="s2">);</span>
 		<span class="s2">} </span><span class="s0">catch </span><span class="s2">(</span><span class="s1">e</span><span class="s2">) {</span>
-			<span class="s0">throw new </span><span class="s1">InsightError</span><span class="s2">(</span><span class="s3">'id passed to addDataset invalid' </span><span class="s2">+ </span><span class="s1">e</span><span class="s2">); </span><span class="s5">//is this catch block necessary?</span>
+			<span class="s0">throw new </span><span class="s1">InsightError</span><span class="s2">(</span><span class="s3">'id passed to addDatasetAPI invalid' </span><span class="s2">+ </span><span class="s1">e</span><span class="s2">); </span><span class="s5">//is this catch block necessary?</span>
 		<span class="s2">}</span>
 		<span class="s5">//3) Check validity of content: must be a valid base24 string. Must contain at least 1 valid section(not be empty)</span>
 		<span class="s5">//4) Check validity of courses folder: must be a JSON formatted file, must contain 1 or more valid sections within the result key</span>
@@ -101,7 +101,7 @@ InsightFacade.ts</font>
 <span class="s5">//  throw new InsightError(&quot;Failed to load files, no courses folder found&quot; + error);</span>
 <span class="s5">// }</span>
 
-	<span class="s0">public </span><span class="s1">async removeDataset</span><span class="s2">(</span><span class="s1">id</span><span class="s2">: </span><span class="s1">string</span><span class="s2">): </span><span class="s1">Promise</span><span class="s2">&lt;</span><span class="s1">string</span><span class="s2">&gt; {</span>
+	<span class="s0">public </span><span class="s1">async removeDatasetAPI</span><span class="s2">(</span><span class="s1">id</span><span class="s2">: </span><span class="s1">string</span><span class="s2">): </span><span class="s1">Promise</span><span class="s2">&lt;</span><span class="s1">string</span><span class="s2">&gt; {</span>
 		<span class="s5">// TODO: Remove this once you implement the methods!</span>
 
 		<span class="s5">// validate id: if &quot;&quot;, contains _, or only whitespace</span>
@@ -132,7 +132,7 @@ InsightFacade.ts</font>
 		<span class="s2">}</span>
 	<span class="s2">}</span>
 
-	<span class="s0">public </span><span class="s1">async performQuery</span><span class="s2">(</span><span class="s1">query</span><span class="s2">: </span><span class="s1">unknown</span><span class="s2">): </span><span class="s1">Promise</span><span class="s2">&lt;</span><span class="s1">InsightResult</span><span class="s2">[]&gt; {</span>
+	<span class="s0">public </span><span class="s1">async performQueryAPI</span><span class="s2">(</span><span class="s1">query</span><span class="s2">: </span><span class="s1">unknown</span><span class="s2">): </span><span class="s1">Promise</span><span class="s2">&lt;</span><span class="s1">InsightResult</span><span class="s2">[]&gt; {</span>
 		<span class="s5">// TODO: Remove this once you implement the methods!</span>
 
 		<span class="s5">// // 1. Validate query (this function should be implemented elsewhere)</span>
@@ -164,7 +164,7 @@ InsightFacade.ts</font>
 		<span class="s5">// // 6. Return the results</span>
 		<span class="s5">// return results;</span>
 		<span class="s5">//</span>
-		<span class="s5">// throw new Error(`InsightFacadeImpl::performQuery() is unimplemented! - query=${query};`);</span>
+		<span class="s5">// throw new Error(`InsightFacadeImpl::performQueryAPI() is unimplemented! - query=${query};`);</span>
 	<span class="s2">}</span>
 
 	<span class="s0">public </span><span class="s1">async listDatasets</span><span class="s2">(): </span><span class="s1">Promise</span><span class="s2">&lt;</span><span class="s1">InsightDataset</span><span class="s2">[]&gt; {</span>

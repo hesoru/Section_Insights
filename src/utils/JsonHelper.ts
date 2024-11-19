@@ -220,7 +220,7 @@ export async function unzipContent(content: string): Promise<JSZip> {
 	try {
 		unzipped = await zip.loadAsync(content, { base64: true });
 	} catch (error) {
-		throw new InsightError("content passed to addDataset is not a valid base64 string" + error);
+		throw new InsightError("content passed to addDatasetAPI is not a valid base64 string" + error);
 	}
 	return unzipped;
 }

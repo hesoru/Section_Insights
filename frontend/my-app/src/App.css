@@ -1,0 +1,80 @@
+.App {
+  text-align: center;
+  height: max-content;
+  margin: 0;
+  padding: 0;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+.App-header {
+  font-family: Georgia, serif;
+  font-size: 35px;
+  font-style: normal;
+  font-weight: bold;
+  color: black;
+  text-align: center;
+  margin-top: 20px;
+  margin-bottom: 5px;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+.App-title {
+  font-family: Verdana, serif;
+  font-size: 50px;
+  font-weight: bold;
+  color: white;
+  text-align: center;
+  margin-top: 40px;
+}
+
+.App-subtitle {
+  font-family: Georgia, serif;
+  font-size: 20px;
+  font-style: italic;
+  color: white;
+  text-align: center;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.App-fieldtitle {
+  font-family: Georgia, serif;
+  font-size: 20px;
+  color: black;
+  text-align: left;
+  margin-top: 20px;
+  margin-bottom: 10px;
+}
+
+.App-bannertxt {
+  font-family: Georgia, serif;
+  font-size: 20px;
+  color: white;
+  text-align: center;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.App-buttons {
+  background-color: #1E2019;
+  color: white;
+  border-color: #1E2019;
+  transform: scale(1.5);
+  font-family: Georgia, serif;
+}
+
+.App-buttons:hover {
+  background-color: #2B2D24;
+  border-color: #2B2D24;
+}
+
+.App-buttonrow {
+  margin-top: 30px;
+}
