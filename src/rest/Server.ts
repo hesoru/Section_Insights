@@ -143,6 +143,7 @@ export default class Server {
 
 	private async performQueryOnServer(req: Request, res: Response): Promise<void> {
 		try {
+			// hardcode 3 queries (insights) into performQuery()
 			Log.info(`Server::performQueryOnServer - query: ${JSON.stringify(req.body)}`);
 			const query = JSON.parse(req.body);
 			// should check for data on the disk
