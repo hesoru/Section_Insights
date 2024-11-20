@@ -12,7 +12,7 @@ export async function addDatasetAPI(id, content, kind) {
         if(!response.ok) {
             //to make sure the status code is 200 for success.
             const error = await response.json(); //extract the error message
-            throw new Error("Error occured adding dataset to backend" + error);
+            throw new Error("Error occurred adding dataset to backend" + error);
         }
 
         //backend fetch was successful

@@ -41,18 +41,25 @@ export async function getPieChartData(id) {
     }
     console.log("this is the query" + JSON.stringify(query, null, 2));
     const res = await performQueryAPI(query);
-    const results = res.body.result
-    return results.map(result => {
+    console.log("looking at getPieChartData" + JSON.stringify(res))
+    const results = res.result
+    console.log("testing results" + Array.isArray(results))
+    const testing = results.map(result => {
+        const firstKey = Object.keys(result)[0]
         return {
-            labels: ["Pass", "Fail", "Audit"],
-            datasets: [{
-                data: [result.totalPass, result.totalFail, result.totalAudit],
-                backgroundColor: ["blue", "green", "red"],
-                hoverOffset: 4
-            }],
-            departmentName: result[0]
+            data: {
+                labels: ["Pass", "Fail", "Audit"],
+                datasets: [{
+                    data: [result.totalPass, result.totalFail, result.totalAudit],
+                    backgroundColor: ["blue", "green", "red"],
+                    hoverOffset: 4
+                }],
+            },
+            departmentName: result[firstKey]
         };
     });
+    console.log("after map testing array" + JSON.stringify(testing));
+    return testing;
 }
 
 
