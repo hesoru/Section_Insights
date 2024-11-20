@@ -271,6 +271,7 @@ function DisplayDatasets({setId, setView}) {
         const fetchDatasets = async () => {
             try {
                 let allDatasets = await listDatasetsAPI();
+                console.log("this is what we are looking for!:" + allDatasets);
                 allDatasets = allDatasets.result
                 console.log("KEYS" + allDatasets.keys());
                 setAllDatasets(allDatasets);
@@ -371,7 +372,7 @@ function PassFailInsight({id}) {
                 //         }],
                 //     departments: ["CHEM", "BIO"]
                 // };
-                console.log("reached after generatePieCharts")
+                console.log("reached after generatePieCharts" + JSON.stringify(data))
                 setDepts(data.departments);
                 setAllPieData(data.data);
                 setLoading(false);
