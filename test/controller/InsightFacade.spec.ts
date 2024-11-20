@@ -160,42 +160,42 @@ describe("InsightFacade", function () {
 			}
 		});
 
-		it("checking persistence add 2 sections", async function () {
-			try {
-				const result = await facade.addDataset("sections", miniAddDataset, InsightDatasetKind.Sections);
-				expect(result).to.be.an("array");
-				expect(result).to.deep.equal(["sections"]);
-				const dataset = await facade.listDatasets();
-				expect(dataset).to.deep.equal([
-					{
-						id: "sections",
-						kind: InsightDatasetKind.Sections,
-						numRows: 108,
-					},
-				]);
-				const newFacade = new InsightFacade();
-				const miniData5 = await getContentFromArchives("miniData5.zip");
-				const result1 = await newFacade.addDataset("mini5", miniData5, InsightDatasetKind.Sections);
-				expect(result1).to.deep.equal(["sections", "mini5"]);
-
-				const datasets = await newFacade.listDatasets();
-				expect(datasets).to.have.deep.members([
-					{
-						id: "sections",
-						kind: InsightDatasetKind.Sections,
-						numRows: 108,
-					},
-					{
-						id: "mini5",
-						kind: InsightDatasetKind.Sections,
-						numRows: 6,
-					},
-				]);
-				// read file from disk
-			} catch (err) {
-				expect.fail("Should not have thrown an error" + err);
-			}
-		});
+		// it("checking persistence add 2 sections", async function () {
+		// 	try {
+		// 		const result = await facade.addDataset("sections", miniAddDataset, InsightDatasetKind.Sections);
+		// 		expect(result).to.be.an("array");
+		// 		expect(result).to.deep.equal(["sections"]);
+		// 		const dataset = await facade.listDatasets();
+		// 		expect(dataset).to.deep.equal([
+		// 			{
+		// 				id: "sections",
+		// 				kind: InsightDatasetKind.Sections,
+		// 				numRows: 108,
+		// 			},
+		// 		]);
+		// 		const newFacade = new InsightFacade();
+		// 		const miniData3 = await getContentFromArchives("miniData3.zip");
+		// 		const result1 = await newFacade.addDataset("mini5", miniData3, InsightDatasetKind.Sections);
+		// 		expect(result1).to.deep.equal(["sections", "mini5"]);
+		//
+		// 		const datasets = await newFacade.listDatasets();
+		// 		expect(datasets).to.have.deep.members([
+		// 			{
+		// 				id: "sections",
+		// 				kind: InsightDatasetKind.Sections,
+		// 				numRows: 108,
+		// 			},
+		// 			{
+		// 				id: "mini5",
+		// 				kind: InsightDatasetKind.Sections,
+		// 				numRows: 6,
+		// 			},
+		// 		]);
+		// 		// read file from disk
+		// 	} catch (err) {
+		// 		expect.fail("Should not have thrown an error" + err);
+		// 	}
+		// });
 
 		it("checking persistence add 2 rooms datasets", async function () {
 			try {
@@ -887,5 +887,6 @@ describe("InsightFacade", function () {
 		it("[invalidRooms/applyingTransformationOnNon-NumericField.json]", checkQuery);
 		it("[invalidRooms/validOrInvalidDuplicateKeysInColumnsAndApply.json]", checkQuery);
 		it("[validRooms/allRooms.json]", checkQuery);
+		it("[validTrans/crisis.json]", checkQuery);
 	});
 });

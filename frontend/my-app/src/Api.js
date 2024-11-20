@@ -1,7 +1,6 @@
 export async function addDatasetAPI(id, content, kind) {
     const url = 'http://localhost:4321'
     try {
-        console.log("1")
         const response = await fetch(`${url}/dataset/${id}/${kind}`, {
             method: 'PUT',
             headers: {
@@ -10,9 +9,7 @@ export async function addDatasetAPI(id, content, kind) {
             //need to convert to base64 encoded
             body: content
         });
-        console.log("2")
         if(!response.ok) {
-            console.log("4")
             //to make sure the status code is 200 for success.
             const error = await response.json(); //extract the error message
             throw new Error("Error occured adding dataset to backend" + error);
@@ -27,14 +24,11 @@ export async function addDatasetAPI(id, content, kind) {
 
 export async function removeDatasetAPI(id) {
     const url = 'http://localhost:4321'
-    console.log("remove1")
     try {
         const response = await fetch(`${url}/dataset/${id}`, {
             method: 'DELETE',
         });
-        console.log("remove2")
         if(!response.ok) {
-            console.log("remove3")
             //to make sure the status code is 200 for success.
             const error = await response.json(); //extract the error message
             throw new Error("Error occurred removing dataset from backend" + error);
@@ -49,26 +43,54 @@ export async function removeDatasetAPI(id) {
 }
 
 export async function performQueryAPI(query) {
-    const url = 'http://localhost:4321'
-    console.log(`${url}/${query}`)
+    console.log("reached perfom api query")
+    console.log(query)
+    const url = 'http://localhost:4321/query'
     try {
-        const response = await fetch(`${url}/${query}`, {
+        const response = await fetch(`${url}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({query})
+            body: JSON.stringify(query)
+        });
+
+        if(!response.ok) {
+            //to make sure the status code is 200 for success.
+            const error = await response.text(); //extract the error message
+            throw new Error(`Error occurred performing query from backend: ${error}`);
+        }
+
+        //backend fetch was successful
+        console.log("query fetch was sucessfully");
+        const jsonResponse = await response.json();
+        console.log(jsonResponse);
+        return jsonResponse;
+    } catch(error) {
+        console.error("Error performing query from backend", error.message);
+        throw new Error("Error performing query from backend" + error);
+    }
+}
+
+export async function listDatasetsAPI() {
+    console.log("reached listDatasetAPI")
+    const url = 'http://localhost:4321'
+    try {
+        const response = await fetch(`${url}/datasets`, {
+            method: 'GET'
         });
 
         if(!response.ok) {
             //to make sure the status code is 200 for success.
             const error = await response.json(); //extract the error message
-            throw new Error("Error occurred performing query from backend" + error);
+            throw new Error("Error occurred listing datasets from backend" + error);
         }
-
+        console.log("sucessful response from listdatasetAPI")
         //backend fetch was successful
-        return await response.json();
+        const jsonData = await response.json()
+        console.log(jsonData)
+        return jsonData;
     } catch(error) {
-        throw new Error("Error performing query from backend" + error);
+        throw new Error("Error listing datasets from backend" + error);
     }
 }
