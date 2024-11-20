@@ -16,10 +16,12 @@ describe("Facade C3", function () {
 	let ZIP_FILE_SMALL_3: Buffer;
 	let ZIP_FILE_SMALL_4: Buffer;
 	let ZIP_FILE_LARGE: Buffer;
+	let ZIP_FILE_ROOMS_0: Buffer;
+	let ZIP_FILE_ROOMS_1: Buffer;
 
 	before(async function () {
-		const timeout = 10000;
-		this.timeout(timeout);
+		// const timeout = 10000;
+		// this.timeout(timeout);
 
 		await clearDisk();
 		// start server here once and handle errors properly
@@ -33,7 +35,7 @@ describe("Facade C3", function () {
 			.catch((err: Error) => {
 				Log.error(`Server - ERROR: ${err.message}`);
 			});
-
+    
 		ZIP_FILE_SMALL_0 = await fs.readFile("./test/resources/archives/miniData5.zip");
 		ZIP_FILE_SMALL_1 = await fs.readFile("./test/resources/archives/miniData5.zip");
 		ZIP_FILE_SMALL_2 = await fs.readFile("./test/resources/archives/miniData5.zip");
@@ -44,8 +46,8 @@ describe("Facade C3", function () {
 
 	after(async function () {
 		// stop server here once!
-		const timeout = 10000;
-		this.timeout(timeout);
+		// const timeout = 10000;
+		// this.timeout(timeout);
 
 		await clearDisk();
 		Log.info("Stopping server after testing");
@@ -75,7 +77,7 @@ describe("Facade C3", function () {
 				expect(res.status).to.deep.equal(StatusCodes.OK);
 			})
 			.catch(function (err: any) {
-				Log.info(err.toString());
+				Log.info(err.message);
 				expect.fail();
 			});
 	});
@@ -92,7 +94,7 @@ describe("Facade C3", function () {
 				expect(res.status).to.deep.equal(StatusCodes.OK);
 			})
 			.catch(function (err: any) {
-				Log.info(err.toString());
+				Log.info(err.message);
 				expect.fail();
 			});
 
@@ -105,7 +107,39 @@ describe("Facade C3", function () {
 				expect(res.status).to.deep.equal(StatusCodes.BAD_REQUEST);
 			})
 			.catch(function (err: any) {
-				Log.info(err.toString());
+				Log.info(err.message);
+				expect.fail();
+			});
+	});
+
+	it("should PUT mini rooms dataset on server (200 response code)", async function () {
+		return request(SERVER_URL)
+			.put("/dataset/miniCampus/rooms")
+			.send(ZIP_FILE_ROOMS_1)
+			.set("Content-Type", "application/x-zip-compressed") // application/x-zip-compressed
+			.then(function (res: Response) {
+				Log.info(`PUT response: ${JSON.stringify(res.body)}`);
+				expect(res.body.result).to.be.an("array");
+				expect(res.body.result).to.include("miniCampus");
+				expect(res.status).to.deep.equal(StatusCodes.OK);
+			})
+			.catch(function (err: any) {
+				Log.info(err.message);
+				expect.fail();
+			});
+	});
+
+	it("PUT request with rooms dataset and sections kind should produce 400 response code", async function () {
+		return request(SERVER_URL)
+			.put("/dataset/miniCampus/sections")
+			.send(ZIP_FILE_ROOMS_1)
+			.set("Content-Type", "application/x-zip-compressed") // application/x-zip-compressed
+			.then(function (res: Response) {
+				Log.info(`PUT response: ${JSON.stringify(res.body)}`);
+				expect(res.status).to.deep.equal(StatusCodes.BAD_REQUEST);
+			})
+			.catch(function (err: any) {
+				Log.info(err.message);
 				expect.fail();
 			});
 	});
@@ -124,14 +158,14 @@ describe("Facade C3", function () {
 				expect(res.status).to.be.equal(StatusCodes.OK);
 			})
 			.catch(function (err: any) {
-				Log.info(err.toString());
+				Log.info(err.message);
 				expect.fail();
 			});
 	});
 
 	it("should GET list of datasets (200 response code)", async function () {
-		const timeout = 10000;
-		this.timeout(timeout);
+		// const timeout = 10000;
+		// this.timeout(timeout);
 
 		await request(SERVER_URL)
 			.put("/dataset/miniData2/sections")
@@ -143,7 +177,7 @@ describe("Facade C3", function () {
 				expect(res.status).to.deep.equal(StatusCodes.OK);
 			})
 			.catch(function (err: any) {
-				Log.info(err.toString());
+				Log.info(err.message);
 				expect.fail();
 			});
 
@@ -160,7 +194,7 @@ describe("Facade C3", function () {
 				expect(res.status).to.be.equal(StatusCodes.OK);
 			})
 			.catch(function (err: any) {
-				Log.info(err.toString());
+				Log.info(err.message);
 				expect.fail();
 			});
 	});
@@ -181,7 +215,7 @@ describe("Facade C3", function () {
 	// 	})
 	// });
 
-	it("should POST query (200 response code)", async function () {
+	it("should POST valid sections query (200 response code)", async function () {
 		await request(SERVER_URL)
 			.put("/dataset/miniData7/sections")
 			.send(ZIP_FILE_SMALL_3)
@@ -192,17 +226,17 @@ describe("Facade C3", function () {
 				expect(res.status).to.deep.equal(StatusCodes.OK);
 			})
 			.catch(function (err: any) {
-				Log.info(err.toString());
+				Log.info(err.message);
 				expect.fail();
 			});
 
-		const query = {
+		const querySections = {
 			WHERE: { GT: { miniData7_avg: 80 } },
 			OPTIONS: { COLUMNS: ["miniData7_dept", "miniData7_avg"], ORDER: "miniData7_avg" },
 		};
 		return request(SERVER_URL)
 			.post("/query")
-			.send(query)
+			.send(querySections)
 			.set("Content-Type", "application/json")
 			.then(function (res2: Response) {
 				Log.info(`POST response: ${JSON.stringify(res2.body)}`);
@@ -220,9 +254,86 @@ describe("Facade C3", function () {
 				expect(res2.status).to.be.equal(StatusCodes.OK);
 			})
 			.catch(function (err: any) {
-				Log.info(err.toString());
+				Log.info(err.message);
 				expect.fail();
 			});
+	});
+
+	it("should POST valid rooms query (200 response code)", async function () {
+		await request(SERVER_URL)
+			.put("/dataset/campus/rooms")
+			.send(ZIP_FILE_ROOMS_0)
+			.set("Content-Type", "application/x-zip-compressed") // application/x-zip-compressed
+			.then(function (res: Response) {
+				Log.info(`PUT response: ${JSON.stringify(res.body)}`);
+				expect(res.body.result).to.include("campus");
+				expect(res.status).to.deep.equal(StatusCodes.OK);
+			})
+			.catch(function (err: any) {
+				Log.info(err.message);
+				expect.fail();
+			});
+
+		const queryRooms = {
+			WHERE: {
+				AND: [
+					{
+						IS: {
+							campus_furniture: "*Tables*",
+						},
+					},
+					{
+						GT: {
+							campus_seats: 300,
+						},
+					},
+				],
+			},
+			OPTIONS: {
+				COLUMNS: ["campus_shortname", "maxSeats"],
+				ORDER: {
+					dir: "DOWN",
+					keys: ["maxSeats"],
+				},
+			},
+			TRANSFORMATIONS: {
+				GROUP: ["campus_shortname"],
+				APPLY: [
+					{
+						maxSeats: {
+							MAX: "campus_seats",
+						},
+					},
+				],
+			},
+		};
+		return request(SERVER_URL)
+			.post("/query")
+			.send(queryRooms)
+			.set("Content-Type", "application/json")
+			.then(function (res2: Response) {
+				Log.info(`POST response: ${JSON.stringify(res2.body)}`);
+				expect(res2.body.result).to.be.an("array");
+				expect(res2.body.result).to.deep.equal([
+					{
+						campus_shortname: "OSBO",
+						maxSeats: 442,
+					},
+					{
+						campus_shortname: "HEBB",
+						maxSeats: 375,
+					},
+					{
+						campus_shortname: "LSC",
+						maxSeats: 350,
+					},
+				]);
+				expect(res2.status).to.be.equal(StatusCodes.OK);
+			});
+		// .catch(function (err: any) {
+		// 	Log.info(err.message);
+		// 	expect.fail();
+		// });
 	});
 
 	it("POST query should produce 400 response code when query has invalid syntax (no COLUMNS)", async function () {
@@ -236,7 +347,7 @@ describe("Facade C3", function () {
 				expect(res.status).to.deep.equal(StatusCodes.OK);
 			})
 			.catch(function (err: any) {
-				Log.info(err.toString());
+				Log.info(err.message);
 				expect.fail();
 			});
 
@@ -253,7 +364,7 @@ describe("Facade C3", function () {
 				expect(res2.status).to.be.equal(StatusCodes.BAD_REQUEST);
 			})
 			.catch(function (err: any) {
-				Log.info(err.toString());
+				Log.info(err.message);
 				expect.fail();
 			});
 	});
@@ -269,7 +380,7 @@ describe("Facade C3", function () {
 				expect(res.status).to.deep.equal(StatusCodes.OK);
 			})
 			.catch(function (err: any) {
-				Log.info(err.toString());
+				Log.info(err.message);
 				expect.fail();
 			});
 
@@ -281,7 +392,7 @@ describe("Facade C3", function () {
 				expect(res.status).to.be.equal(StatusCodes.OK);
 			})
 			.catch(function (err: any) {
-				Log.info(err.toString());
+				Log.info(err.message);
 				expect.fail();
 			});
 	});
@@ -294,7 +405,7 @@ describe("Facade C3", function () {
 				expect(res.status).to.be.equal(StatusCodes.BAD_REQUEST);
 			})
 			.catch(function (err: any) {
-				Log.info(err.toString());
+				Log.info(err.message);
 				expect.fail();
 			});
 	});
@@ -307,7 +418,7 @@ describe("Facade C3", function () {
 				expect(res.status).to.be.equal(StatusCodes.NOT_FOUND);
 			})
 			.catch(function (err: any) {
-				Log.info(err.toString());
+				Log.info(err.message);
 				expect.fail();
 			});
 	});
