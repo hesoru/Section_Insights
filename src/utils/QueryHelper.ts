@@ -128,9 +128,6 @@ export async function getAllData(
  * @param datasetIds
  */
 export function extractDatasetId(query: any, datasetIds: Map<string, number>): string {
-	console.log(typeof query)
-	console.log(query.OPTIONS)
-	console.log(datasetIds)
 	if (query.OPTIONS) {
 		const options = query.OPTIONS;
 		if (options.COLUMNS) {
