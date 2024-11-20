@@ -113,31 +113,33 @@ export default class Server {
 		try {
 			Log.info(`Server::addDatasetToServer(..) - params: ${JSON.stringify(req.params)}`);
 			// Log.info(`Server::addDatasetToServer(..) - content: ${JSON.stringify(req.body)}`);
+			let kind: InsightDatasetKind = InsightDatasetKind.Rooms;
+			if (req.params.kind === "sections") {
+				kind = InsightDatasetKind.Sections;
+			}
 			const newDataset = {
 				id: req.params.id,
 				content: req.body.toString("base64"),
-				kind: InsightDatasetKind.Sections, // req.params.kind as InsightDatasetKind
+				kind: kind,
 			};
 			// Log.info(`this 2: ${this.toString()}`);
-			// const facade = new InsightFacade();
 			const response = await this.facade.addDataset(newDataset.id, newDataset.content, newDataset.kind);
 			res.status(StatusCodes.OK).json({ result: response });
 		} catch (err: any) {
-			res.status(StatusCodes.BAD_REQUEST).json({ error: err.toString() });
+			res.status(StatusCodes.BAD_REQUEST).json({ error: err.message });
 		}
 	}
 
 	private async removeDatasetFromServer(req: Request, res: Response): Promise<void> {
 		try {
 			Log.info(`Server::removeDatasetFromServer(..) - params: ${JSON.stringify(req.params)}`);
-			// const facade = new InsightFacade();
 			const response = await this.facade.removeDataset(req.params.id);
 			res.status(StatusCodes.OK).json({ result: response });
 		} catch (err: any) {
 			if (err instanceof NotFoundError) {
-				res.status(StatusCodes.NOT_FOUND).json({ error: err.toString() });
+				res.status(StatusCodes.NOT_FOUND).json({ error: err.message });
 			} else {
-				res.status(StatusCodes.BAD_REQUEST).json({ error: err.toString() });
+				res.status(StatusCodes.BAD_REQUEST).json({ error: err.message });
 			}
 		}
 	}
@@ -147,11 +149,10 @@ export default class Server {
 			Log.info(`Server::performQueryOnServer - query: ${JSON.stringify(req.body)}`);
 			const query = req.body;
 			// should check for data on the disk
-			// const facade = new InsightFacade();
 			const response = await this.facade.performQuery(query);
 			res.status(StatusCodes.OK).json({ result: response });
 		} catch (err: any) {
-			res.status(StatusCodes.BAD_REQUEST).json({ error: err.toString() });
+			res.status(StatusCodes.BAD_REQUEST).json({ error: err.message });
 		}
 	}
 
@@ -160,7 +161,6 @@ export default class Server {
 		// try {
 		// should check for data on the disk
 		Log.info(`Server::listDatasetsOnServer - method: ${req.method}`);
-		// const facade = new InsightFacade();
 		const response = await this.facade.listDatasets();
 		res.status(StatusCodes.OK).json({ result: response });
 		// } catch (err: any) {
