@@ -10,14 +10,13 @@ export const PieChart = ({data}) => {
     if(!data || data.length === 0) {
         return <div>No data found</div>;
     }
-    const options = {}
+    //const options = {}
 
-    return <Pie options={options} data={data}/>;
+    return <Pie data={data}/>;
 }
 
-export async function generatePieCharts({id, department}) {
+export async function generatePieCharts({id}) {
     const pieData = (await getPieChartData(id))
-    console.log("pieData looking for departments" + JSON.stringify(pieData))
     if (!pieData || pieData.length === 0) {
         return {data: {}, departments: []}
     }
@@ -25,7 +24,6 @@ export async function generatePieCharts({id, department}) {
     const allPieData = [];
 
     for (const data of pieData) {
-        console.log("looking at data in pieData" + JSON.stringify(data))
         const department = data.departmentName
         departments.push(department);
         allPieData.push({[department]: data.data});

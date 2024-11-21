@@ -117,25 +117,18 @@ function AddDataset({setView, id, setId}) {
     const [alertType, setAlertType] = useState("");
 
     const handleAddDataset = async () => {
-        console.log(`reached handleAddDataset ${id}, ${file}`)
         if (!id || !file) {
-            console.log("inside if block")
             setMessage("Please provide a dataset ID and a valid ZIP file");
             setAlertType("danger");
             return;
         }
         //Handle upload
-        console.log("do something with put to upload file");
         try {
-            console.log("reached inside try block")
             const kind = "sections";
             await addDatasetAPI(id, file, kind);
-            console.log("6")
             setView("insights");
-            console.log("7")
             setMessage(`Successfully added dataset ${id}!`);
             setAlertType("success");
-            console.log("after setting alert success")
         } catch (error) {
             setMessage(`Could not add dataset ${id}, please check that you provided a valid dataset id and zip file`);
             setAlertType("danger");
@@ -173,7 +166,6 @@ function RemoveDataset() {
             return;
         }
         //Handle upload
-        console.log("do something with put to upload file");
         try {
             const kind = "Sections";
             await removeDatasetAPI(id, kind);
@@ -203,8 +195,6 @@ function RemoveDataset() {
 }
 
 function InsightsViewer({view, setView, id, setId}) {
-    //view can be set to datasets or insights
-    console.log("reached insightsviewer")
     return (
         <Card style={{backgroundColor: '#C8D7C1', height: "100%"}}>
             <Card.Title className="App-header">
@@ -264,19 +254,15 @@ function DisplayInsights({id}) {
 }
 
 function DisplayDatasets({setId, setView}) {
-    console.log("reached display datasets")
     const [allDatasets, setAllDatasets] = useState([]);
 
     useEffect(() => {
         const fetchDatasets = async () => {
             try {
                 let allDatasets = await listDatasetsAPI();
-                console.log("this is what we are looking for!:" + allDatasets);
                 allDatasets = allDatasets.result
-                console.log("KEYS" + allDatasets.keys());
                 setAllDatasets(allDatasets);
             } catch (error) {
-                console.error("failed to load datasets" + error);
                 return <p>Error loading datasets</p>
             }
         };
@@ -288,9 +274,6 @@ function DisplayDatasets({setId, setView}) {
 }
 
 function DatasetsTable({setId, setView, datasets}) {
-    console.log("reached DatasetsTable")
-    console.log(typeof datasets);
-    console.log(datasets);
     if(!datasets || !Array.isArray(datasets)) {
         return <p>No datasets available</p>
     }
@@ -336,7 +319,6 @@ const Banner = () => {
 }
 
 function PassFailInsight({id}) {
-    console.log("pie2")
     const [allPieData, setAllPieData] = useState(null);
     const [selectedDept, setSelectedDept] = useState(null);
     const [depts, setDepts] = useState(null);
@@ -345,40 +327,13 @@ function PassFailInsight({id}) {
     useEffect(() => {
         if(!id){return}
         const fetchPieCharts = async () => {
-            console.log("pie3");
             try{
                 setLoading(true);
-                console.log("reached before generatePieCharts")
                 const data = await generatePieCharts({id: id});
-                // const data = {
-                //     data: [{
-                //         CHEM: {
-                //             labels: ["Pass", "Fail", "Audit"],
-                //             datasets: [{
-                //                 data: [23, 1, 3],
-                //                 backgroundColor: ["blue", "green", "red"],
-                //                 hoverOffset: 4
-                //             }]
-                //         }
-                //     },
-                //         { BIO: {
-                //                 labels: ["Pass", "Fail", "Audit"],
-                //                 datasets: [{
-                //                     data: [152, 24, 35],
-                //                     backgroundColor: ["blue", "green", "red"],
-                //                     hoverOffset: 4
-                //                 }]
-                //             }
-                //         }],
-                //     departments: ["CHEM", "BIO"]
-                // };
-                console.log("reached after generatePieCharts" + JSON.stringify(data))
                 setDepts(data.departments);
                 setAllPieData(data.data);
                 setLoading(false);
-                console.log("pie5")
             } catch (error) {
-                console.error("Error fetching data", error);
                 setLoading(false);
             }
         };
@@ -396,7 +351,6 @@ function PassFailInsight({id}) {
     }
 
     if(loading) {
-        console.log("pie load")
         return <p>Loading Pass/Fail data...</p>
     }
     if(!allPieData) {
