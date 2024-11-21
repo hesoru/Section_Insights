@@ -53,4 +53,66 @@ export async function getPieChartData(id) {
     });
 }
 
+export async function getBarGraphData(id) {
+	const query_asc = {
+		"WHERE": {},
+		"OPTIONS": {
+		"COLUMNS": [`${id}_dept`, "avgGrade"],
+			"ORDER": {
+			"dir": "UP",
+				"keys": ["avgGrade"]
+		}
+	},
+		"TRANSFORMATIONS": {
+		"GROUP": [`${id}_dept`],
+			"APPLY": [
+			{ "avgGrade": { "AVG": `${id}_avg` } }
+			]
+		}
+	}
+	const query_desc = {
+		"WHERE": {},
+		"OPTIONS": {
+			"COLUMNS": [`${id}_dept`, "avgGrade"],
+			"ORDER": {
+				"dir": "DOWN",
+				"keys": ["avgGrade"]
+			}
+		},
+		"TRANSFORMATIONS": {
+			"GROUP": [`${id}_dept`],
+			"APPLY": [
+				{ "avgGrade": { "AVG": `${id}_avg` } }
+			]
+		}
+	}
+	const res_asc = await performQueryAPI(query_asc);
+	const res_desc = await performQueryAPI(query_desc);
+	const results_asc = res_asc.body.result
+	const results_desc = res_desc.body.result
+	const bottomFive = results_asc.map(result => {
+		return {
+			labels: ["Pass", "Fail", "Audit"],
+			datasets: [{
+				data: [result.totalPass, result.totalFail, result.totalAudit],
+				backgroundColor: ["blue", "green", "red"],
+				hoverOffset: 4
+			}],
+			departmentName: result[0]
+		};
+	});
+	const topFive = results_desc.map(result => {
+		return {
+			labels: ["Pass", "Fail", "Audit"],
+			datasets: [{
+				data: [result.totalPass, result.totalFail, result.totalAudit],
+				backgroundColor: ["blue", "green", "red"],
+				hoverOffset: 4
+			}],
+			departmentName: result[0]
+		};
+	});
+}
+
+
 
