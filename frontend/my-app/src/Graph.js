@@ -15,7 +15,7 @@ export const PieChart = ({data}) => {
     if(!data || data.length === 0) {
         return <div>No data found</div>;
     }
-    const options = {}
+    const options = {responsive: true} // change if trying to make it smaller
 
     return <Pie options={options} data={data}/>;
 }

@@ -38,7 +38,6 @@ function Layout() {
                 </Col>
             </Row>
         </Container>
-
     )
 }
 
@@ -215,7 +214,7 @@ function InsightsViewer({view, setView, id, setId}) {
     return (
         <Card style={{backgroundColor: '#C8D7C1', height: "100%", borderColor: 'transparent'}}>
             <Card.Title className="App-header">
-                {view === "insights" ? "Insights for Dataset ID" : "Available Datasets"}
+                {view === "insights" ? "Dataset Insights" : "Available Datasets"}
             </Card.Title>
             <Card.Body>
                 {view === "insights" ? DisplayInsights({id}) : DisplayDatasets({setId, setView})}
@@ -229,19 +228,20 @@ function InsightsViewer({view, setView, id, setId}) {
 
 function DisplayInsights({ id }) {
 	return (
-		<Card>
-			<Row>
-				{/* Pass/Fail Ratios */}
+		<Card style={{borderColor: 'transparent'}}>
+
+			{/* Department Averages Over Time */}
+			<Row className="mt-3">
 				<Col>
-					<Card>
+					<Card style={{borderColor: 'transparent'}}>
 						<Card.Body>
 							<Card.Title>
-								Student Success in Department Courses
+								Department Averages Over Time
 							</Card.Title>
 							{id ? (
-								<PassFailInsight id={id} />
+								<AvgTrendsInsight id={id} />
 							) : (
-								<p>Pass/Fail Insight</p>
+								<p>Department Averages Over Time Insight</p>
 							)}
 						</Card.Body>
 					</Card>
@@ -251,7 +251,7 @@ function DisplayInsights({ id }) {
 			<Row>
 				{/* Department Averages (Bottom Five and Top Five) */}
 				<Col>
-					<Card>
+					<Card style={{borderColor: 'transparent'}}>
 						<Card.Body>
 							<Card.Title>
 								Bottom Five Department Averages
@@ -275,23 +275,24 @@ function DisplayInsights({ id }) {
 				</Col>
 			</Row>
 
-			{/* Department Averages Over Time */}
-			<Row className="mt-3">
+			<Row>
+				{/* Pass/Fail Ratios */}
 				<Col>
-					<Card>
+					<Card style={{borderColor: 'transparent'}}>
 						<Card.Body>
 							<Card.Title>
-								Department Averages Over Time
+								Student Success in Department Courses
 							</Card.Title>
 							{id ? (
-								<AvgTrendsInsight id={id} />
+								<PassFailInsight id={id} />
 							) : (
-								<p>Department Averages Over Time Insight</p>
+								<p>Pass/Fail Insight</p>
 							)}
 						</Card.Body>
 					</Card>
 				</Col>
 			</Row>
+
 		</Card>
 	);
 }
@@ -317,44 +318,50 @@ function DisplayInsights({ id }) {
 //                 <Col>
 //                     <Card>
 //                         <Card.Body>
-//                             <Card.Title>
+// 							<Card.Title>
+// 								Department Averages Over Time
+// 							</Card.Title>
+// 							{id ? (
+// 								<AvgTrendsInsight id={id} />
+// 							) : (
+// 								<p>Average Trends Insight</p>
+// 							)}
+//                         </Card.Body>
+//                     </Card>
+//                 </Col>
+//             </Row>
+// 			<Row>
+// 				<Col>
+// 					<Card>
+// 						<Card.Body>
+// 							<Card.Title>
 // 								Bottom Five Department Averages
 // 							</Card.Title>
-// 								{id ? (
-// 									<BottomFiveDeptAvgInsight id={id} />
-// 								) : (
-// 									<p>Bottom Five Department Averages Insight</p>
-// 								)}
+// 							{id ? (
+// 								<BottomFiveDeptAvgInsight id={id} />
+// 							) : (
+// 								<p>Bottom Five Department Averages Insight</p>
+// 							)}
+// 						</Card.Body>
+// 					</Card>
+// 				</Col>
+// 				<Col>
+// 					<Card>
+// 						<Card.Body>
 // 							<Card.Title>
 // 								Top Five Department Averages
 // 							</Card.Title>
-// 								{id ? (
-// 									<TopFiveDeptAvgInsight id={id} />
-// 								) : (
-// 									<p>Top Five Department Averages Insight</p>
-// 								)}
-//                         </Card.Body>
-//                     </Card>
-//                 </Col>
-//             </Row>
-//             <Row className="mt-3">
-//                 <Col>
-//                     <Card>
-//                         <Card.Body>
-//                             <Card.Title>
-//                                 Department Averages Over Time
-// 							</Card.Title>
-// 								{id ? (
-// 									<AvgTrendsInsight id={id} />
-// 								) : (
-// 									<p>Average Trends Insight</p>
-// 								)}
-//                         </Card.Body>
-//                     </Card>
-//                 </Col>
-//             </Row>
-//         </Card>
-//     )
+// 							{id ? (
+// 								<TopFiveDeptAvgInsight id={id} />
+// 							) : (
+// 								<p>Top Five Department Averages Insight</p>
+// 							)}
+// 						</Card.Body>
+// 					</Card>
+// 				</Col>
+// 			</Row>
+// 		</Card>
+// 	)
 // }
 
 function DisplayDatasets({setId, setView}) {
@@ -370,7 +377,7 @@ function DisplayDatasets({setId, setView}) {
                 console.log("KEYS" + allDatasets.keys());
                 setAllDatasets(allDatasets);
             } catch (error) {
-                console.error("failed to load datasets" + error);
+                console.error("failed to load datasets" + error.message);
                 return <p>Error loading datasets</p>
             }
         };
