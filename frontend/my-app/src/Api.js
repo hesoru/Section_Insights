@@ -62,7 +62,7 @@ export async function performQueryAPI(query) {
         }
 
         //backend fetch was successful
-        console.log("query fetch was sucessfully");
+        console.log("query fetch was successful");
         const jsonResponse = await response.json();
         console.log(jsonResponse);
         return jsonResponse;

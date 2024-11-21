@@ -3,7 +3,14 @@ import {Button, Card, Container, Row, Col, Form, Alert, Table} from "react-boots
 import 'bootstrap/dist/css/bootstrap.min.css'
 import './App.css';
 import {addDatasetAPI, listDatasetsAPI, removeDatasetAPI} from "./Api";
-import {generatePieCharts, PieChart} from "./Graph";
+import {
+	BarChart,
+	generateBottomFiveBarChart,
+	generateLineGraphs,
+	generatePieCharts, generateTopFiveBarChart,
+	LineGraph,
+	PieChart
+} from "./Graph";
 
 function App() {
     return (
@@ -31,7 +38,6 @@ function Layout() {
                 </Col>
             </Row>
         </Container>
-
     )
 }
 
@@ -61,7 +67,7 @@ function IdField({id, setId, description}) {
                 type="text"
                 value={id}
                 onChange={(e) => setId(e.target.value)}
-                placeholder="Enter an id for your dataset"
+                placeholder="Enter a dataset ID"
             />
             <Form.Text className="text-muted">
                 {description}
@@ -103,7 +109,7 @@ function SelectInputFile({file, setFile}) {
                 onChange={handleFileChange}
             />
                 <Form.Text className="text-muted">
-                    All sections data should be located in a courses directory and uploaded as a zip file.
+                    All sections datasets should be located in a courses directory and uploaded as a zip file.
                 </Form.Text>
             </Form.Group>
             {file && <p>Selected File: {file.name}</p>}
@@ -120,7 +126,7 @@ function AddDataset({setView, id, setId}) {
         console.log(`reached handleAddDataset ${id}, ${file}`)
         if (!id || !file) {
             console.log("inside if block")
-            setMessage("Please provide a dataset ID and a valid ZIP file");
+            setMessage("Please provide a valid dataset ID and a valid dataset zip file.");
             setAlertType("danger");
             return;
         }
@@ -137,7 +143,7 @@ function AddDataset({setView, id, setId}) {
             setAlertType("success");
             console.log("after setting alert success")
         } catch (error) {
-            setMessage(`Could not add dataset ${id}, please check that you provided a valid dataset id and zip file`);
+            setMessage(`Could not add dataset ${id}, please check that you provided a valid dataset ID and valid dataset zip file.`);
             setAlertType("danger");
         }
     };
@@ -149,7 +155,7 @@ function AddDataset({setView, id, setId}) {
                     {message}
                 </Alert>
             )}
-            <IdField id={id} setId={setId} description="The ID will be used to uniquely identify your dataset, it may not contain underscores."/>
+            <IdField id={id} setId={setId} description="This ID will be used to uniquely identify your dataset (it must not contain underscores)."/>
             <TypeField/>
             <SelectInputFile file={file} setFile={setFile}/>
             <Row className="App-buttonrow">
@@ -168,7 +174,7 @@ function RemoveDataset() {
 
     const handleRemoveDataset = async () => {
         if (!id) {
-            setMessage("Please provide the id of an existing dataset");
+            setMessage("Please provide the ID of an existing dataset");
             setAlertType("danger");
             return;
         }
@@ -177,10 +183,10 @@ function RemoveDataset() {
         try {
             const kind = "Sections";
             await removeDatasetAPI(id, kind);
-            setMessage(`Successfully removed dataset ${id}`);
+            setMessage(`Successfully removed dataset ${id}.`);
             setAlertType("success");
         } catch (error) {
-            setMessage(`Could not remove dataset ${id}, please check that you provided the id of an existing dataset`);
+            setMessage(`Could not remove dataset ${id}, please check that you provided the ID of an existing dataset.`);
             setAlertType("danger");
         }
     };
@@ -192,7 +198,7 @@ function RemoveDataset() {
                     {message}
                 </Alert>
             )}
-            <IdField id={id} setId={setId} description="Enter the ID of the datset you wish to remove."/>
+            <IdField id={id} setId={setId} description="Enter the ID of the dataset you wish to remove."/>
             <Row className="App-buttonrow">
                 <Col className="text-center">
                     <RemoveDatasetButton onClick={handleRemoveDataset} />
@@ -206,62 +212,157 @@ function InsightsViewer({view, setView, id, setId}) {
     //view can be set to datasets or insights
     console.log("reached insightsviewer")
     return (
-        <Card style={{backgroundColor: '#C8D7C1', height: "100%"}}>
+        <Card style={{backgroundColor: '#C8D7C1', height: "100%", borderColor: 'transparent'}}>
             <Card.Title className="App-header">
-                {view === "insights" ? "Insights for Dataset id" : "Available Datasets"}
+                {view === "insights" ? "Dataset Insights" : "Available Datasets"}
             </Card.Title>
             <Card.Body>
                 {view === "insights" ? DisplayInsights({id}) : DisplayDatasets({setId, setView})}
             </Card.Body>
-            <Card.Footer>
+            <Card.Footer style={{backgroundColor: '#C8D7C1', borderColor: 'transparent'}}>
                 <ViewDatasetButton onClick={() => setView("datasets")}/>
             </Card.Footer>
         </Card>
     )
 }
 
-function DisplayInsights({id}) {
-    return (
-        <Card>
-            <Row>
-                <Col>
-                    <Card>
-                        <Card.Body>
-                            <Card.Title>
-                                Graphic 1
-                                {id ? (
-                                    <PassFailInsight id={id} />
-                                ) : (
-                                    <p>Pass Fail Insight</p>
-                                )}
-                            </Card.Title>
-                        </Card.Body>
-                    </Card>
-                </Col>
-                <Col>
-                    <Card>
-                        <Card.Body>
-                            <Card.Title>
-                                Graphic 2
-                            </Card.Title>
-                        </Card.Body>
-                    </Card>
-                </Col>
-            </Row>
-            <Row className="mt-3">
-                <Col>
-                    <Card>
-                        <Card.Body>
-                            <Card.Title>
-                                Graphic 3
-                            </Card.Title>
-                        </Card.Body>
-                    </Card>
-                </Col>
-            </Row>
-        </Card>
-    )
+function DisplayInsights({ id }) {
+	return (
+		<Card style={{borderColor: 'transparent'}}>
+
+			{/* Department Averages Over Time */}
+			<Row className="mt-3">
+				<Col>
+					<Card style={{borderColor: 'transparent'}}>
+						<Card.Body>
+							<Card.Title>
+								Department Averages Over Time
+							</Card.Title>
+							{id ? (
+								<AvgTrendsInsight id={id} />
+							) : (
+								<p>Department Averages Over Time Insight</p>
+							)}
+						</Card.Body>
+					</Card>
+				</Col>
+			</Row>
+
+			<Row>
+				{/* Department Averages (Bottom Five and Top Five) */}
+				<Col>
+					<Card style={{borderColor: 'transparent'}}>
+						<Card.Body>
+							<Card.Title>
+								Bottom Five Department Averages
+							</Card.Title>
+							{id ? (
+								<BottomFiveDeptAvgInsight id={id} />
+							) : (
+								<p>Bottom Five Department Averages Insight</p>
+							)}
+
+							<Card.Title className="mt-3">
+								Top Five Department Averages
+							</Card.Title>
+							{id ? (
+								<TopFiveDeptAvgInsight id={id} />
+							) : (
+								<p>Top Five Department Averages Insight</p>
+							)}
+						</Card.Body>
+					</Card>
+				</Col>
+			</Row>
+
+			<Row>
+				{/* Pass/Fail Ratios */}
+				<Col>
+					<Card style={{borderColor: 'transparent'}}>
+						<Card.Body>
+							<Card.Title>
+								Student Success in Department Courses
+							</Card.Title>
+							{id ? (
+								<PassFailInsight id={id} />
+							) : (
+								<p>Pass/Fail Insight</p>
+							)}
+						</Card.Body>
+					</Card>
+				</Col>
+			</Row>
+
+		</Card>
+	);
 }
+
+// function DisplayInsights({id}) {
+//     return (
+//         <Card>
+//             <Row>
+//                 <Col>
+//                     <Card>
+//                         <Card.Body>
+//                             <Card.Title>
+//                                 Department Pass vs. Fail Ratios
+// 							</Card.Title>
+//                                 {id ? (
+//                                     <PassFailInsight id={id} />
+//                                 ) : (
+//                                     <p>Pass Fail Insight</p>
+//                                 )}
+//                         </Card.Body>
+//                     </Card>
+//                 </Col>
+//                 <Col>
+//                     <Card>
+//                         <Card.Body>
+// 							<Card.Title>
+// 								Department Averages Over Time
+// 							</Card.Title>
+// 							{id ? (
+// 								<AvgTrendsInsight id={id} />
+// 							) : (
+// 								<p>Average Trends Insight</p>
+// 							)}
+//                         </Card.Body>
+//                     </Card>
+//                 </Col>
+//             </Row>
+// 			<Row>
+// 				<Col>
+// 					<Card>
+// 						<Card.Body>
+// 							<Card.Title>
+// 								Bottom Five Department Averages
+// 							</Card.Title>
+// 							{id ? (
+// 								<BottomFiveDeptAvgInsight id={id} />
+// 							) : (
+// 								<p>Bottom Five Department Averages Insight</p>
+// 							)}
+// 						</Card.Body>
+// 					</Card>
+// 				</Col>
+// 				<Col>
+// 					<Card>
+// 						<Card.Body>
+// 							<Card.Title>
+// 								Top Five Department Averages
+// 							</Card.Title>
+// 							{id ? (
+// 								<TopFiveDeptAvgInsight id={id} />
+// 							) : (
+// 								<p>Top Five Department Averages Insight</p>
+// 							)}
+// 						</Card.Body>
+// 					</Card>
+// 				</Col>
+// 			</Row>
+// 		</Card>
+// 	)
+// }
 
 function DisplayDatasets({setId, setView}) {
     console.log("reached display datasets")
@@ -276,7 +377,7 @@ function DisplayDatasets({setId, setView}) {
                 console.log("KEYS" + allDatasets.keys());
                 setAllDatasets(allDatasets);
             } catch (error) {
-                console.error("failed to load datasets" + error);
+                console.error("failed to load datasets" + error.message);
                 return <p>Error loading datasets</p>
             }
         };
@@ -300,7 +401,7 @@ function DatasetsTable({setId, setView, datasets}) {
     }
     return (
         <Card>
-            <Card.Header className="App-tablelabel">Select a dataset from the table below to view it's Insights</Card.Header>
+            <Card.Header className="App-tablelabel">Select a dataset from the table below to view its Insights</Card.Header>
             <Card.Body>
                 <Table striped bordered hover>
                     <tbody>
@@ -323,9 +424,9 @@ const Banner = () => {
             <Row>
                 <Col>
                     <Card.Body>
-                        <h1 className="App-title">Sections Insight</h1>
-                        <p className="App-subtitle">Welcome to Sections Insight, a tool providing visual representations
-                            of Sections data in the InsightUBC database. Add a dataset to get started!</p>
+                        <h1 className="App-title">Section Insights</h1>
+                        <p className="App-subtitle">Welcome to Section Insights: a tool providing visual representations
+                            of university course sections datasets. Add a dataset to get started!</p>
                         <hr className="my-lg-3" />
                         <p className="App-bannertxt"> By Helena and Sophia</p>
                     </Card.Body>
@@ -397,7 +498,7 @@ function PassFailInsight({id}) {
 
     if(loading) {
         console.log("pie load")
-        return <p>Loading Pass/Fail data...</p>
+        return <p>Loading pass/fail data...</p>
     }
     if(!allPieData) {
         return <p>No data found</p>
@@ -423,10 +524,141 @@ function PassFailInsight({id}) {
     //return <p>testing</p>
 }
 
-function DeptAvgInsight() {
-    return null;
+function BottomFiveDeptAvgInsight({id}) {
+	console.log("bar")
+	const [allBarData, setAllBarData] = useState(null);
+	const [loading, setLoading] = useState(false);
+
+	useEffect(() => {
+		if(!id){return}
+		const fetchBarCharts = async () => {
+			console.log("bar3");
+			try{
+				setLoading(true);
+				console.log("reached before generateBarCharts")
+				const data = await generateBottomFiveBarChart({id: id});
+				console.log("reached after generateBarCharts" + JSON.stringify(data))
+				setAllBarData(data.data);
+				setLoading(false);
+				console.log("bar5")
+			} catch (error) {
+				console.error("Error fetching data", error);
+				setLoading(false);
+			}
+		};
+		fetchBarCharts();
+	}, [id]);
+
+	if(loading) {
+		console.log("bar load")
+		return <p>Loading bottom five averages...</p>
+	}
+	if(!allBarData) {
+		return <p>No data found</p>
+	}
+
+	return <div>
+		<BarChart data={allBarData} />
+	</div>;
 }
 
-function AvgTrendsInsight() {
-    return null;
+function TopFiveDeptAvgInsight({id}) {
+	console.log("bar")
+	const [allBarData, setAllBarData] = useState(null);
+	const [loading, setLoading] = useState(false);
+
+	useEffect(() => {
+		if(!id){return}
+		const fetchBarCharts = async () => {
+			console.log("bar3");
+			try{
+				setLoading(true);
+				console.log("reached before generateBarCharts")
+				const data = await generateTopFiveBarChart({id: id});
+				console.log("reached after generateBarCharts" + JSON.stringify(data))
+				setAllBarData(data.data);
+				setLoading(false);
+				console.log("bar5")
+			} catch (error) {
+				console.error("Error fetching data", error);
+				setLoading(false);
+			}
+		};
+		fetchBarCharts();
+	}, [id]);
+
+	if(loading) {
+		console.log("bar load")
+		return <p>Loading top five averages...</p>
+	}
+	if(!allBarData) {
+		return <p>No data found</p>
+	}
+
+	return <div>
+		<BarChart data={allBarData} />
+	</div>;
+}
+
+function AvgTrendsInsight({id}) {
+	console.log("line2")
+	const [allLineData, setAllLineData] = useState(null);
+	const [selectedDept, setSelectedDept] = useState(null);
+	const [depts, setDepts] = useState(null);
+	const [loading, setLoading] = useState(false);
+
+	useEffect(() => {
+		if(!id){return}
+		const fetchLineGraphs = async () => {
+			console.log("line3");
+			try{
+				setLoading(true);
+				console.log("reached before generateLineGraphs")
+				const data = await generateLineGraphs({id: id});
+				console.log("reached after generateLineGraphs" + JSON.stringify(data))
+				setDepts(data.departments);
+				setAllLineData(data.data);
+				setLoading(false);
+				console.log("line5")
+			} catch (error) {
+				console.error("Error fetching data", error);
+				setLoading(false);
+			}
+		};
+		fetchLineGraphs();
+	}, [id]);
+
+	useEffect(() => {
+		if (depts && depts.length > 0 && !selectedDept) {
+			setSelectedDept(depts[0]);
+		}
+	}, [depts, selectedDept]);
+
+	const handleDeptChange = (newDept) => {
+		setSelectedDept(newDept);
+	}
+
+	if(loading) {
+		console.log("line load")
+		return <p>Loading department averages over time...</p>
+	}
+	if(!allLineData) {
+		return <p>No data found</p>
+	}
+
+	const lineDataForSelectedDept = allLineData[selectedDept];
+
+	if(!lineDataForSelectedDept) {
+		return <p>No data found for {selectedDept}</p>
+	}
+
+	return <div>
+		<LineGraph data={lineDataForSelectedDept} />
+
+		<select onChange={(e) => handleDeptChange(e.target.value)} value={selectedDept}>
+			{depts.map((dept) => (
+				<option key={dept} value={dept}>{dept}</option>
+			))}
+		</select>
+	</div>;
 }
