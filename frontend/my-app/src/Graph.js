@@ -1,7 +1,6 @@
 import {Bar, Line, Pie} from "react-chartjs-2"
 import {Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Title, Legend, ArcElement} from "chart.js"
 import {getPieChartData} from "./InsightsHelper";
-import {useState} from "react";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Title, Legend, ArcElement)
 // need labels and datasets.
@@ -16,31 +15,20 @@ export const PieChart = ({data}) => {
     return <Pie options={options} data={data}/>;
 }
 
-export async function generatePieCharts({id}) {
-    console.log("pie4")
-    const pieData = (await getPieChartData(id))[0]
-    console.log(typeof pieData)
-    console.log(pieData)
-    if(!pieData || pieData.length === 0) {
-        return <div>No data found</div>;
+export async function generatePieCharts({id, department}) {
+    const pieData = (await getPieChartData(id))
+    console.log("pieData looking for departments" + JSON.stringify(pieData))
+    if (!pieData || pieData.length === 0) {
+        return {data: {}, departments: []}
     }
+    const departments = [];
+    const allPieData = [];
 
-    const options = {}
-    return (
-        pieData
-        // <div>
-        //     {pieData ? (
-        //         pieData.map((data, index) => (
-        //             <div key={index} className="App-chart">
-        //                 <h3>{data.departmentName}</h3>
-        //                 <Pie data={data} options={options}/>
-        //             </div>
-        //         ))
-        //     ) : (
-        //         <p>Loading chart data...</p>
-        //     )}
-        //
-        // </div>
-    );
+    for (const data of pieData) {
+        console.log("looking at data in pieData" + JSON.stringify(data))
+        const department = data.departmentName
+        departments.push(department);
+        allPieData.push({[department]: data.data});
+    }
+    return {data: allPieData, departments: departments};
 }
-

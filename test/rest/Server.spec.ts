@@ -36,14 +36,14 @@ describe("Facade C3", function () {
 				Log.error(`Server - ERROR: ${err.message}`);
 			});
 
-		ZIP_FILE_SMALL_0 = await fs.readFile("C:/Users/Helena/project_team154/test/resources/archives/miniData5.zip");
-		ZIP_FILE_SMALL_1 = await fs.readFile("C:/Users/Helena/project_team154/test/resources/archives/miniData5.zip");
-		ZIP_FILE_SMALL_2 = await fs.readFile("C:/Users/Helena/project_team154/test/resources/archives/miniData5.zip");
-		ZIP_FILE_SMALL_3 = await fs.readFile("C:/Users/Helena/project_team154/test/resources/archives/miniData7.zip");
-		ZIP_FILE_SMALL_4 = await fs.readFile("C:/Users/Helena/project_team154/test/resources/archives/miniData8.zip");
-		ZIP_FILE_LARGE = await fs.readFile("C:/Users/Helena/project_team154/test/resources/archives/pair.zip");
-		ZIP_FILE_ROOMS_0 = await fs.readFile("C:/Users/Helena/project_team154/test/resources/archives/campus.zip");
-		ZIP_FILE_ROOMS_1 = await fs.readFile("C:/Users/Helena/project_team154/test/resources/archives/miniCampus2.zip");
+		ZIP_FILE_SMALL_0 = await fs.readFile("./test/resources/archives/miniData5.zip");
+		ZIP_FILE_SMALL_1 = await fs.readFile("./test/resources/archives/miniData5.zip");
+		ZIP_FILE_SMALL_2 = await fs.readFile("./test/resources/archives/miniData5.zip");
+		ZIP_FILE_SMALL_3 = await fs.readFile("./test/resources/archives/miniData7.zip");
+		ZIP_FILE_SMALL_4 = await fs.readFile("./test/resources/archives/miniData8.zip");
+		ZIP_FILE_LARGE = await fs.readFile("./test/resources/archives/pair.zip");
+		ZIP_FILE_ROOMS_1 = await fs.readFile("./test/resources/archives/miniCampus1.zip");
+		ZIP_FILE_ROOMS_0 = await fs.readFile("./test/resources/archives/campus.zip");
 	});
 
 	after(async function () {
