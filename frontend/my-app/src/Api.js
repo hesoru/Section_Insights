@@ -35,6 +35,7 @@ export async function removeDatasetAPI(id) {
         }
 
         //backend fetch was successful
+        console.log("remove4")
         return await response.json();
     } catch(error) {
         throw new Error("Error removing dataset from backend" + error);
@@ -42,6 +43,8 @@ export async function removeDatasetAPI(id) {
 }
 
 export async function performQueryAPI(query) {
+    console.log("reached perfom api query")
+    console.log(query)
     const url = 'http://localhost:4321/query'
     try {
         const response = await fetch(`${url}`, {
@@ -59,7 +62,9 @@ export async function performQueryAPI(query) {
         }
 
         //backend fetch was successful
+        console.log("query fetch was successful");
         const jsonResponse = await response.json();
+        console.log(jsonResponse);
         return jsonResponse;
     } catch(error) {
         console.error("Error performing query from backend", error.message);
@@ -68,6 +73,7 @@ export async function performQueryAPI(query) {
 }
 
 export async function listDatasetsAPI() {
+    console.log("reached listDatasetAPI")
     const url = 'http://localhost:4321'
     try {
         const response = await fetch(`${url}/datasets`, {
@@ -79,8 +85,10 @@ export async function listDatasetsAPI() {
             const error = await response.json(); //extract the error message
             throw new Error("Error occurred listing datasets from backend" + error);
         }
+        console.log("sucessful response from listdatasetAPI")
         //backend fetch was successful
         const jsonData = await response.json()
+        console.log(jsonData)
         return jsonData;
     } catch(error) {
         throw new Error("Error listing datasets from backend" + error);
