@@ -113,7 +113,7 @@ export async function generatePieCharts({id, department}) {
 
 export async function generateBottomFiveBarChart({id, department}) {
 	const barData = (await getBottomFiveBarChartData(id));
-	console.log("barData looking for lowest departments" + JSON.stringify(barData))
+	//console.log("barData looking for lowest departments" + JSON.stringify(barData))
 	if (!barData || barData.length === 0) {
 		return {data: {}}
 	}
@@ -130,6 +130,7 @@ export async function generateTopFiveBarChart({id, department}) {
 }
 
 export async function generateLineGraphs({id, department}) {
+	const badYear = 1900
 	const lineData = await getLineGraphData(id);
 	console.log("lineData looking for departments" + JSON.stringify(lineData))
 	if (!lineData || lineData.length === 0) {

@@ -1,7 +1,6 @@
 import {performQueryAPI} from "./Api";
 
 export async function getPieChartData(id) {
-    console.log("this is the id" + id)
     const query = {
         "WHERE": {},
         "OPTIONS": {
@@ -41,9 +40,7 @@ export async function getPieChartData(id) {
     }
     console.log("this is the query" + JSON.stringify(query, null, 2));
     const res = await performQueryAPI(query);
-    console.log("looking at getPieChartData" + JSON.stringify(res))
     const results = res.result
-    console.log("testing results" + Array.isArray(results))
     const testing = results.map(result => {
         // const firstKey = Object.keys(result)[0]
         return {
@@ -58,12 +55,12 @@ export async function getPieChartData(id) {
             departmentName: result[`${id}_dept`]
         };
     });
-    console.log("after map testing array" + JSON.stringify(testing));
+    //console.log("after map testing array" + JSON.stringify(testing));
     return testing;
 }
 
 export async function getBottomFiveBarChartData(id) {
-	console.log("this is the id" + id);
+	//console.log("this is the id" + id);
 	const query_asc = {
 		"WHERE": {},
 		"OPTIONS": {
@@ -80,11 +77,11 @@ export async function getBottomFiveBarChartData(id) {
 			]
 		}
 	}
-	console.log("this is the query_asc" + JSON.stringify(query_asc, null, 2));
+	//console.log("this is the query_asc" + JSON.stringify(query_asc, null, 2));
 	const res_asc = await performQueryAPI(query_asc);
 	const results_asc = res_asc.result;
 	const results_bottom_five = results_asc.slice(0, 5);
-	console.log("looking at bottom 5" + JSON.stringify(results_bottom_five));
+	//console.log("looking at bottom 5" + JSON.stringify(results_bottom_five));
 	return {
 		data: {
 			labels: results_bottom_five.map(result => result[`${id}_dept`]),
@@ -100,7 +97,7 @@ export async function getBottomFiveBarChartData(id) {
 }
 
 export async function getTopFiveBarChartData(id) {
-	console.log("this is the id" + id);
+	//console.log("this is the id" + id);
 	const query_desc = {
 		"WHERE": {},
 		"OPTIONS": {
@@ -117,11 +114,11 @@ export async function getTopFiveBarChartData(id) {
 			]
 		}
 	}
-	console.log("this is the query_desc" + JSON.stringify(query_desc, null, 2));
+	//console.log("this is the query_desc" + JSON.stringify(query_desc, null, 2));
 	const res_desc = await performQueryAPI(query_desc);
 	const results_desc = res_desc.result;
 	const results_top_five = results_desc.slice(0, 5);
-	console.log("looking at top 5" + JSON.stringify(results_top_five));
+	//console.log("looking at top 5" + JSON.stringify(results_top_five));
 	return {
 		data: {
 			labels: results_top_five.map(result => result[`${id}_dept`]),
@@ -137,9 +134,13 @@ export async function getTopFiveBarChartData(id) {
 }
 
 export async function getLineGraphData(id) {
-	console.log("this is the id" + id);
+	//console.log("this is the id" + id);
 	const query = {
-		"WHERE": {},
+		"WHERE": {
+			"GT": {
+				[`${id}_year`]: 1900
+			}
+		},
 		"OPTIONS": {
 			"COLUMNS": [`${id}_dept`, `${id}_year`, "avgGrade"],
 			"ORDER": {
@@ -154,10 +155,8 @@ export async function getLineGraphData(id) {
 			]
 		}
 	}
-	console.log("this is the query" + JSON.stringify(query, null, 2));
 	const res = await performQueryAPI(query);
 	const results = res.result;
-	console.log("looking at avgByYear" + JSON.stringify(results));
 	const avgByYear = results.map(result => {
 		return {
 			data: {
@@ -174,6 +173,5 @@ export async function getLineGraphData(id) {
 			departmentName: result[`${id}_dept`]
 		};
 	});
-	console.log("after map testing array" + JSON.stringify(avgByYear));
 	return avgByYear;
 }

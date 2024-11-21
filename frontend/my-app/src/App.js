@@ -31,7 +31,7 @@ function Layout() {
                 <Col md={5} className="d-flex flex-column">
                     <AddDataset setView={setView} id={id} setId={setId}/>
                     <hr style={{marginTop: "70px", marginBottom: "30px", border: "1px solid black"}}/>
-                    <RemoveDataset/>
+                    <RemoveDataset setView={setView}/>
                 </Col>
                 <Col md={7} className="d-flex flex-column">
                     <InsightsViewer view={view} setView={setView} id={id} setId={setId}/>
@@ -55,7 +55,7 @@ function RemoveDatasetButton({onClick}) {
 
 function ViewDatasetButton({onClick}) {
     return (
-        <Button onClick={onClick} className="App-buttons">View Dataset</Button>
+        <Button onClick={onClick} className="App-buttons">View Datasets</Button>
     );
 }
 
@@ -123,25 +123,25 @@ function AddDataset({setView, id, setId}) {
     const [alertType, setAlertType] = useState("");
 
     const handleAddDataset = async () => {
-        console.log(`reached handleAddDataset ${id}, ${file}`)
+        //console.log(`reached handleAddDataset ${id}, ${file}`)
         if (!id || !file) {
-            console.log("inside if block")
+            //console.log("inside if block")
             setMessage("Please provide a valid dataset ID and a valid dataset zip file.");
             setAlertType("danger");
             return;
         }
         //Handle upload
-        console.log("do something with put to upload file");
+        //console.log("do something with put to upload file");
         try {
-            console.log("reached inside try block")
+            //console.log("reached inside try block")
             const kind = "sections";
             await addDatasetAPI(id, file, kind);
-            console.log("6")
+            //console.log("6")
             setView("insights");
-            console.log("7")
+            //console.log("7")
             setMessage(`Successfully added dataset ${id}!`);
             setAlertType("success");
-            console.log("after setting alert success")
+            //console.log("after setting alert success")
         } catch (error) {
             setMessage(`Could not add dataset ${id}, please check that you provided a valid dataset ID and valid dataset zip file.`);
             setAlertType("danger");
@@ -167,7 +167,7 @@ function AddDataset({setView, id, setId}) {
     )
 }
 
-function RemoveDataset() {
+function RemoveDataset({setView}) {
     const [id, setId] = useState("");
     const [message, setMessage] = useState("");
     const [alertType, setAlertType] = useState("");
@@ -179,10 +179,11 @@ function RemoveDataset() {
             return;
         }
         //Handle upload
-        console.log("do something with put to upload file");
+        //console.log("do something with put to upload file");
         try {
             const kind = "Sections";
             await removeDatasetAPI(id, kind);
+            setView("datasets");
             setMessage(`Successfully removed dataset ${id}.`);
             setAlertType("success");
         } catch (error) {
@@ -210,17 +211,22 @@ function RemoveDataset() {
 
 function InsightsViewer({view, setView, id, setId}) {
     //view can be set to datasets or insights
-    console.log("reached insightsviewer")
+    //console.log("reached insightsviewer")
     return (
         <Card style={{backgroundColor: '#C8D7C1', height: "100%", borderColor: 'transparent'}}>
             <Card.Title className="App-header">
                 {view === "insights" ? "Dataset Insights" : "Available Datasets"}
             </Card.Title>
             <Card.Body>
+                <div style={{marginBottom: "70px"}}>
                 {view === "insights" ? DisplayInsights({id}) : DisplayDatasets({setId, setView})}
+                </div>
+                <div>
+                <ViewDatasetButton onClick={() => setView("datasets")}/>
+                </div>
             </Card.Body>
             <Card.Footer style={{backgroundColor: '#C8D7C1', borderColor: 'transparent'}}>
-                <ViewDatasetButton onClick={() => setView("datasets")}/>
+
             </Card.Footer>
         </Card>
     )
@@ -365,19 +371,19 @@ function DisplayInsights({ id }) {
 // }
 
 function DisplayDatasets({setId, setView}) {
-    console.log("reached display datasets")
+    //console.log("reached display datasets")
     const [allDatasets, setAllDatasets] = useState([]);
 
     useEffect(() => {
         const fetchDatasets = async () => {
             try {
                 let allDatasets = await listDatasetsAPI();
-                console.log("this is what we are looking for!:" + allDatasets);
+                //console.log("this is what we are looking for!:" + allDatasets);
                 allDatasets = allDatasets.result
-                console.log("KEYS" + allDatasets.keys());
+                //console.log("KEYS" + allDatasets.keys());
                 setAllDatasets(allDatasets);
             } catch (error) {
-                console.error("failed to load datasets" + error.message);
+                //console.error("failed to load datasets" + error.message);
                 return <p>Error loading datasets</p>
             }
         };
@@ -389,9 +395,9 @@ function DisplayDatasets({setId, setView}) {
 }
 
 function DatasetsTable({setId, setView, datasets}) {
-    console.log("reached DatasetsTable")
-    console.log(typeof datasets);
-    console.log(datasets);
+    //console.log("reached DatasetsTable")
+    //console.log(typeof datasets);
+    //console.log(datasets);
     if(!datasets || !Array.isArray(datasets)) {
         return <p>No datasets available</p>
     }
@@ -437,7 +443,7 @@ const Banner = () => {
 }
 
 function PassFailInsight({id}) {
-    console.log("pie2")
+    //console.log("pie2")
     const [allPieData, setAllPieData] = useState(null);
     const [selectedDept, setSelectedDept] = useState(null);
     const [depts, setDepts] = useState(null);
@@ -446,10 +452,10 @@ function PassFailInsight({id}) {
     useEffect(() => {
         if(!id){return}
         const fetchPieCharts = async () => {
-            console.log("pie3");
+            //console.log("pie3");
             try{
                 setLoading(true);
-                console.log("reached before generatePieCharts")
+                //console.log("reached before generatePieCharts")
                 const data = await generatePieCharts({id: id});
                 // const data = {
                 //     data: [{
@@ -473,13 +479,13 @@ function PassFailInsight({id}) {
                 //         }],
                 //     departments: ["CHEM", "BIO"]
                 // };
-                console.log("reached after generatePieCharts" + JSON.stringify(data))
+                //console.log("reached after generatePieCharts" + JSON.stringify(data))
                 setDepts(data.departments);
                 setAllPieData(data.data);
                 setLoading(false);
-                console.log("pie5")
+                //console.log("pie5")
             } catch (error) {
-                console.error("Error fetching data", error);
+                //console.error("Error fetching data", error);
                 setLoading(false);
             }
         };
@@ -497,7 +503,7 @@ function PassFailInsight({id}) {
     }
 
     if(loading) {
-        console.log("pie load")
+        //console.log("pie load")
         return <p>Loading pass/fail data...</p>
     }
     if(!allPieData) {
@@ -525,22 +531,22 @@ function PassFailInsight({id}) {
 }
 
 function BottomFiveDeptAvgInsight({id}) {
-	console.log("bar")
+	//console.log("bar")
 	const [allBarData, setAllBarData] = useState(null);
 	const [loading, setLoading] = useState(false);
 
 	useEffect(() => {
 		if(!id){return}
 		const fetchBarCharts = async () => {
-			console.log("bar3");
+			//console.log("bar3");
 			try{
 				setLoading(true);
-				console.log("reached before generateBarCharts")
+				//console.log("reached before generateBarCharts")
 				const data = await generateBottomFiveBarChart({id: id});
-				console.log("reached after generateBarCharts" + JSON.stringify(data))
+				//console.log("reached after generateBarCharts" + JSON.stringify(data))
 				setAllBarData(data.data);
 				setLoading(false);
-				console.log("bar5")
+				//console.log("bar5")
 			} catch (error) {
 				console.error("Error fetching data", error);
 				setLoading(false);
@@ -550,7 +556,7 @@ function BottomFiveDeptAvgInsight({id}) {
 	}, [id]);
 
 	if(loading) {
-		console.log("bar load")
+		//console.log("bar load")
 		return <p>Loading bottom five averages...</p>
 	}
 	if(!allBarData) {
@@ -563,22 +569,22 @@ function BottomFiveDeptAvgInsight({id}) {
 }
 
 function TopFiveDeptAvgInsight({id}) {
-	console.log("bar")
+	//console.log("bar")
 	const [allBarData, setAllBarData] = useState(null);
 	const [loading, setLoading] = useState(false);
 
 	useEffect(() => {
 		if(!id){return}
 		const fetchBarCharts = async () => {
-			console.log("bar3");
+			//console.log("bar3");
 			try{
 				setLoading(true);
-				console.log("reached before generateBarCharts")
+				//console.log("reached before generateBarCharts")
 				const data = await generateTopFiveBarChart({id: id});
-				console.log("reached after generateBarCharts" + JSON.stringify(data))
+				//console.log("reached after generateBarCharts" + JSON.stringify(data))
 				setAllBarData(data.data);
 				setLoading(false);
-				console.log("bar5")
+				//console.log("bar5")
 			} catch (error) {
 				console.error("Error fetching data", error);
 				setLoading(false);
@@ -588,7 +594,7 @@ function TopFiveDeptAvgInsight({id}) {
 	}, [id]);
 
 	if(loading) {
-		console.log("bar load")
+		//console.log("bar load")
 		return <p>Loading top five averages...</p>
 	}
 	if(!allBarData) {
@@ -601,7 +607,7 @@ function TopFiveDeptAvgInsight({id}) {
 }
 
 function AvgTrendsInsight({id}) {
-	console.log("line2")
+	//console.log("line2")
 	const [allLineData, setAllLineData] = useState(null);
 	const [selectedDept, setSelectedDept] = useState(null);
 	const [depts, setDepts] = useState(null);
@@ -610,16 +616,16 @@ function AvgTrendsInsight({id}) {
 	useEffect(() => {
 		if(!id){return}
 		const fetchLineGraphs = async () => {
-			console.log("line3");
+			//console.log("line3");
 			try{
 				setLoading(true);
-				console.log("reached before generateLineGraphs")
+				//console.log("reached before generateLineGraphs")
 				const data = await generateLineGraphs({id: id});
-				console.log("reached after generateLineGraphs" + JSON.stringify(data))
+				//console.log("reached after generateLineGraphs" + JSON.stringify(data))
 				setDepts(data.departments);
 				setAllLineData(data.data);
 				setLoading(false);
-				console.log("line5")
+				//console.log("line5")
 			} catch (error) {
 				console.error("Error fetching data", error);
 				setLoading(false);
@@ -639,7 +645,7 @@ function AvgTrendsInsight({id}) {
 	}
 
 	if(loading) {
-		console.log("line load")
+		//console.log("line load")
 		return <p>Loading department averages over time...</p>
 	}
 	if(!allLineData) {
