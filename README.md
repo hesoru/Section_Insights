@@ -1,4 +1,4 @@
-# Section Insights: UI
+# Section Insights
 
 ### Please watch our [frontend demo](https://youtu.be/OzR8udyafII)!
 
